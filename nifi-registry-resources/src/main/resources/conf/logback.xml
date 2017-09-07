@@ -67,6 +67,7 @@
     <!-- valid logging levels: TRACE, DEBUG, INFO, WARN, ERROR -->
     
     <logger name="org.apache.nifi.registry" level="INFO"/>
+    <logger name="org.hibernate.SQL" level="INFO" />
 
     <!--
         Logger for capturing Bootstrap logs and NiFi Registry's standard error and standard out.

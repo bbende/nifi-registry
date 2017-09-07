@@ -33,6 +33,8 @@ public abstract class BucketItem {
     @NotBlank
     private String name;
 
+    private String description;
+
     @NotBlank
     private String bucketIdentifier;
 
@@ -44,6 +46,7 @@ public abstract class BucketItem {
 
     @NotNull
     private final BucketItemType type;
+
 
     public BucketItem(final BucketItemType type) {
         this.type = type;
@@ -67,6 +70,16 @@ public abstract class BucketItem {
     public void setName(String name) {
         this.name = name;
     }
+
+    @ApiModelProperty("A description of the item.")
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
 
     @ApiModelProperty("The identifier of the bucket this items belongs to.")
     public String getBucketIdentifier() {
