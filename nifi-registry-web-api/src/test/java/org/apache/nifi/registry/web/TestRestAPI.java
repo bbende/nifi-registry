@@ -46,7 +46,7 @@ public class TestRestAPI {
             final Client client = ClientBuilder.newClient();
 
             // create some buckets
-            final int numBuckets = 20;
+            final int numBuckets = 1;
             final List<Bucket> createdBuckets = new ArrayList<>();
 
             for (int i=0; i < numBuckets; i++) {
