@@ -156,10 +156,10 @@ public class RegistryService {
         }
     }
 
-    public List<Bucket> getBuckets(final QueryParameters queryParameters, final Set<String> bucketIds) {
+    public List<Bucket> getBuckets(final Set<String> bucketIds) {
         readLock.lock();
         try {
-            final List<BucketEntity> buckets = metadataService.getBuckets(queryParameters, bucketIds);
+            final List<BucketEntity> buckets = metadataService.getBuckets(bucketIds);
             return buckets.stream().map(b -> DataModelMapper.map(b)).collect(Collectors.toList());
         } finally {
             readLock.unlock();
@@ -242,7 +242,7 @@ public class RegistryService {
 
     // ---------------------- BucketItem methods ---------------------------------------------
 
-    public List<BucketItem> getBucketItems(final QueryParameters queryParameters, final String bucketIdentifier) {
+    public List<BucketItem> getBucketItems(final String bucketIdentifier) {
         if (bucketIdentifier == null) {
             throw new IllegalArgumentException("Bucket identifier cannot be null");
         }
@@ -255,14 +255,14 @@ public class RegistryService {
             }
 
             final List<BucketItem> bucketItems = new ArrayList<>();
-            metadataService.getBucketItems(queryParameters, bucket).stream().forEach(b -> addBucketItem(bucketItems, b));
+            metadataService.getBucketItems(bucket).stream().forEach(b -> addBucketItem(bucketItems, b));
             return bucketItems;
         } finally {
             readLock.unlock();
         }
     }
 
-    public List<BucketItem> getBucketItems(final QueryParameters queryParameters, final Set<String> bucketIdentifiers) {
+    public List<BucketItem> getBucketItems(final Set<String> bucketIdentifiers) {
         if (bucketIdentifiers == null || bucketIdentifiers.isEmpty()) {
             throw new IllegalArgumentException("Bucket identifiers cannot be null or empty");
         }
@@ -270,7 +270,7 @@ public class RegistryService {
         readLock.lock();
         try {
             final List<BucketItem> bucketItems = new ArrayList<>();
-            metadataService.getBucketItems(queryParameters, bucketIdentifiers).stream().forEach(b -> addBucketItem(bucketItems, b));
+            metadataService.getBucketItems(bucketIdentifiers).stream().forEach(b -> addBucketItem(bucketItems, b));
             return bucketItems;
         } finally {
             readLock.unlock();

@@ -28,23 +28,17 @@ import org.apache.nifi.registry.db.repository.BucketRepository;
 import org.apache.nifi.registry.db.repository.FlowRepository;
 import org.apache.nifi.registry.db.repository.FlowSnapshotRepository;
 import org.apache.nifi.registry.service.MetadataService;
-import org.apache.nifi.registry.service.QueryParameters;
-import org.apache.nifi.registry.params.SortOrder;
-import org.apache.nifi.registry.params.SortParameter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
 import javax.persistence.metamodel.ManagedType;
 import javax.persistence.metamodel.Metamodel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -143,105 +137,55 @@ public class DatabaseMetadataService implements MetadataService {
     }
 
     @Override
-    public List<BucketEntity> getBuckets(final QueryParameters params, final Set<String> bucketIds) {
-        if (params != null && params.getNumRows() != null && params.getPageNum() != null) {
-            return getPagedBuckets(params, bucketIds);
-        } else if (params != null && params.getSortParameters() != null && params.getSortParameters().size() > 0) {
-            return getSortedBuckets(params, bucketIds);
-        } else {
-            return getAllBuckets(bucketIds);
-        }
-    }
+    public List<BucketEntity> getBuckets(final Set<String> bucketIds) {
+        final StringBuilder queryBuilder = new StringBuilder("FROM BucketEntity b WHERE b.id IN (");
 
-    private List<BucketEntity> getAllBuckets(final Set<String> bucketIds) {
-        final List<BucketEntity> buckets = new ArrayList<>();
-        for (BucketEntity bucket : bucketRepository.findByIdIn(bucketIds)) {
-            buckets.add(bucket);
-        }
-        return buckets;
-    }
+        boolean first = true;
+        for (String bucketId : bucketIds) {
+            if (!first) {
+                queryBuilder.append(", ");
+            }
+            first = false;
 
-    private List<BucketEntity> getPagedBuckets(final QueryParameters params, final Set<String> bucketIds) {
-        final Pageable pageable = getPageRequest(params);
-        final List<BucketEntity> buckets = new ArrayList<>();
-        for (BucketEntity bucket : bucketRepository.findByIdIn(bucketIds, pageable)) {
-            buckets.add(bucket);
+            queryBuilder.append("'").append(bucketId).append("'");
         }
-        return buckets;
-    }
 
-    private List<BucketEntity> getSortedBuckets(final QueryParameters params, final Set<String> bucketIds) {
-        final Sort sort = getSort(params);
-        final List<BucketEntity> buckets = new ArrayList<>();
-        for (BucketEntity bucket : bucketRepository.findByIdIn(bucketIds, sort)) {
-            buckets.add(bucket);
-        }
-        return buckets;
-    }
+        queryBuilder.append(")");
 
-    private Set<BucketEntity> getBuckets(Set<String> bucketIds) {
-        return new HashSet<>(bucketRepository.findByIdIn(bucketIds));
+        final TypedQuery<BucketEntity> results = entityManager.createQuery(queryBuilder.toString(), BucketEntity.class);
+        return results.getResultList();
     }
 
     // ------------------------------------------------------------------------------------
 
     @Override
-    public List<BucketItemEntity> getBucketItems(final QueryParameters params, final BucketEntity bucket) {
-        if (params != null && params.getNumRows() != null && params.getPageNum() != null) {
-            return getPagedBucketItems(params, bucket);
-        } else if (params != null && params.getSortParameters() != null && params.getSortParameters().size() > 0) {
-            return getSortedBucketItems(params, bucket);
-        } else {
-            return getBucketItems(bucket);
-        }
-    }
-
-    private List<BucketItemEntity> getBucketItems(final BucketEntity bucket) {
+    public List<BucketItemEntity> getBucketItems(final BucketEntity bucket) {
         final Iterable<BucketItemEntity> items = itemRepository.findByBucket(bucket);
         return getItemsWithCounts(items);
     }
 
-    private List<BucketItemEntity> getPagedBucketItems(final QueryParameters params, final BucketEntity bucket) {
-        final Pageable pageable = getPageRequest(params);
-        final Iterable<BucketItemEntity> items = itemRepository.findByBucket(bucket, pageable);
-        return getItemsWithCounts(items);
-    }
-
-    private List<BucketItemEntity> getSortedBucketItems(final QueryParameters params, final BucketEntity bucket) {
-        final Sort sort = getSort(params);
-        final Iterable<BucketItemEntity> items = itemRepository.findByBucket(bucket, sort);
-        return getItemsWithCounts(items);
-    }
-
-    // ------------------------------------------------------------------------------------
-
+    // We can't use spring-data's findByXyzIn here because there is some issue with EclipseLink and H2 where it
+    // gets back no results from the query that is generated, so instead we need to build the query ourselves
     @Override
-    public List<BucketItemEntity> getBucketItems(final QueryParameters params, final Set<String> bucketIds) {
-        Set<BucketEntity> filterBuckets = getBuckets(bucketIds);
-        if (params != null && params.getNumRows() != null && params.getPageNum() != null) {
-            return getPagedBucketItems(params, filterBuckets);
-        } else if (params != null && params.getSortParameters() != null && params.getSortParameters().size() > 0) {
-            return getSortedBucketItems(params, filterBuckets);
-        } else {
-            return getBucketItems(filterBuckets);
+    public List<BucketItemEntity> getBucketItems(final Set<String> bucketIds) {
+        final List<BucketEntity> filterBuckets = getBuckets(bucketIds);
+
+        final StringBuilder queryBuilder = new StringBuilder("FROM BucketItemEntity item WHERE item.bucket.id IN (");
+
+        boolean first = true;
+        for (BucketEntity bucketEntity : filterBuckets) {
+            if (!first) {
+                queryBuilder.append(", ");
+            }
+            first = false;
+
+            queryBuilder.append("'").append(bucketEntity.getId()).append("'");
         }
-    }
 
-    private List<BucketItemEntity> getBucketItems(final Set<BucketEntity> buckets) {
-        final List<BucketItemEntity> items = itemRepository.findByBucketIn(buckets);
-        return getItemsWithCounts(items);
-    }
+        queryBuilder.append(")");
 
-    private List<BucketItemEntity> getPagedBucketItems(final QueryParameters params, final Set<BucketEntity> buckets) {
-        final Pageable pageable = getPageRequest(params);
-        final List<BucketItemEntity> items = itemRepository.findByBucketIn(buckets, pageable);
-        return getItemsWithCounts(items);
-    }
-
-    private List<BucketItemEntity> getSortedBucketItems(final QueryParameters params, final Set<BucketEntity> buckets) {
-        final Sort sort = getSort(params);
-        final List<BucketItemEntity> items = itemRepository.findByBucketIn(buckets, sort);
-        return getItemsWithCounts(items);
+        final TypedQuery<BucketItemEntity> results = entityManager.createQuery(queryBuilder.toString(), BucketItemEntity.class);
+        return getItemsWithCounts(results.getResultList());
     }
 
     // ------------------------------------------------------------------------------------
@@ -405,43 +349,6 @@ public class DatabaseMetadataService implements MetadataService {
     @Override
     public Set<String> getFlowFields() {
         return flowFields;
-    }
-
-    /**
-     * Converts the registry query parameters to Spring Data's PageRequest.
-     *
-     * @param parameters the registry query parameters
-     * @return the equivalent Pageable
-     */
-    private Pageable getPageRequest(final QueryParameters parameters) {
-        final Sort sort = getSort(parameters);
-        if (sort == null) {
-            return PageRequest.of(parameters.getPageNum(), parameters.getNumRows());
-        } else {
-            return PageRequest.of(parameters.getPageNum(), parameters.getNumRows(), sort);
-        }
-    }
-
-    /**
-     * Converts the registry sort parameters to Spring Data's Sort.
-     *
-     * @param parameters the registry query parameters
-     * @return the equivalent Sort
-     */
-    private Sort getSort(final QueryParameters parameters) {
-        final List<Sort.Order> orders = new ArrayList<>();
-
-        for (SortParameter sortParameter : parameters.getSortParameters()) {
-            final Sort.Direction direction = sortParameter.getOrder() == SortOrder.ASC ? Sort.Direction.ASC : Sort.Direction.DESC;
-            final Sort.Order order = new Sort.Order(direction, sortParameter.getFieldName());
-            orders.add(order);
-        }
-
-        if (orders.isEmpty()) {
-            return null;
-        } else {
-            return Sort.by(orders);
-        }
     }
 
 }

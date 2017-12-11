@@ -30,7 +30,7 @@ import java.util.List;
  */
 public interface FlowSnapshotRepository extends PagingAndSortingRepository<FlowSnapshotEntity, FlowSnapshotEntityKey> {
 
-    @Query("select new org.apache.nifi.registry.db.entity.FlowSnapshotCount(fs.id.flowId, count(*)) from FlowSnapshotEntity as fs group by fs.id.flowId")
+    @Query("select new org.apache.nifi.registry.db.entity.FlowSnapshotCount(fs.id.flowId, count(fs)) from FlowSnapshotEntity as fs group by fs.id.flowId")
     List<FlowSnapshotCount> countByFlow();
 
     FlowSnapshotEntity findFirstByFlowOrderByIdVersionDesc(FlowEntity flowEntity);

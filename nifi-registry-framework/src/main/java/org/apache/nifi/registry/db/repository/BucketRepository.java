@@ -17,12 +17,9 @@
 package org.apache.nifi.registry.db.repository;
 
 import org.apache.nifi.registry.db.entity.BucketEntity;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Spring Data Repository for BucketEntity.
@@ -30,11 +27,5 @@ import java.util.Set;
 public interface BucketRepository extends PagingAndSortingRepository<BucketEntity,String> {
 
     List<BucketEntity> findByNameIgnoreCase(String name);
-
-    List<BucketEntity> findByIdIn(Set<String> id);
-
-    List<BucketEntity> findByIdIn(Set<String> id, Sort sort);
-
-    List<BucketEntity> findByIdIn(Set<String> id, Pageable pageable);
 
 }

@@ -39,8 +39,7 @@ public class NiFiRegistryApiApplication extends SpringBootServletInitializer {
     @Override
     protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
         final Properties defaultProperties = new Properties();
-        defaultProperties.setProperty("spring.jpa.hibernate.ddl-auto", "none");
-        defaultProperties.setProperty("spring.jpa.hibernate.naming.physical-strategy", "org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl");
+        defaultProperties.setProperty("spring.jpa.generate-ddl", "false");
 
         return application
                 .sources(NiFiRegistryApiApplication.class)

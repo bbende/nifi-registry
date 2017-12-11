@@ -21,7 +21,6 @@ import org.apache.nifi.registry.db.entity.BucketItemEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntityType;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
-import org.apache.nifi.registry.service.QueryParameters;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -47,14 +46,14 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
 
     @Test
     public void testGetBuckets() {
-        final List<BucketEntity> buckets = metadataService.getBuckets(QueryParameters.EMPTY_PARAMETERS, new HashSet<>(Arrays.asList("1", "2")));
+        final List<BucketEntity> buckets = metadataService.getBuckets(new HashSet<>(Arrays.asList("1", "2")));
         assertNotNull(buckets);
         assertEquals(2, buckets.size());
     }
 
     @Test
     public void testGetItemsWithCounts() {
-        final List<BucketItemEntity> items = metadataService.getBucketItems(null, new HashSet<>(Arrays.asList("1", "2")));
+        final List<BucketItemEntity> items = metadataService.getBucketItems(new HashSet<>(Arrays.asList("1", "2")));
         assertNotNull(items);
 
         // 3 items across all buckets
@@ -70,7 +69,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
 
     @Test
     public void testGetItemsWithCountsFilteredByBuckets() {
-        final List<BucketItemEntity> items = metadataService.getBucketItems(null, Collections.singleton("1"));
+        final List<BucketItemEntity> items = metadataService.getBucketItems(Collections.singleton("1"));
         assertNotNull(items);
 
         // only 2 items in bucket 1

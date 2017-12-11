@@ -72,11 +72,10 @@ public interface MetadataService {
     /**
      * Retrieves all buckets with the given ids.
      *
-     * @param params the paging and sorting params, or null
      * @param bucketIds the ids of the buckets to retrieve
      * @return the set of all buckets
      */
-    List<BucketEntity> getBuckets(QueryParameters params, Set<String> bucketIds);
+    List<BucketEntity> getBuckets(Set<String> bucketIds);
 
     /**
      * Retrieves all buckets.
@@ -91,19 +90,17 @@ public interface MetadataService {
      * Retrieves items for the given bucket.
      *
      * @param bucket the bucket to retrieve items for
-     * @param queryParameters the parameters for retrieving the items, or null
      * @return the set of items for the bucket
      */
-    List<BucketItemEntity> getBucketItems(QueryParameters queryParameters, BucketEntity bucket);
+    List<BucketItemEntity> getBucketItems(BucketEntity bucket);
 
     /**
      * Retrieves items for the given buckets.
      *
      * @param bucketIds the ids of buckets to retrieve items for
-     * @param queryParameters the parameters for retrieving the items, or null
      * @return the set of items for the bucket
      */
-    List<BucketItemEntity> getBucketItems(QueryParameters queryParameters, Set<String> bucketIds);
+    List<BucketItemEntity> getBucketItems(Set<String> bucketIds);
 
     // --------------------------------------------------------------------------------------------
 
