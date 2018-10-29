@@ -110,13 +110,9 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
         // otp
         // todo, if needed one-time password auth filter goes here
 
-        if (properties.getSslPort() == null) {
-            // If we are running an unsecured NiFi Registry server, add an
-            // anonymous authentication filter that will populate the
-            // authenticated, anonymous user if no other user identity
-            // is detected earlier in the Spring filter chain.
-            http.anonymous().authenticationFilter(anonymousAuthenticationFilter);
-        }
+
+        http.anonymous().authenticationFilter(anonymousAuthenticationFilter);
+
 
         // After Spring Security filter chain is complete (so authentication is done),
         // but before the Jersey application endpoints get the request,

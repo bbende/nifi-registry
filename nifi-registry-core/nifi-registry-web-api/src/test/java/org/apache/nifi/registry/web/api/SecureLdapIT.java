@@ -240,7 +240,7 @@ public class SecureLdapIT extends IntegrationTestBase {
                 .get(Response.class);
 
         // Then: the server returns a 200 OK with the expected current user
-        assertEquals(401, response.getStatus());
+        assertEquals(200, response.getStatus());
 
     }
 
