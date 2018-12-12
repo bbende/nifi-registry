@@ -14,9 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.extension;
+package org.apache.nifi.registry.bundle.extract.nar;
 
-import org.apache.nifi.registry.extension.nar.NarBundleExtractor;
+import org.apache.nifi.registry.bundle.extract.BundleException;
+import org.apache.nifi.registry.bundle.extract.BundleExtractor;
+import org.apache.nifi.registry.bundle.model.BuildInfo;
+import org.apache.nifi.registry.bundle.model.BundleCoordinate;
+import org.apache.nifi.registry.bundle.model.BundleDetails;
+import org.apache.nifi.registry.bundle.model.ExtensionInfo;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -50,6 +55,11 @@ public class TestNarBundleExtractor {
             assertEquals("org.apache.nifi", bundleCoordinate.getGroupId());
             assertEquals("nifi-framework-nar", bundleCoordinate.getArtifactId());
             assertEquals("1.8.0", bundleCoordinate.getVersion());
+
+            assertNotNull(bundleDetails.getExtensionInfo());
+            assertNotNull(bundleDetails.getExtensionInfo().getExtensionDetails());
+            assertEquals(0, bundleDetails.getExtensionInfo().getExtensionDetails().size());
+            assertEquals("1.8.0", bundleDetails.getExtensionInfo().getSystemApiVersion());
         }
     }
 
@@ -74,7 +84,7 @@ public class TestNarBundleExtractor {
         }
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = BundleException.class)
     public void testExtractFromNarMissingRequiredManifestEntries() throws IOException {
         try (final InputStream in = new FileInputStream("src/test/resources/nars/nifi-missing-manifest-entries.nar")) {
             extractor.extract(in);
@@ -82,11 +92,51 @@ public class TestNarBundleExtractor {
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = BundleException.class)
     public void testExtractFromNarMissingManifest() throws IOException {
         try (final InputStream in = new FileInputStream("src/test/resources/nars/nifi-missing-manifest.nar")) {
             extractor.extract(in);
             fail("Should have thrown exception");
+        }
+    }
+
+    @Test(expected = BundleException.class)
+    public void testExtractFromNarMissingExtensionDescriptor() throws IOException {
+        try (final InputStream in = new FileInputStream("src/test/resources/nars/nifi-foo-nar-missing-extension-descriptor.nar")) {
+            extractor.extract(in);
+            fail("Should have thrown exception");
+        }
+    }
+
+    @Test
+    public void testExtractFromNarWithDescriptorAndAdditionalDetails() throws IOException {
+        try (final InputStream in = new FileInputStream("src/test/resources/nars/nifi-hadoop-nar.nar")) {
+            final BundleDetails bundleDetails = extractor.extract(in);
+            assertNotNull(bundleDetails);
+            assertNotNull(bundleDetails.getBundleCoordinate());
+            assertNotNull(bundleDetails.getDependencyBundleCoordinates());
+            assertEquals(1, bundleDetails.getDependencyBundleCoordinates().size());
+
+            final BundleCoordinate bundleCoordinate = bundleDetails.getBundleCoordinate();
+            assertEquals("org.apache.nifi", bundleCoordinate.getGroupId());
+            assertEquals("nifi-hadoop-nar", bundleCoordinate.getArtifactId());
+            assertEquals("1.9.0-SNAPSHOT", bundleCoordinate.getVersion());
+
+            final BuildInfo buildInfo = bundleDetails.getBuildInfo();
+            assertNotNull(buildInfo);
+            assertEquals("1.8.0_162", buildInfo.getTool());
+            assertEquals(BuildInfo.NA, buildInfo.getFlags());
+            assertEquals("master", buildInfo.getBranch());
+            assertEquals("HEAD", buildInfo.getTag());
+            assertEquals("1a937b6", buildInfo.getRevision());
+            assertEquals("jsmith", buildInfo.getBuiltBy());
+            assertNotNull(buildInfo.getTimestamp());
+
+            final ExtensionInfo extensionInfo = bundleDetails.getExtensionInfo();
+            assertNotNull(extensionInfo);
+            assertEquals("1.9.0-SNAPSHOT", extensionInfo.getSystemApiVersion());
+            assertNotNull(extensionInfo.getExtensionDetails());
+            assertEquals(10, extensionInfo.getExtensionDetails().size());
         }
     }
 

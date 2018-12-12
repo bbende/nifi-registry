@@ -14,21 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.extension;
-
-import java.io.IOException;
-import java.io.InputStream;
+package org.apache.nifi.registry.bundle.extract;
 
 /**
- * Extracts the bundle metadata from the given InputStream.
+ * Exception to be thrown from a BundleExtractor when an issue occurs during extraction.
  */
-public interface BundleExtractor {
+public class BundleException extends RuntimeException {
 
-    /**
-     * @param inputStream the input stream of the binary bundle
-     * @return the bundle metadata extracted from the input stream
-     * @throws IOException if an error occurs reading from the InputStream
-     */
-    BundleDetails extract(InputStream inputStream) throws IOException;
+    public BundleException(String message) {
+        super(message);
+    }
+
+    public BundleException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
 }

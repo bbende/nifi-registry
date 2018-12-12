@@ -14,26 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.extension;
+package org.apache.nifi.registry.bundle.model;
 
+
+import org.apache.nifi.registry.bundle.extract.BundleExtractor;
+import org.apache.nifi.registry.bundle.util.BundleUtils;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Details for a given bundle which are obtained from a given {@link BundleExtractor}.
+ */
 public class BundleDetails {
 
     private final BundleCoordinate bundleCoordinate;
-
-    // Can be null when there is no dependent bundle
     private final Set<BundleCoordinate> dependencyBundleCoordinates;
+    private final ExtensionInfo extensionInfo;
+    private final BuildInfo buildInfo;
 
     private BundleDetails(final Builder builder) {
         this.bundleCoordinate = builder.bundleCoordinate;
         this.dependencyBundleCoordinates = Collections.unmodifiableSet(new HashSet<>(builder.dependencyBundleCoordinates));
-        if (this.bundleCoordinate == null) {
-            throw new IllegalStateException("A bundle coordinate is required");
-        }
+        this.extensionInfo = builder.extensionInfo;
+        this.buildInfo = builder.buildInfo;
+
+        BundleUtils.validateNotNull("Bundle Coordinate", this.bundleCoordinate);
+        BundleUtils.validateNotNull("Dependency Coordinates", this.dependencyBundleCoordinates);
+        BundleUtils.validateNotNull("Extension Info", this.extensionInfo);
+        BundleUtils.validateNotNull("Build Info", this.buildInfo);
     }
 
     public BundleCoordinate getBundleCoordinate() {
@@ -44,6 +54,14 @@ public class BundleDetails {
         return dependencyBundleCoordinates;
     }
 
+    public ExtensionInfo getExtensionInfo() {
+        return extensionInfo;
+    }
+
+    public BuildInfo getBuildInfo() {
+        return buildInfo;
+    }
+
     /**
      * Builder for creating instances of BundleDetails.
      */
@@ -51,16 +69,28 @@ public class BundleDetails {
 
         private BundleCoordinate bundleCoordinate;
         private Set<BundleCoordinate> dependencyBundleCoordinates = new HashSet<>();
+        private ExtensionInfo extensionInfo;
+        private BuildInfo buildInfo;
 
         public Builder coordinate(final BundleCoordinate bundleCoordinate) {
             this.bundleCoordinate = bundleCoordinate;
             return this;
         }
 
-        public Builder dependencyCoordinate(final BundleCoordinate dependencyCoordinate) {
+        public Builder addDependencyCoordinate(final BundleCoordinate dependencyCoordinate) {
             if (dependencyCoordinate != null) {
                 this.dependencyBundleCoordinates.add(dependencyCoordinate);
             }
+            return this;
+        }
+
+        public Builder extensionInfo(final ExtensionInfo extensionInfo) {
+            this.extensionInfo = extensionInfo;
+            return this;
+        }
+
+        public Builder buildInfo(final BuildInfo buildInfo) {
+            this.buildInfo = buildInfo;
             return this;
         }
 

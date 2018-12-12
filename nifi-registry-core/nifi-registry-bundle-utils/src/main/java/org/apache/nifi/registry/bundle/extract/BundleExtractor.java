@@ -14,23 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.extension.minificpp;
+package org.apache.nifi.registry.bundle.extract;
 
-import org.apache.nifi.registry.extension.BundleDetails;
-import org.apache.nifi.registry.extension.BundleExtractor;
+import org.apache.nifi.registry.bundle.model.BundleDetails;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * ExtensionBundleExtractor for MiNiFi CPP extensions.
+ * Extracts the bundle metadata from the given InputStream.
  */
-public class MiNiFiCppBundleExtractor implements BundleExtractor {
+public interface BundleExtractor {
 
-    @Override
-    public BundleDetails extract(final InputStream inputStream) throws IOException {
-        // TODO implement
-        throw new UnsupportedOperationException("Minifi CPP extensions are not yet supported");
-    }
+    /**
+     * @param inputStream the input stream of the binary bundle
+     * @return the bundle metadata extracted from the input stream
+     * @throws IOException if an error occurs reading from the InputStream
+     */
+    BundleDetails extract(InputStream inputStream) throws IOException;
 
 }
