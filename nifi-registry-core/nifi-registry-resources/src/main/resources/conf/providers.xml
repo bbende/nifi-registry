@@ -52,7 +52,7 @@
     -->
 
     <extensionBundlePersistenceProvider>
-        <class>org.apache.nifi.registry.provider.extension.FileSystemExtensionBundlePersistenceProvider</class>
+        <class>org.apache.nifi.registry.provider.extension.FileSystemBundlePersistenceProvider</class>
         <property name="Extension Bundle Storage Directory">./extension_bundles</property>
     </extensionBundlePersistenceProvider>
 
