@@ -16,13 +16,17 @@
  */
 package org.apache.nifi.registry.db;
 
+import org.apache.nifi.registry.jdbc.api.JdbcEntityTemplate;
+import org.apache.nifi.registry.jdbc.spring.SpringJdbcEntityTemplate;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * Sets up the application context for database repository tests.
@@ -48,5 +52,11 @@ public class DatabaseTestApplication {
     @Bean
     public NiFiRegistryProperties createNiFiRegistryProperties() {
         return Mockito.mock(NiFiRegistryProperties.class);
+    }
+
+    @Bean
+    @Autowired
+    public JdbcEntityTemplate getJdbcEntityTemplate(final JdbcTemplate jdbcTemplate) {
+        return new SpringJdbcEntityTemplate(jdbcTemplate);
     }
 }
