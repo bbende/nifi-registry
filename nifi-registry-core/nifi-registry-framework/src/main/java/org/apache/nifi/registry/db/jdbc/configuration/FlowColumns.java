@@ -14,11 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.db.jdbc.repository;
+package org.apache.nifi.registry.db.jdbc.configuration;
 
-import org.apache.nifi.registry.db.entity.BucketEntity;
-import org.apache.nifi.registry.jdbc.api.JdbcRepository;
+import org.apache.nifi.registry.jdbc.api.Column;
 
-public interface BucketRepository extends JdbcRepository<String,BucketEntity> {
+public interface FlowColumns extends BucketItemColumns {
+
+    static Column[] values() {
+        return new Column[] { ID };
+    }
 
 }

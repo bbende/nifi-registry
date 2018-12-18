@@ -27,19 +27,20 @@ import org.apache.nifi.registry.db.entity.ExtensionEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntityCategory;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
-import org.apache.nifi.registry.db.jdbc.configuration.BucketColumns;
+import org.apache.nifi.registry.db.jdbc.configuration.BucketItemColumns;
+import org.apache.nifi.registry.db.jdbc.repository.BucketRepository;
+import org.apache.nifi.registry.db.jdbc.repository.FlowRepository;
 import org.apache.nifi.registry.db.mapper.BucketItemEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.ExtensionBundleEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.ExtensionBundleEntityWithBucketNameRowMapper;
 import org.apache.nifi.registry.db.mapper.ExtensionBundleVersionDependencyEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.ExtensionBundleVersionEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.ExtensionEntityRowMapper;
-import org.apache.nifi.registry.db.mapper.FlowEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.FlowSnapshotEntityRowMapper;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
 import org.apache.nifi.registry.jdbc.api.Column;
-import org.apache.nifi.registry.jdbc.api.JdbcRepository;
+import org.apache.nifi.registry.jdbc.commons.StandardQueryParamBuilder;
 import org.apache.nifi.registry.service.MetadataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -57,19 +58,21 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.TreeMap;
 
 @Repository
 public class DatabaseMetadataService implements MetadataService {
 
     private final JdbcTemplate jdbcTemplate;
-    private final JdbcRepository<String,BucketEntity> bucketRepository;
+    private final BucketRepository bucketRepository;
+    private final FlowRepository flowRepository;
 
     @Autowired
     public DatabaseMetadataService(final JdbcTemplate jdbcTemplate,
-                                   final JdbcRepository<String,BucketEntity> bucketRepository) {
+                                   final BucketRepository bucketRepository,
+                                   final FlowRepository flowRepository) {
         this.jdbcTemplate = jdbcTemplate;
         this.bucketRepository = bucketRepository;
+        this.flowRepository = flowRepository;
     }
 
     //----------------- Buckets ---------------------------------
@@ -87,8 +90,7 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public List<BucketEntity> getBucketsByName(final String name) {
-        final SortedMap<Column,Object> params = new TreeMap<>();
-        params.put(BucketColumns.NAME, name);
+        final SortedMap<Column,Object> params = new StandardQueryParamBuilder().with(BucketItemColumns.NAME, name).build();
         return bucketRepository.findByFields(params);
     }
 
@@ -112,8 +114,7 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public List<BucketEntity> getAllBuckets() {
-        final SortedMap<Column,Object> params = new TreeMap<>();
-        return bucketRepository.findByFields(params);
+        return bucketRepository.findAll();
     }
 
     //----------------- BucketItems ---------------------------------
@@ -227,32 +228,13 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public FlowEntity createFlow(final FlowEntity flow) {
-        final String itemSql = "INSERT INTO bucket_item (ID, NAME, DESCRIPTION, CREATED, MODIFIED, ITEM_TYPE, BUCKET_ID) VALUES (?, ?, ?, ?, ?, ?, ?)";
-
-        jdbcTemplate.update(itemSql,
-                flow.getId(),
-                flow.getName(),
-                flow.getDescription(),
-                flow.getCreated(),
-                flow.getModified(),
-                flow.getType().toString(),
-                flow.getBucketId());
-
-        final String flowSql = "INSERT INTO flow (ID) VALUES (?)";
-
-        jdbcTemplate.update(flowSql, flow.getId());
-
-        return flow;
+        return flowRepository.create(flow);
     }
 
     @Override
     public FlowEntity getFlowById(final String flowIdentifier) {
-        final String sql = "SELECT * FROM flow f, bucket_item item WHERE f.id = ? AND item.id = f.id";
-        try {
-            return jdbcTemplate.queryForObject(sql, new FlowEntityRowMapper(), flowIdentifier);
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
+        final Optional<FlowEntity> result = flowRepository.findById(flowIdentifier);
+        return result.isPresent() ? result.get() : null;
     }
 
     @Override
@@ -272,21 +254,28 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public List<FlowEntity> getFlowsByName(final String name) {
-        final String sql = "SELECT * FROM flow f, bucket_item item WHERE item.name = ? AND item.id = f.id";
-        return jdbcTemplate.query(sql, new Object[] {name}, new FlowEntityRowMapper());
+        final SortedMap<Column,Object> params = new StandardQueryParamBuilder().with(BucketItemColumns.NAME, name).build();
+        return flowRepository.findByFields(params);
     }
 
     @Override
     public List<FlowEntity> getFlowsByName(final String bucketIdentifier, final String name) {
-        final String sql = "SELECT * FROM flow f, bucket_item item WHERE item.name = ? AND item.id = f.id AND item.bucket_id = ?";
-        return jdbcTemplate.query(sql, new Object[] {name, bucketIdentifier}, new FlowEntityRowMapper());
+        final SortedMap<Column,Object> params = new StandardQueryParamBuilder()
+                .with(BucketItemColumns.BUCKET_ID, bucketIdentifier)
+                .with(BucketItemColumns.NAME, name)
+                .build();
+        return flowRepository.findByFields(params);
     }
 
     @Override
     public List<FlowEntity> getFlowsByBucket(final String bucketIdentifier) {
-        final String sql = "SELECT * FROM flow f, bucket_item item WHERE item.bucket_id = ? AND item.id = f.id";
-        final List<FlowEntity> flows = jdbcTemplate.query(sql, new Object[] {bucketIdentifier}, new FlowEntityRowMapper());
+        final SortedMap<Column,Object> params = new StandardQueryParamBuilder()
+                .with(BucketItemColumns.BUCKET_ID, bucketIdentifier)
+                .build();
 
+        final List<FlowEntity> flows = flowRepository.findByFields(params);
+
+        // TODO update
         final Map<String,Long> snapshotCounts = getFlowSnapshotCounts();
         for (final FlowEntity flowEntity : flows) {
             final Long snapshotCount = snapshotCounts.get(flowEntity.getId());
@@ -301,10 +290,7 @@ public class DatabaseMetadataService implements MetadataService {
     @Override
     public FlowEntity updateFlow(final FlowEntity flow) {
         flow.setModified(new Date());
-
-        final String sql = "UPDATE bucket_item SET name = ?, description = ?, modified = ? WHERE id = ?";
-        jdbcTemplate.update(sql, flow.getName(), flow.getDescription(), flow.getModified(), flow.getId());
-        return flow;
+        return flowRepository.update(flow);
     }
 
     @Override

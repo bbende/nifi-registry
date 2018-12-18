@@ -26,7 +26,7 @@ import org.apache.nifi.registry.jdbc.api.EntityValueMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class ExtensionMapper implements EntityRowMapper<String, ExtensionEntity>, EntityValueMapper<String,ExtensionEntity> {
+public class ExtensionMapper implements EntityRowMapper<ExtensionEntity>, EntityValueMapper<ExtensionEntity> {
 
     @Override
     public ExtensionEntity mapRow(final ResultSet rs, final int rowNum) throws SQLException {

@@ -28,7 +28,7 @@ public class SqlUtils {
         boolean first = true;
         for (final String value : values) {
             if (!first) {
-                builder.append(" ").append(separator);
+                builder.append(" ").append(separator).append(" ");
             }
             builder.append(value);
             first = false;

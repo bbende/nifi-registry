@@ -40,5 +40,7 @@ public interface QueryBuilder {
 
     QueryBuilder where(String clause);
 
+    QueryBuilder copy();
+
     String build();
 }

@@ -16,7 +16,7 @@
  */
 package org.apache.nifi.registry.jdbc.api;
 
-public interface EntityValueMapper<ID, E extends Entity<ID>> {
+public interface EntityValueMapper<E extends Entity> {
 
     Object map(Column column, E entity);
 

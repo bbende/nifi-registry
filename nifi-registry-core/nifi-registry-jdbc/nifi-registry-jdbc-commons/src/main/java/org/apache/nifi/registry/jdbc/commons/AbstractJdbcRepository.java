@@ -40,14 +40,14 @@ public abstract class AbstractJdbcRepository<I, E extends Entity<I>> implements 
     protected final Table<I> table;
     protected final Class<E> entityClass;
     protected final TableConfiguration tableConfiguration;
-    protected final EntityValueMapper<I,E> entityValueMapper;
-    protected final EntityRowMapper<I,E> entityRowMapper;
+    protected final EntityValueMapper<E> entityValueMapper;
+    protected final EntityRowMapper<E> entityRowMapper;
     protected final JdbcEntityTemplate jdbcEntityTemplate;
 
     public AbstractJdbcRepository(final Class<E> entityClass,
                                   final TableConfiguration tableConfiguration,
-                                  final EntityValueMapper<I, E> entityValueMapper,
-                                  final EntityRowMapper<I, E> entityRowMapper,
+                                  final EntityValueMapper<E> entityValueMapper,
+                                  final EntityRowMapper<E> entityRowMapper,
                                   final JdbcEntityTemplate jdbcEntityTemplate) {
         this.entityClass = Objects.requireNonNull(entityClass);
         this.tableConfiguration = Objects.requireNonNull(tableConfiguration);

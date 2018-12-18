@@ -14,11 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.db.jdbc.repository;
+package org.apache.nifi.registry.db.jdbc.configuration;
 
-import org.apache.nifi.registry.db.entity.BucketEntity;
-import org.apache.nifi.registry.jdbc.api.JdbcRepository;
+import org.apache.nifi.registry.jdbc.api.Column;
+import org.apache.nifi.registry.jdbc.commons.StandardColumn;
 
-public interface BucketRepository extends JdbcRepository<String,BucketEntity> {
+public interface BucketItemColumns {
 
+    Column ID = new StandardColumn("ID");
+    Column NAME = new StandardColumn("NAME");
+    Column DESCRIPTION = new StandardColumn("DESCRIPTION");
+    Column CREATED = new StandardColumn("CREATED");
+    Column MODIFIED = new StandardColumn("MODIFIED");
+    Column ITEM_TYPE = new StandardColumn("ITEM_TYPE");
+    Column BUCKET_ID = new StandardColumn("BUCKET_ID");
+
+    static Column[] values() {
+        return new Column[] { ID, NAME, DESCRIPTION, CREATED, MODIFIED, ITEM_TYPE, BUCKET_ID};
+    }
 }

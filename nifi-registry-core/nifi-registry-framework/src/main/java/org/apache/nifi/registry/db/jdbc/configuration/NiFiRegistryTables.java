@@ -29,6 +29,20 @@ public interface NiFiRegistryTables {
                     .idGenerator(new UUIDStringGenerator())
                     .build();
 
+    Table<String> BUCKET_ITEM =
+            new StandardTable.Builder<String>("BUCKET_ITEM", "bi")
+                    .addColumns(BucketItemColumns.values())
+                    .idColumn(BucketItemColumns.ID)
+                    .idGenerator(new UUIDStringGenerator())
+                    .build();
+
+    Table<String> FLOW =
+            new StandardTable.Builder<String>("FLOW", "f")
+                    .addColumns(FlowColumns.values())
+                    .idColumn(FlowColumns.ID)
+                    .idGenerator(null)
+                    .build();
+
     Table<String> EXTENSION =
             new StandardTable.Builder<String>("EXTENSION", "ext")
                     .addColumns(ExtensionColumns.values())

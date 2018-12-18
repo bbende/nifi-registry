@@ -23,15 +23,17 @@ import java.util.SortedSet;
 
 public interface JdbcEntityTemplate {
 
-    <I, E extends Entity<I>> E insert(Table<I> table, E entity, EntityValueMapper<I, E> entityValueMapper);
+    <I, E extends Entity<I>> E insert(Table<I> table, E entity, EntityValueMapper<E> entityValueMapper);
 
-    <I, E extends Entity<I>> E update(Table<I> table, E entity, SortedSet<Column> columns, EntityValueMapper<I, E> entityValueMapper);
+    <I, E extends Entity<I>> E update(Table<I> table, E entity, SortedSet<Column> columns, EntityValueMapper<E> entityValueMapper);
 
-    <I, E extends Entity<I>> Optional<E> queryForObject(Table<I> table, I id, EntityRowMapper<I,E> rowMapper);
+    <I, E extends Entity<I>> Optional<E> queryForObject(Table<I> table, I id, EntityRowMapper<E> rowMapper);
 
-    <I, E extends Entity<I>> List<E> query(Table<I> table, SortedMap<Column,Object> args, EntityRowMapper<I,E> rowMapper);
+    <I, E extends Entity<I>> Optional<E> queryForObject(String sql, I id, EntityRowMapper<E> rowMapper);
 
-    <I, E extends Entity<I>> List<E> query(String sql, List<Object> args, EntityRowMapper<I,E> rowMapper);
+    <I, E extends Entity<I>> List<E> query(Table<I> table, SortedMap<Column,Object> args, EntityRowMapper<E> rowMapper);
+
+    <I, E extends Entity<I>> List<E> query(String sql, List<Object> args, EntityRowMapper<E> rowMapper);
 
     <I, E extends Entity<I>> void deleteByEntity(Table<I> table, E entity);
 

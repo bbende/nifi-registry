@@ -31,6 +31,8 @@ public class StandardQueryBuilder implements QueryBuilder {
     private List<String> from = new ArrayList<>();
     private List<String> whereClauses= new ArrayList<>();
 
+
+
     @Override
     public QueryBuilder select(final Table table, final SortedSet<Column> columns) {
         columns.forEach(c -> select(table, c));
@@ -104,6 +106,15 @@ public class StandardQueryBuilder implements QueryBuilder {
     public QueryBuilder where(final String clause) {
         whereClauses.add(clause);
         return this;
+    }
+
+    @Override
+    public QueryBuilder copy() {
+        final StandardQueryBuilder copy = new StandardQueryBuilder();
+        copy.returnFields.addAll(this.returnFields);
+        copy.from.addAll(this.from);
+        copy.whereClauses.addAll(this.whereClauses);
+        return copy;
     }
 
     @Override

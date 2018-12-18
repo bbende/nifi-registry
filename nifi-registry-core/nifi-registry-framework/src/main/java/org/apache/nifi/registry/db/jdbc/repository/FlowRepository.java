@@ -16,9 +16,9 @@
  */
 package org.apache.nifi.registry.db.jdbc.repository;
 
-import org.apache.nifi.registry.db.entity.BucketEntity;
+import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.jdbc.api.JdbcRepository;
 
-public interface BucketRepository extends JdbcRepository<String,BucketEntity> {
+public interface FlowRepository extends JdbcRepository<String, FlowEntity> {
 
 }

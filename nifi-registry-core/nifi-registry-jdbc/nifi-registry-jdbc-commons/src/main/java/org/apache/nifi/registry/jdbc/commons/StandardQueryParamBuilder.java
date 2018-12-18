@@ -14,11 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.db.jdbc.repository;
+package org.apache.nifi.registry.jdbc.commons;
 
-import org.apache.nifi.registry.db.entity.BucketEntity;
-import org.apache.nifi.registry.jdbc.api.JdbcRepository;
+import org.apache.nifi.registry.jdbc.api.Column;
+import org.apache.nifi.registry.jdbc.api.QueryParamBuilder;
 
-public interface BucketRepository extends JdbcRepository<String,BucketEntity> {
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+public class StandardQueryParamBuilder implements QueryParamBuilder {
+
+    private SortedMap<Column,Object> params = new TreeMap<>();
+
+    @Override
+    public QueryParamBuilder with(Column column, Object value) {
+        params.put(column, value);
+        return this;
+    }
+
+    @Override
+    public SortedMap<Column, Object> build() {
+        return new TreeMap<>(params);
+    }
 
 }

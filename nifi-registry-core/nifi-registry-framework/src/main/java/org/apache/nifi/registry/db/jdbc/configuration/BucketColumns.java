@@ -19,15 +19,15 @@ package org.apache.nifi.registry.db.jdbc.configuration;
 import org.apache.nifi.registry.jdbc.api.Column;
 import org.apache.nifi.registry.jdbc.commons.StandardColumn;
 
-public class BucketColumns {
+public interface BucketColumns {
 
-    public static final Column ID = new StandardColumn("ID");
-    public static final Column NAME = new StandardColumn("NAME");
-    public static final Column DESCRIPTION = new StandardColumn("DESCRIPTION");
-    public static final Column CREATED = new StandardColumn("CREATED");
-    public static final Column ALLOW_EXTENSION_BUNDLE_REDEPLOY = new StandardColumn("ALLOW_EXTENSION_BUNDLE_REDEPLOY");
+    Column ID = new StandardColumn("ID");
+    Column NAME = new StandardColumn("NAME");
+    Column DESCRIPTION = new StandardColumn("DESCRIPTION");
+    Column CREATED = new StandardColumn("CREATED");
+    Column ALLOW_EXTENSION_BUNDLE_REDEPLOY = new StandardColumn("ALLOW_EXTENSION_BUNDLE_REDEPLOY");
 
-    public static Column[] values() {
+    static Column[] values() {
         return new Column[] { ID, NAME, DESCRIPTION, CREATED, ALLOW_EXTENSION_BUNDLE_REDEPLOY };
     }
 }

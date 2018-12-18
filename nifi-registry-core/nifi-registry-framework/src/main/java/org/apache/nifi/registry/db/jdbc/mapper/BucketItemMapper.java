@@ -16,8 +16,8 @@
  */
 package org.apache.nifi.registry.db.jdbc.mapper;
 
-import org.apache.nifi.registry.db.entity.BucketEntity;
-import org.apache.nifi.registry.db.jdbc.configuration.BucketColumns;
+import org.apache.nifi.registry.db.entity.BucketItemEntity;
+import org.apache.nifi.registry.db.jdbc.configuration.BucketItemColumns;
 import org.apache.nifi.registry.jdbc.api.Column;
 import org.apache.nifi.registry.jdbc.api.EntityRowMapper;
 import org.apache.nifi.registry.jdbc.api.EntityValueMapper;
@@ -25,33 +25,33 @@ import org.apache.nifi.registry.jdbc.api.EntityValueMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class BucketMapper implements EntityRowMapper<BucketEntity>, EntityValueMapper<BucketEntity> {
+public class BucketItemMapper implements EntityRowMapper<BucketItemEntity>, EntityValueMapper<BucketItemEntity> {
 
     @Override
-    public BucketEntity mapRow(final ResultSet rs, final int rowNum) throws SQLException {
-        final BucketEntity b = new BucketEntity();
-        b.setId(rs.getString(BucketColumns.ID.getName()));
-        b.setName(rs.getString(BucketColumns.NAME.getName()));
-        b.setDescription(rs.getString(BucketColumns.DESCRIPTION.getName()));
-        b.setCreated(rs.getTimestamp(BucketColumns.CREATED.getName()));
-        b.setAllowExtensionBundleRedeploy(rs.getInt(BucketColumns.ALLOW_EXTENSION_BUNDLE_REDEPLOY.getName()) == 0 ? false : true);
-        return b;
+    public BucketItemEntity mapRow(final ResultSet rs, final int rowNum) throws SQLException {
+        // TODO
+        return null;
     }
 
     @Override
-    public Object map(final Column column, final BucketEntity entity) {
-        if (column == BucketColumns.ID) {
+    public Object map(final Column column, final BucketItemEntity entity) {
+        if (column == BucketItemColumns.ID) {
             return entity.getId();
-        } else if (column == BucketColumns.NAME) {
+        } else if (column == BucketItemColumns.NAME) {
             return entity.getName();
-        } else if (column == BucketColumns.DESCRIPTION) {
+        } else if (column == BucketItemColumns.DESCRIPTION) {
             return entity.getDescription();
-        } else if (column == BucketColumns.CREATED) {
+        } else if (column == BucketItemColumns.CREATED) {
             return entity.getCreated();
-        } else if (column == BucketColumns.ALLOW_EXTENSION_BUNDLE_REDEPLOY) {
-            return entity.isAllowExtensionBundleRedeploy() ? 1 : 0;
+        } else if (column == BucketItemColumns.MODIFIED) {
+            return entity.getModified();
+        } else if (column == BucketItemColumns.BUCKET_ID) {
+            return entity.getBucketId();
+        } else if (column == BucketItemColumns.ITEM_TYPE) {
+            return entity.getType().toString();
         } else {
-            throw new IllegalArgumentException("Unexpected colum: " + column.getName());
+            throw new IllegalArgumentException("Unexpected column: " + column.getName());
         }
     }
+
 }

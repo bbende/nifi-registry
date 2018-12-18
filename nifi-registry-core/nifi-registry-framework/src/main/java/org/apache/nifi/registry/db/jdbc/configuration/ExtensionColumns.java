@@ -19,17 +19,17 @@ package org.apache.nifi.registry.db.jdbc.configuration;
 import org.apache.nifi.registry.jdbc.api.Column;
 import org.apache.nifi.registry.jdbc.commons.StandardColumn;
 
-public class ExtensionColumns {
+public interface ExtensionColumns {
 
-    public static final Column ID = new StandardColumn("ID");
-    public static final Column EXTENSION_BUNDLE_VERSION_ID = new StandardColumn("EXTENSION_BUNDLE_VERSION_ID");
-    public static final Column TYPE = new StandardColumn("TYPE");
-    public static final Column DESCRIPTION = new StandardColumn("TYPE_DESCRIPTION");
-    public static final Column IS_RESTRICTED = new StandardColumn("IS_RESTRICTED");
-    public static final Column CATEGORY = new StandardColumn("CATEGORY");
-    public static final Column TAGS = new StandardColumn("TAGS");
+    Column ID = new StandardColumn("ID");
+    Column EXTENSION_BUNDLE_VERSION_ID = new StandardColumn("EXTENSION_BUNDLE_VERSION_ID");
+    Column TYPE = new StandardColumn("TYPE");
+    Column DESCRIPTION = new StandardColumn("TYPE_DESCRIPTION");
+    Column IS_RESTRICTED = new StandardColumn("IS_RESTRICTED");
+    Column CATEGORY = new StandardColumn("CATEGORY");
+    Column TAGS = new StandardColumn("TAGS");
 
-    public static Column[] values() {
+    static Column[] values() {
         return new Column[] {
                 ID, EXTENSION_BUNDLE_VERSION_ID, TYPE, DESCRIPTION, IS_RESTRICTED, CATEGORY, TAGS
         };

@@ -19,7 +19,7 @@ package org.apache.nifi.registry.jdbc.api;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public interface EntityRowMapper<ID, E extends Entity<ID>> {
+public interface EntityRowMapper<E extends Entity> {
 
     E mapRow(ResultSet rs, int rowNum) throws SQLException;
 
