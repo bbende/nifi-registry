@@ -20,6 +20,8 @@ import org.apache.nifi.registry.jdbc.api.Column;
 import org.apache.nifi.registry.jdbc.api.QueryBuilder;
 import org.apache.nifi.registry.jdbc.api.Table;
 
+import java.util.Map;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -36,7 +38,7 @@ public class SqlFactory {
         return builder.toString();
     }
 
-    public static String update(final Table<?> table, final SortedSet<Column> columns) {
+    public static String update(final Table<?> table, final SortedMap<Column,Object> values) {
         final String idColumn = table.getIdColumn().getName();
 
         final StringBuilder builder = new StringBuilder("UPDATE ")
@@ -44,7 +46,12 @@ public class SqlFactory {
                 .append(" SET ");
 
         boolean first = true;
-        for (final Column column : columns) {
+        for (final Map.Entry<Column,Object> entry : values.entrySet()) {
+            if (entry.getValue() == null) {
+                continue;
+            }
+
+            final Column column = entry.getKey();
             if (!first) {
                 builder.append(", ");
             }

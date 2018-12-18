@@ -108,12 +108,24 @@ public class StandardQueryBuilder implements QueryBuilder {
 
     @Override
     public String build() {
+        if (returnFields.isEmpty()) {
+            throw new IllegalStateException("At least one column must be selected to return");
+        }
+
+        if (from.isEmpty()) {
+            throw new IllegalStateException("At least one table be specified");
+        }
+
         final StringBuilder builder = new StringBuilder("SELECT ");
-            SqlUtils.appendValues(builder, returnFields);
+        SqlUtils.appendValues(builder, returnFields);
+
         builder.append(" FROM ");
-            SqlUtils.appendValues(builder, from);
-        builder.append(" WHERE ");
+        SqlUtils.appendValues(builder, from);
+
+        if (!whereClauses.isEmpty()) {
+            builder.append(" WHERE ");
             SqlUtils.appendValues(builder, whereClauses, QueryOperator.AND.getOperator());
+        }
         return builder.toString();
     }
 }

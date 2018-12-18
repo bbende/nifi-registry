@@ -19,7 +19,7 @@ package org.apache.nifi.registry.db.jdbc;
 import org.apache.nifi.registry.db.DatabaseBaseTest;
 import org.apache.nifi.registry.db.entity.ExtensionEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntityCategory;
-import org.apache.nifi.registry.jdbc.api.Repository;
+import org.apache.nifi.registry.jdbc.api.JdbcRepository;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
 public class TestExtensionRepository extends DatabaseBaseTest {
 
     @Autowired
-    private Repository<String, ExtensionEntity> repository;
+    private JdbcRepository<String, ExtensionEntity> repository;
 
     @Test
     public void testCreateAndRetrieve() {

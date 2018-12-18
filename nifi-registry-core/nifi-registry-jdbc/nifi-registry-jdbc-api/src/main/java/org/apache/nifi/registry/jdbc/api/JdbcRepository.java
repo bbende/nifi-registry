@@ -19,22 +19,25 @@ package org.apache.nifi.registry.jdbc.api;
 import java.util.List;
 import java.util.Optional;
 import java.util.SortedMap;
-import java.util.SortedSet;
 
-public interface JdbcEntityTemplate {
+public interface JdbcRepository<ID, E extends Entity<ID>> {
 
-    <I, E extends Entity<I>> E insert(Table<I> table, E entity, EntityValueMapper<I, E> entityValueMapper);
+    E create(E entity);
 
-    <I, E extends Entity<I>> E update(Table<I> table, E entity, SortedSet<Column> columns, EntityValueMapper<I, E> entityValueMapper);
+    E update(E entity);
 
-    <I, E extends Entity<I>> Optional<E> queryForObject(Table<I> table, I id, EntityRowMapper<I,E> rowMapper);
+    Optional<E> findById(ID id);
 
-    <I, E extends Entity<I>> List<E> query(Table<I> table, SortedMap<Column,Object> args, EntityRowMapper<I,E> rowMapper);
+    boolean existsById(ID id);
 
-    <I, E extends Entity<I>> List<E> query(String sql, List<Object> args, EntityRowMapper<I,E> rowMapper);
+    List<E> findAll();
 
-    <I, E extends Entity<I>> void deleteByEntity(Table<I> table, E entity);
+    List<E> findAllById(Iterable<ID> ids);
 
-    <I, E extends Entity<I>> void deleteById(Table<I> table, I id);
+    List<E> findByFields(SortedMap<Column,Object> params);
+
+    void deleteById(ID id);
+
+    void delete(E entity);
 
 }

@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.db.jdbc.configuration;
 
+import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntity;
 import org.apache.nifi.registry.jdbc.api.TableConfiguration;
 import org.apache.nifi.registry.jdbc.commons.StandardTableConfiguration;
@@ -28,6 +29,7 @@ public class NiFiRegistryTableConfiguration {
     @Bean
     public TableConfiguration getTableRegistry() {
         final TableConfiguration tableConfiguration = new StandardTableConfiguration();
+        tableConfiguration.register(BucketEntity.class, NiFiRegistryTables.BUCKET);
         tableConfiguration.register(ExtensionEntity.class, NiFiRegistryTables.EXTENSION);
         return tableConfiguration;
     }

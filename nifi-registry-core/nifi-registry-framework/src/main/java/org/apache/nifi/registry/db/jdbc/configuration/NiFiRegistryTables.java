@@ -22,6 +22,13 @@ import org.apache.nifi.registry.jdbc.commons.UUIDStringGenerator;
 
 public interface NiFiRegistryTables {
 
+    Table<String> BUCKET =
+            new StandardTable.Builder<String>("BUCKET", "b")
+                    .addColumns(BucketColumns.values())
+                    .idColumn(BucketColumns.ID)
+                    .idGenerator(new UUIDStringGenerator())
+                    .build();
+
     Table<String> EXTENSION =
             new StandardTable.Builder<String>("EXTENSION", "ext")
                     .addColumns(ExtensionColumns.values())

@@ -58,7 +58,7 @@ public class ExtensionMapper implements EntityRowMapper<String, ExtensionEntity>
         } else if (column == ExtensionColumns.TAGS) {
             return entity.getTags();
         } else {
-            throw new IllegalArgumentException("Unexpect column: " + column.getName());
+            throw new IllegalArgumentException("Unexpected column: " + column.getName());
         }
     }
 }

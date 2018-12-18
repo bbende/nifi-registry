@@ -37,6 +37,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeMap;
 
 @Component
 public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
@@ -51,21 +52,23 @@ public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
     @Override
     public <I, E extends Entity<I>> E insert(final Table<I> table, final E entity, final EntityValueMapper<I, E> entityValueMapper) {
         final String sql = SqlFactory.insert(table);
-        return update(sql, entity, table.getColumns(), entityValueMapper);
+        final SortedMap<Column,Object> entityValues = getEntityValues(entity, table.getColumns(), entityValueMapper);
+        final List<Object> values = getArgs(entityValues);
+        jdbcTemplate.update(sql, values.toArray());
+        return entity;
     }
 
     @Override
     public <I, E extends Entity<I>> E update(final Table<I> table, final E entity, final SortedSet<Column> columns,
                                              final EntityValueMapper<I, E> entityValueMapper) {
-        final String sql = SqlFactory.update(table, columns);
-        return update(sql, entity, columns, entityValueMapper);
-    }
+        final SortedMap<Column,Object> entityValues = getEntityValues(entity, columns, entityValueMapper);
+        final String sql = SqlFactory.update(table, entityValues);
 
-    @Override
-    public <I, E extends Entity<I>> E update(final String sql, final E entity,
-                                             final SortedSet<Column> columns, final EntityValueMapper<I, E> entityValueMapper) {
-        final Object[] values = getEntityValues(entity, columns, entityValueMapper);
-        jdbcTemplate.update(sql, values);
+        // Get the args based on the values map, but then add an additional arg for the id in the where statement
+        final List<Object> values = getArgs(entityValues);
+        values.add(entityValueMapper.map(table.getIdColumn(), entity));
+
+        jdbcTemplate.update(sql, values.toArray());
         return entity;
     }
 
@@ -101,7 +104,8 @@ public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
     }
 
     @Override
-    public <I, E extends Entity<I>> List<E> query(final String sql, final List<Object> args, final EntityRowMapper<I, E> entityRowMapper) {
+    public <I, E extends Entity<I>> List<E> query(final String sql, final List<Object> args,
+                                                  final EntityRowMapper<I, E> entityRowMapper) {
         final RowMapper<E> rowMapper = createSpringRowMapper(entityRowMapper);
         return jdbcTemplate.query(sql, args.toArray(), rowMapper);
     }
@@ -118,11 +122,17 @@ public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
         jdbcTemplate.update(sql, new Object[]{id});
     }
 
-    private <I, E extends Entity<I>> Object[] getEntityValues(final E entity, final SortedSet<Column> columns,
-                                                                final EntityValueMapper<I, E> entityValueMapper) {
+    private <I, E extends Entity<I>> SortedMap<Column,Object> getEntityValues(
+            final E entity, final SortedSet<Column> columns, final EntityValueMapper<I, E> entityValueMapper) {
+        final SortedMap<Column,Object> values = new TreeMap<>();
+        columns.forEach(c -> values.put(c, entityValueMapper.map(c, entity)));
+        return values;
+    }
+
+    private List<Object> getArgs(final SortedMap<Column,Object> entityValues) {
         final List<Object> values = new ArrayList<>();
-        columns.forEach(c -> values.add(entityValueMapper.map(c, entity)));
-        return values.toArray();
+        entityValues.entrySet().forEach(e -> values.add(e.getValue()));
+        return values;
     }
 
     private <I, E extends Entity<I>> RowMapper<E> createSpringRowMapper(final EntityRowMapper<I, E> entityRowMapper) {

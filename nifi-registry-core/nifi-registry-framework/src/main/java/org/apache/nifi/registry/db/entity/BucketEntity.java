@@ -16,10 +16,12 @@
  */
 package org.apache.nifi.registry.db.entity;
 
+import org.apache.nifi.registry.jdbc.api.Entity;
+
 import java.util.Date;
 import java.util.Objects;
 
-public class BucketEntity {
+public class BucketEntity implements Entity<String> {
 
     private String id;
 

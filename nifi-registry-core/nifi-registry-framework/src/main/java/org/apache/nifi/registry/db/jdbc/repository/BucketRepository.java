@@ -16,8 +16,9 @@
  */
 package org.apache.nifi.registry.db.jdbc.repository;
 
-import org.apache.nifi.registry.db.entity.ExtensionEntity;
-import org.apache.nifi.registry.db.jdbc.mapper.ExtensionMapper;
+import org.apache.nifi.registry.db.entity.BucketEntity;
+import org.apache.nifi.registry.db.jdbc.configuration.BucketColumns;
+import org.apache.nifi.registry.db.jdbc.mapper.BucketMapper;
 import org.apache.nifi.registry.jdbc.api.Column;
 import org.apache.nifi.registry.jdbc.api.JdbcEntityTemplate;
 import org.apache.nifi.registry.jdbc.api.TableConfiguration;
@@ -27,20 +28,27 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Collections;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 @Repository
-public class ExtensionRepository extends AbstractJdbcRepository<String, ExtensionEntity> {
+public class BucketRepository extends AbstractJdbcRepository<String, BucketEntity> {
 
-    private static final ExtensionMapper MAPPER = new ExtensionMapper();
+    private static final BucketMapper MAPPER = new BucketMapper();
+
+    private final SortedSet<Column> updateColumns;
 
     @Autowired
-    public ExtensionRepository(final JdbcEntityTemplate jdbcEntityTemplate, final TableConfiguration tableConfiguration) {
-        super(ExtensionEntity.class, tableConfiguration, MAPPER, MAPPER, jdbcEntityTemplate);
+    public BucketRepository(final TableConfiguration tableConfiguration, final JdbcEntityTemplate jdbcEntityTemplate) {
+        super(BucketEntity.class, tableConfiguration, MAPPER, MAPPER, jdbcEntityTemplate);
+
+        this.updateColumns = new TreeSet<>();
+        this.updateColumns.add(BucketColumns.NAME);
+        this.updateColumns.add(BucketColumns.DESCRIPTION);
+        this.updateColumns.add(BucketColumns.ALLOW_EXTENSION_BUNDLE_REDEPLOY);
     }
 
     @Override
-    protected SortedSet<Column> getColumnsToUpdate(final ExtensionEntity entity) {
-        return Collections.emptySortedSet();
+    protected SortedSet<Column> getColumnsToUpdate(final BucketEntity entity) {
+        return Collections.unmodifiableSortedSet(updateColumns);
     }
-
 }

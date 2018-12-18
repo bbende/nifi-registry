@@ -24,10 +24,6 @@ public abstract class AbstractEntity<ID> implements Entity<ID> {
 
     private ID id;
 
-    public AbstractEntity(final ID id) {
-        this.id = id;
-    }
-
     @Override
     public ID getId() {
         return id;

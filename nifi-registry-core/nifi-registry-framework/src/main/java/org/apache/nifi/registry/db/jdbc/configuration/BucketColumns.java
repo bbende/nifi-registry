@@ -14,26 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.jdbc.api;
+package org.apache.nifi.registry.db.jdbc.configuration;
 
-import java.util.Optional;
+import org.apache.nifi.registry.jdbc.api.Column;
+import org.apache.nifi.registry.jdbc.commons.StandardColumn;
 
-public interface Repository<ID, E extends Entity<ID>> {
+public class BucketColumns {
 
-    E create(E entity);
+    public static final Column ID = new StandardColumn("ID");
+    public static final Column NAME = new StandardColumn("NAME");
+    public static final Column DESCRIPTION = new StandardColumn("DESCRIPTION");
+    public static final Column CREATED = new StandardColumn("CREATED");
+    public static final Column ALLOW_EXTENSION_BUNDLE_REDEPLOY = new StandardColumn("ALLOW_EXTENSION_BUNDLE_REDEPLOY");
 
-    E update(E entity);
-
-    Optional<E> findById(ID id);
-
-    boolean existsById(ID id);
-
-    Iterable<E> findAll();
-
-    Iterable<E> findAllById(Iterable<ID> ids);
-
-    void deleteById(ID id);
-
-    void delete(E entity);
-
+    public static Column[] values() {
+        return new Column[] { ID, NAME, DESCRIPTION, CREATED, ALLOW_EXTENSION_BUNDLE_REDEPLOY };
+    }
 }

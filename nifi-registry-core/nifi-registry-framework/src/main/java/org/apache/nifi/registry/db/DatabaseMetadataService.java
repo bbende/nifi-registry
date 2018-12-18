@@ -27,7 +27,7 @@ import org.apache.nifi.registry.db.entity.ExtensionEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntityCategory;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
-import org.apache.nifi.registry.db.mapper.BucketEntityRowMapper;
+import org.apache.nifi.registry.db.jdbc.configuration.BucketColumns;
 import org.apache.nifi.registry.db.mapper.BucketItemEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.ExtensionBundleEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.ExtensionBundleEntityWithBucketNameRowMapper;
@@ -38,6 +38,8 @@ import org.apache.nifi.registry.db.mapper.FlowEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.FlowSnapshotEntityRowMapper;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
+import org.apache.nifi.registry.jdbc.api.Column;
+import org.apache.nifi.registry.jdbc.api.JdbcRepository;
 import org.apache.nifi.registry.service.MetadataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -52,60 +54,52 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 @Repository
 public class DatabaseMetadataService implements MetadataService {
 
     private final JdbcTemplate jdbcTemplate;
+    private final JdbcRepository<String,BucketEntity> bucketRepository;
 
     @Autowired
-    public DatabaseMetadataService(final JdbcTemplate jdbcTemplate) {
+    public DatabaseMetadataService(final JdbcTemplate jdbcTemplate,
+                                   final JdbcRepository<String,BucketEntity> bucketRepository) {
         this.jdbcTemplate = jdbcTemplate;
+        this.bucketRepository = bucketRepository;
     }
 
     //----------------- Buckets ---------------------------------
 
     @Override
     public BucketEntity createBucket(final BucketEntity b) {
-        final String sql = "INSERT INTO bucket (ID, NAME, DESCRIPTION, CREATED, ALLOW_EXTENSION_BUNDLE_REDEPLOY) VALUES (?, ?, ?, ?, ?)";
-        jdbcTemplate.update(sql,
-                b.getId(),
-                b.getName(),
-                b.getDescription(),
-                b.getCreated(),
-                b.isAllowExtensionBundleRedeploy() ? 1 : 0);
-        return b;
+        return bucketRepository.create(b);
     }
 
     @Override
     public BucketEntity getBucketById(final String bucketIdentifier) {
-        final String sql = "SELECT * FROM bucket WHERE id = ?";
-        try {
-            return jdbcTemplate.queryForObject(sql, new BucketEntityRowMapper(), bucketIdentifier);
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
+        final Optional<BucketEntity> result = bucketRepository.findById(bucketIdentifier);
+        return result.isPresent() ? result.get() : null;
     }
 
     @Override
     public List<BucketEntity> getBucketsByName(final String name) {
-        final String sql = "SELECT * FROM bucket WHERE name = ? ORDER BY name ASC";
-        return jdbcTemplate.query(sql, new Object[] {name} , new BucketEntityRowMapper());
+        final SortedMap<Column,Object> params = new TreeMap<>();
+        params.put(BucketColumns.NAME, name);
+        return bucketRepository.findByFields(params);
     }
 
     @Override
     public BucketEntity updateBucket(final BucketEntity bucket) {
-        final String sql = "UPDATE bucket SET name = ?, description = ?, allow_extension_bundle_redeploy = ? WHERE id = ?";
-        jdbcTemplate.update(sql, bucket.getName(), bucket.getDescription(), bucket.isAllowExtensionBundleRedeploy() ? 1 : 0, bucket.getId());
-        return bucket;
+        return bucketRepository.update(bucket);
     }
 
     @Override
     public void deleteBucket(final BucketEntity bucket) {
-        // NOTE: Cascading deletes will delete from all child tables
-        final String sql = "DELETE FROM bucket WHERE id = ?";
-        jdbcTemplate.update(sql, bucket.getId());
+        bucketRepository.delete(bucket);
     }
 
     @Override
@@ -113,24 +107,13 @@ public class DatabaseMetadataService implements MetadataService {
         if (bucketIds == null || bucketIds.isEmpty()) {
             return Collections.emptyList();
         }
-
-        final StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM bucket WHERE id IN (");
-        for (int i=0; i < bucketIds.size(); i++) {
-            if (i > 0) {
-                sqlBuilder.append(", ");
-            }
-            sqlBuilder.append("?");
-        }
-        sqlBuilder.append(") ");
-        sqlBuilder.append("ORDER BY name ASC");
-
-        return jdbcTemplate.query(sqlBuilder.toString(), bucketIds.toArray(), new BucketEntityRowMapper());
+        return bucketRepository.findAllById(bucketIds);
     }
 
     @Override
     public List<BucketEntity> getAllBuckets() {
-        final String sql = "SELECT * FROM bucket ORDER BY name ASC";
-        return jdbcTemplate.query(sql, new BucketEntityRowMapper());
+        final SortedMap<Column,Object> params = new TreeMap<>();
+        return bucketRepository.findByFields(params);
     }
 
     //----------------- BucketItems ---------------------------------

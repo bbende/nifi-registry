@@ -22,7 +22,7 @@ import org.apache.nifi.registry.jdbc.api.EntityRowMapper;
 import org.apache.nifi.registry.jdbc.api.EntityValueMapper;
 import org.apache.nifi.registry.jdbc.api.IDGenerator;
 import org.apache.nifi.registry.jdbc.api.JdbcEntityTemplate;
-import org.apache.nifi.registry.jdbc.api.Repository;
+import org.apache.nifi.registry.jdbc.api.JdbcRepository;
 import org.apache.nifi.registry.jdbc.api.Table;
 import org.apache.nifi.registry.jdbc.api.TableConfiguration;
 
@@ -30,10 +30,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
-public abstract class AbstractJdbcRepository<I, E extends Entity<I>> implements Repository<I, E> {
+public abstract class AbstractJdbcRepository<I, E extends Entity<I>> implements JdbcRepository<I, E> {
 
     protected final Table<I> table;
     protected final Class<E> entityClass;
@@ -73,7 +75,10 @@ public abstract class AbstractJdbcRepository<I, E extends Entity<I>> implements 
 
     @Override
     public E update(final E entity) {
-        final SortedSet<Column> columnsToUpdate = getColumnsToUpdate(entity);
+        final SortedSet<Column> columnsToUpdate = new TreeSet<>(getColumnsToUpdate(entity));
+        if (columnsToUpdate.contains(table.getIdColumn())) {
+            columnsToUpdate.remove(table.getIdColumn());
+        }
         if (columnsToUpdate.isEmpty()) {
             throw new IllegalStateException("This repository does not support updating columns");
         }
@@ -94,12 +99,12 @@ public abstract class AbstractJdbcRepository<I, E extends Entity<I>> implements 
     }
 
     @Override
-    public Iterable<E> findAll() {
+    public List<E> findAll() {
         return jdbcEntityTemplate.query(table, new TreeMap<>(), entityRowMapper);
     }
 
     @Override
-    public Iterable<E> findAllById(final Iterable<I> ids) {
+    public List<E> findAllById(final Iterable<I> ids) {
         final List<Object> idArgs = new ArrayList<>();
         ids.forEach(i -> idArgs.add(i));
 
@@ -110,6 +115,11 @@ public abstract class AbstractJdbcRepository<I, E extends Entity<I>> implements 
                 .build();
 
         return jdbcEntityTemplate.query(sql, idArgs, entityRowMapper);
+    }
+
+    @Override
+    public List<E> findByFields(final SortedMap<Column, Object> params) {
+        return jdbcEntityTemplate.query(table, params, entityRowMapper);
     }
 
     @Override

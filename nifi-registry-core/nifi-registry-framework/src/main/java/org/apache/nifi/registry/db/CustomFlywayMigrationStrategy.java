@@ -17,12 +17,18 @@
 package org.apache.nifi.registry.db;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.registry.db.entity.BucketEntity;
+import org.apache.nifi.registry.db.jdbc.repository.BucketRepository;
 import org.apache.nifi.registry.db.migration.BucketEntityV1;
 import org.apache.nifi.registry.db.migration.FlowEntityV1;
 import org.apache.nifi.registry.db.migration.FlowSnapshotEntityV1;
 import org.apache.nifi.registry.db.migration.LegacyDataSourceFactory;
 import org.apache.nifi.registry.db.migration.LegacyDatabaseService;
 import org.apache.nifi.registry.db.migration.LegacyEntityMapper;
+import org.apache.nifi.registry.jdbc.api.JdbcEntityTemplate;
+import org.apache.nifi.registry.jdbc.api.JdbcRepository;
+import org.apache.nifi.registry.jdbc.api.TableConfiguration;
+import org.apache.nifi.registry.jdbc.spring.SpringJdbcEntityTemplate;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.service.MetadataService;
 import org.flywaydb.core.Flyway;
@@ -53,10 +59,12 @@ public class CustomFlywayMigrationStrategy implements FlywayMigrationStrategy {
     private static final Logger LOGGER = LoggerFactory.getLogger(CustomFlywayMigrationStrategy.class);
 
     private NiFiRegistryProperties properties;
+    private TableConfiguration tableConfiguration;
 
     @Autowired
-    public CustomFlywayMigrationStrategy(final NiFiRegistryProperties properties) {
+    public CustomFlywayMigrationStrategy(final NiFiRegistryProperties properties, final TableConfiguration tableConfiguration) {
         this.properties = properties;
+        this.tableConfiguration = tableConfiguration;
     }
 
     @Override
@@ -123,7 +131,12 @@ public class CustomFlywayMigrationStrategy implements FlywayMigrationStrategy {
         final LegacyDatabaseService legacyDatabaseService = new LegacyDatabaseService(source);
 
         final JdbcTemplate destJdbcTemplate = new JdbcTemplate(dest);
-        final MetadataService destMetadataService = new DatabaseMetadataService(destJdbcTemplate);
+        final JdbcEntityTemplate destJdbcEntityTemplate = new SpringJdbcEntityTemplate(destJdbcTemplate);
+
+        final JdbcRepository<String, BucketEntity> bucketRepository = new BucketRepository(
+                tableConfiguration, destJdbcEntityTemplate);
+
+        final MetadataService destMetadataService = new DatabaseMetadataService(destJdbcTemplate, bucketRepository);
 
         LOGGER.info("Migrating data from legacy database to new new database...");
 
