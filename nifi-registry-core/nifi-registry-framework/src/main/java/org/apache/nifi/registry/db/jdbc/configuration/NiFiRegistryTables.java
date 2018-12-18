@@ -14,12 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.jdbc.api;
+package org.apache.nifi.registry.db.jdbc.configuration;
 
-public interface Entity<ID> {
+import org.apache.nifi.registry.jdbc.api.Table;
+import org.apache.nifi.registry.jdbc.commons.StandardTable;
+import org.apache.nifi.registry.jdbc.commons.UUIDStringGenerator;
 
-    ID getId();
+public interface NiFiRegistryTables {
 
-    void setId(ID id);
+    Table<String> EXTENSION =
+            new StandardTable.Builder<String>("EXTENSION", "ext")
+                    .addColumns(ExtensionColumns.values())
+                    .idColumn(ExtensionColumns.ID)
+                    .idGenerator(new UUIDStringGenerator())
+                    .build();
+
 
 }

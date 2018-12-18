@@ -24,9 +24,11 @@ import org.apache.nifi.registry.jdbc.api.IDGenerator;
 import org.apache.nifi.registry.jdbc.api.JdbcEntityTemplate;
 import org.apache.nifi.registry.jdbc.api.Repository;
 import org.apache.nifi.registry.jdbc.api.Table;
+import org.apache.nifi.registry.jdbc.api.TableConfiguration;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -34,24 +36,31 @@ import java.util.TreeMap;
 public abstract class AbstractJdbcRepository<I, E extends Entity<I>> implements Repository<I, E> {
 
     protected final Table<I> table;
+    protected final Class<E> entityClass;
+    protected final TableConfiguration tableConfiguration;
     protected final EntityValueMapper<I,E> entityValueMapper;
     protected final EntityRowMapper<I,E> entityRowMapper;
     protected final JdbcEntityTemplate jdbcEntityTemplate;
 
-    public AbstractJdbcRepository(final Table<I> table,
+    public AbstractJdbcRepository(final Class<E> entityClass,
+                                  final TableConfiguration tableConfiguration,
                                   final EntityValueMapper<I, E> entityValueMapper,
                                   final EntityRowMapper<I, E> entityRowMapper,
                                   final JdbcEntityTemplate jdbcEntityTemplate) {
-        this.table = table;
-        this.entityValueMapper = entityValueMapper;
-        this.entityRowMapper = entityRowMapper;
-        this.jdbcEntityTemplate = jdbcEntityTemplate;
+        this.entityClass = Objects.requireNonNull(entityClass);
+        this.tableConfiguration = Objects.requireNonNull(tableConfiguration);
+        this.entityValueMapper = Objects.requireNonNull(entityValueMapper);
+        this.entityRowMapper = Objects.requireNonNull(entityRowMapper);
+        this.jdbcEntityTemplate = Objects.requireNonNull(jdbcEntityTemplate);
+
+        this.table = tableConfiguration.getTable(entityClass);
+        if (this.table == null) {
+            throw new IllegalStateException("Entity class must be registered to a Table");
+        }
     }
 
     @Override
     public E create(final E entity) {
-        ensureTablesMatch(entity);
-
         if (entity.getId() == null) {
             final Optional<IDGenerator<I>> idGenerator = table.getIDGenerator();
             if (idGenerator.isPresent()) {
@@ -59,17 +68,16 @@ public abstract class AbstractJdbcRepository<I, E extends Entity<I>> implements 
                 entity.setId(id);
             }
         }
-        return jdbcEntityTemplate.insert(entity, entityValueMapper);
+        return jdbcEntityTemplate.insert(table, entity, entityValueMapper);
     }
 
     @Override
     public E update(final E entity) {
-        ensureTablesMatch(entity);
         final SortedSet<Column> columnsToUpdate = getColumnsToUpdate(entity);
         if (columnsToUpdate.isEmpty()) {
             throw new IllegalStateException("This repository does not support updating columns");
         }
-        return jdbcEntityTemplate.update(entity, columnsToUpdate, entityValueMapper);
+        return jdbcEntityTemplate.update(table, entity, columnsToUpdate, entityValueMapper);
     }
 
     protected abstract SortedSet<Column> getColumnsToUpdate(final E entity);
@@ -111,17 +119,7 @@ public abstract class AbstractJdbcRepository<I, E extends Entity<I>> implements 
 
     @Override
     public void delete(final E entity) {
-        ensureTablesMatch(entity);
-        jdbcEntityTemplate.deleteByEntity(entity);
-    }
-
-    private void ensureTablesMatch(final E entity) {
-        final String repositoryTableName = this.table.getName();
-        final String entityTableName = entity.getTable().getName();
-        if (!entityTableName.equals(repositoryTableName)) {
-            throw new IllegalArgumentException("Repository table name '"
-                    + repositoryTableName + "' must match entity table name '" + entityTableName + "'" );
-        }
+        jdbcEntityTemplate.deleteByEntity(table, entity);
     }
 
 }

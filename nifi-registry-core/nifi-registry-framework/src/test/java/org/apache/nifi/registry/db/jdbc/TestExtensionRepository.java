@@ -20,9 +20,14 @@ import org.apache.nifi.registry.db.DatabaseBaseTest;
 import org.apache.nifi.registry.db.entity.ExtensionEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntityCategory;
 import org.apache.nifi.registry.jdbc.api.Repository;
-import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Optional;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class TestExtensionRepository extends DatabaseBaseTest {
 
@@ -40,7 +45,11 @@ public class TestExtensionRepository extends DatabaseBaseTest {
         entity.setTags("a, b, c");
 
         final ExtensionEntity createdEntity = repository.create(entity);
-        Assert.assertNotNull(createdEntity);
-        Assert.assertNotNull(createdEntity.getId());
+        assertNotNull(createdEntity);
+        assertNotNull(createdEntity.getId());
+
+        final Optional<ExtensionEntity> retrievedEntity = repository.findById(createdEntity.getId());
+        assertTrue(retrievedEntity.isPresent());
+        assertEquals(createdEntity.getId(), retrievedEntity.get().getId());
     }
 }

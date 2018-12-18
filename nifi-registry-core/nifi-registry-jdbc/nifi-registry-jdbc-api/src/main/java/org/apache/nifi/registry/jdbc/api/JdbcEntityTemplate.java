@@ -23,9 +23,9 @@ import java.util.SortedSet;
 
 public interface JdbcEntityTemplate {
 
-    <I, E extends Entity<I>> E insert(E entity, EntityValueMapper<I, E> entityValueMapper);
+    <I, E extends Entity<I>> E insert(Table<I> table, E entity, EntityValueMapper<I, E> entityValueMapper);
 
-    <I, E extends Entity<I>> E update(E entity, SortedSet<Column> columns, EntityValueMapper<I, E> entityValueMapper);
+    <I, E extends Entity<I>> E update(Table<I> table, E entity, SortedSet<Column> columns, EntityValueMapper<I, E> entityValueMapper);
 
     <I, E extends Entity<I>> E update(String sql, E entity, SortedSet<Column> columns, EntityValueMapper<I, E> entityValueMapper);
 
@@ -35,7 +35,7 @@ public interface JdbcEntityTemplate {
 
     <I, E extends Entity<I>> List<E> query(String sql, List<Object> args, EntityRowMapper<I,E> rowMapper);
 
-    <I, E extends Entity<I>> void deleteByEntity(E entity);
+    <I, E extends Entity<I>> void deleteByEntity(Table<I> table, E entity);
 
     <I, E extends Entity<I>> void deleteById(Table<I> table, I id);
 

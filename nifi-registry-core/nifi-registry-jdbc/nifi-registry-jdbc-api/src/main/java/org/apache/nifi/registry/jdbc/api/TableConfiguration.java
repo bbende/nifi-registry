@@ -16,10 +16,16 @@
  */
 package org.apache.nifi.registry.jdbc.api;
 
-public interface Entity<ID> {
+import java.util.Collection;
 
-    ID getId();
+public interface TableConfiguration {
 
-    void setId(ID id);
+    <I, E extends Entity<I>> void register(Class<E> entityClass, Table<I> table);
+
+    <I> Table<I> getTable(Entity<I> entity);
+
+    <I, E extends Entity<I>> Table<I> getTable(Class<E> entityClass);
+
+    Collection<Table> getTables();
 
 }

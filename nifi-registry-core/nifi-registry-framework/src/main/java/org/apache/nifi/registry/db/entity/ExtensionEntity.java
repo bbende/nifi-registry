@@ -16,9 +16,7 @@
  */
 package org.apache.nifi.registry.db.entity;
 
-import org.apache.nifi.registry.db.jdbc.Tables;
 import org.apache.nifi.registry.jdbc.api.Entity;
-import org.apache.nifi.registry.jdbc.api.Table;
 
 public class ExtensionEntity implements Entity<String> {
 
@@ -37,10 +35,6 @@ public class ExtensionEntity implements Entity<String> {
     // Comma separated list of tags so we don't have to query tag table for each extension
     private String tags;
 
-    @Override
-    public Table<String> getTable() {
-        return Tables.EXTENSION;
-    }
 
     public String getId() {
         return id;

@@ -14,11 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.db.jdbc;
+package org.apache.nifi.registry.db.jdbc.repository;
 
 import org.apache.nifi.registry.db.entity.ExtensionEntity;
+import org.apache.nifi.registry.db.jdbc.mapper.ExtensionMapper;
 import org.apache.nifi.registry.jdbc.api.Column;
 import org.apache.nifi.registry.jdbc.api.JdbcEntityTemplate;
+import org.apache.nifi.registry.jdbc.api.TableConfiguration;
 import org.apache.nifi.registry.jdbc.commons.AbstractJdbcRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -32,8 +34,8 @@ public class ExtensionRepository extends AbstractJdbcRepository<String, Extensio
     private static final ExtensionMapper mapper = new ExtensionMapper();
 
     @Autowired
-    public ExtensionRepository(final JdbcEntityTemplate jdbcEntityTemplate) {
-        super(Tables.EXTENSION, mapper, mapper, jdbcEntityTemplate);
+    public ExtensionRepository(final JdbcEntityTemplate jdbcEntityTemplate, final TableConfiguration tableConfiguration) {
+        super(ExtensionEntity.class, tableConfiguration, mapper, mapper, jdbcEntityTemplate);
     }
 
     @Override

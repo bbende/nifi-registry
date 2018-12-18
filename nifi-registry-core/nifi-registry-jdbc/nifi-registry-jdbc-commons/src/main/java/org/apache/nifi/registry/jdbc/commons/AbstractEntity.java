@@ -39,7 +39,7 @@ public abstract class AbstractEntity<ID> implements Entity<ID> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.id, this.getTable());
+        return Objects.hash(this.id);
     }
 
     @Override
@@ -53,7 +53,7 @@ public abstract class AbstractEntity<ID> implements Entity<ID> {
         }
 
         final Entity entity = (Entity) obj;
-        return Objects.equals(this.id, entity.getId()) && Objects.equals(this.getTable(), entity.getTable());
+        return Objects.equals(this.id, entity.getId());
     }
 
 }

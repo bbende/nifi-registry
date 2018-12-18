@@ -33,6 +33,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -40,29 +41,29 @@ import java.util.SortedSet;
 @Component
 public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
 
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     @Autowired
     public SpringJdbcEntityTemplate(final JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+        this.jdbcTemplate = Objects.requireNonNull(jdbcTemplate);
     }
 
     @Override
-    public <I, E extends Entity<I>> E insert(final E entity, final EntityValueMapper<I, E> entityValueMapper) {
-        final String sql = SqlFactory.insert(entity.getTable());
-        return update(sql, entity, entity.getTable().getColumns(), entityValueMapper);
+    public <I, E extends Entity<I>> E insert(final Table<I> table, final E entity, final EntityValueMapper<I, E> entityValueMapper) {
+        final String sql = SqlFactory.insert(table);
+        return update(sql, entity, table.getColumns(), entityValueMapper);
     }
 
     @Override
-    public <I, E extends Entity<I>> E update(final E entity, final SortedSet<Column> columns,
-                                               final EntityValueMapper<I, E> entityValueMapper) {
-        final String sql = SqlFactory.update(entity.getTable(), columns);
+    public <I, E extends Entity<I>> E update(final Table<I> table, final E entity, final SortedSet<Column> columns,
+                                             final EntityValueMapper<I, E> entityValueMapper) {
+        final String sql = SqlFactory.update(table, columns);
         return update(sql, entity, columns, entityValueMapper);
     }
 
     @Override
     public <I, E extends Entity<I>> E update(final String sql, final E entity,
-                                               final SortedSet<Column> columns, final EntityValueMapper<I, E> entityValueMapper) {
+                                             final SortedSet<Column> columns, final EntityValueMapper<I, E> entityValueMapper) {
         final Object[] values = getEntityValues(entity, columns, entityValueMapper);
         jdbcTemplate.update(sql, values);
         return entity;
@@ -72,7 +73,7 @@ public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
     public <I, E extends Entity<I>> Optional<E> queryForObject(final Table<I> table, final I id,
                                                                final EntityRowMapper<I, E> entityRowMapper) {
         final String sql = SqlFactory.selectById(table);
-        final RowMapper<E> rowMapper = (RowMapper<E>) entityRowMapper;
+        final RowMapper<E> rowMapper = createSpringRowMapper(entityRowMapper);
         try {
             return Optional.of(jdbcTemplate.queryForObject(sql, rowMapper, id));
         } catch (EmptyResultDataAccessException e) {
@@ -82,7 +83,7 @@ public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
 
     @Override
     public <I, E extends Entity<I>> List<E> query(final Table<I> table, final SortedMap<Column,Object> args,
-                                                    final EntityRowMapper<I, E> entityRowMapper) {
+                                                  final EntityRowMapper<I, E> entityRowMapper) {
 
         final List<Object> argValues = new ArrayList<>();
 
@@ -101,13 +102,13 @@ public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
 
     @Override
     public <I, E extends Entity<I>> List<E> query(final String sql, final List<Object> args, final EntityRowMapper<I, E> entityRowMapper) {
-        final RowMapper<E> rowMapper = (RowMapper<E>) entityRowMapper;
+        final RowMapper<E> rowMapper = createSpringRowMapper(entityRowMapper);
         return jdbcTemplate.query(sql, args.toArray(), rowMapper);
     }
 
     @Override
-    public <I, E extends Entity<I>> void deleteByEntity(final E entity) {
-        final String sql = SqlFactory.delete(entity.getTable());
+    public <I, E extends Entity<I>> void deleteByEntity(final Table<I> table, final E entity) {
+        final String sql = SqlFactory.delete(table);
         jdbcTemplate.update(sql, new Object[]{entity.getId()});
     }
 
@@ -124,4 +125,9 @@ public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
         return values.toArray();
     }
 
+    private <I, E extends Entity<I>> RowMapper<E> createSpringRowMapper(final EntityRowMapper<I, E> entityRowMapper) {
+        return (rs, rowNum) -> {
+          return entityRowMapper.mapRow(rs, rowNum);
+        };
+    }
 }

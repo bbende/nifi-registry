@@ -14,19 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.db.jdbc;
+package org.apache.nifi.registry.db.jdbc.configuration;
 
-import org.apache.nifi.registry.jdbc.api.Table;
-import org.apache.nifi.registry.jdbc.commons.StandardTable;
-import org.apache.nifi.registry.jdbc.commons.UUIDStringGenerator;
+import org.apache.nifi.registry.db.entity.ExtensionEntity;
+import org.apache.nifi.registry.jdbc.api.TableConfiguration;
+import org.apache.nifi.registry.jdbc.commons.StandardTableConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-public class Tables {
+@Configuration
+public class NiFiRegistryTableConfiguration {
 
-    public static final Table<String> EXTENSION =
-            new StandardTable.Builder<String>("EXTENSION", "ext")
-                    .addColumns(ExtensionColumns.values())
-                    .idColumn(ExtensionColumns.ID)
-                    .idGenerator(new UUIDStringGenerator())
-                    .build();
-
+    @Bean
+    public TableConfiguration getTableRegistry() {
+        final TableConfiguration tableConfiguration = new StandardTableConfiguration();
+        tableConfiguration.register(ExtensionEntity.class, NiFiRegistryTables.EXTENSION);
+        return tableConfiguration;
+    }
 }
