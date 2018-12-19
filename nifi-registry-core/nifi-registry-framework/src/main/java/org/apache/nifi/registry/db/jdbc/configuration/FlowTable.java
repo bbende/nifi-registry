@@ -17,11 +17,39 @@
 package org.apache.nifi.registry.db.jdbc.configuration;
 
 import org.apache.nifi.registry.jdbc.api.Column;
+import org.apache.nifi.registry.jdbc.commons.AbstractTable;
+import org.apache.nifi.registry.jdbc.commons.StandardColumn;
+import org.apache.nifi.registry.jdbc.commons.UUIDStringGenerator;
 
-public interface FlowColumns extends BucketItemColumns {
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
-    static Column[] values() {
-        return new Column[] { ID };
+public class FlowTable extends AbstractTable<String> {
+
+    public final Column ID;
+
+    private SortedSet<Column> allColumns;
+
+    FlowTable() {
+        super("FLOW", "f", new UUIDStringGenerator());
+        ID = StandardColumn.create(this, "ID");
+        allColumns = Collections.unmodifiableSortedSet(new TreeSet<>(Arrays.asList(ID)));
     }
 
+    @Override
+    public Column getIdColumn() {
+        return ID;
+    }
+
+    @Override
+    public SortedSet<Column> getColumns() {
+        return allColumns;
+    }
+
+    @Override
+    public SortedSet<Column> getUpdatableColumns() {
+        return Collections.emptySortedSet();
+    }
 }

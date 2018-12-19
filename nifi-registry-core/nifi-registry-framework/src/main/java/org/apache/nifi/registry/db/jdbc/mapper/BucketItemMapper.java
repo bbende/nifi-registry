@@ -17,7 +17,7 @@
 package org.apache.nifi.registry.db.jdbc.mapper;
 
 import org.apache.nifi.registry.db.entity.BucketItemEntity;
-import org.apache.nifi.registry.db.jdbc.configuration.BucketItemColumns;
+import org.apache.nifi.registry.db.jdbc.configuration.Tables;
 import org.apache.nifi.registry.jdbc.api.Column;
 import org.apache.nifi.registry.jdbc.api.EntityRowMapper;
 import org.apache.nifi.registry.jdbc.api.EntityValueMapper;
@@ -35,19 +35,19 @@ public class BucketItemMapper implements EntityRowMapper<BucketItemEntity>, Enti
 
     @Override
     public Object map(final Column column, final BucketItemEntity entity) {
-        if (column == BucketItemColumns.ID) {
+        if (column == Tables.BUCKET_ITEM.ID) {
             return entity.getId();
-        } else if (column == BucketItemColumns.NAME) {
+        } else if (column == Tables.BUCKET_ITEM.NAME) {
             return entity.getName();
-        } else if (column == BucketItemColumns.DESCRIPTION) {
+        } else if (column == Tables.BUCKET_ITEM.DESCRIPTION) {
             return entity.getDescription();
-        } else if (column == BucketItemColumns.CREATED) {
+        } else if (column == Tables.BUCKET_ITEM.CREATED) {
             return entity.getCreated();
-        } else if (column == BucketItemColumns.MODIFIED) {
+        } else if (column == Tables.BUCKET_ITEM.MODIFIED) {
             return entity.getModified();
-        } else if (column == BucketItemColumns.BUCKET_ID) {
+        } else if (column == Tables.BUCKET_ITEM.BUCKET_ID) {
             return entity.getBucketId();
-        } else if (column == BucketItemColumns.ITEM_TYPE) {
+        } else if (column == Tables.BUCKET_ITEM.ITEM_TYPE) {
             return entity.getType().toString();
         } else {
             throw new IllegalArgumentException("Unexpected column: " + column.getName());

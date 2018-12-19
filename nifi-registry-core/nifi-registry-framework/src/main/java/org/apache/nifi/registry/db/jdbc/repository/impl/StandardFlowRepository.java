@@ -83,7 +83,8 @@ public class StandardFlowRepository implements FlowRepository {
     @Override
     public FlowEntity update(final FlowEntity entity) {
         final SortedSet<Column> updatableColumns = bucketItemTable.getUpdatableColumns();
-        return jdbcEntityTemplate.update(bucketItemTable, entity, updatableColumns, FLOW_MAPPER);
+        jdbcEntityTemplate.update(bucketItemTable, entity, updatableColumns, BUCKET_ITEM_MAPPER);
+        return entity;
     }
 
     @Override

@@ -16,11 +16,9 @@
  */
 package org.apache.nifi.registry.db.jdbc.mapper;
 
-import org.apache.nifi.registry.db.entity.BucketItemEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntityType;
 import org.apache.nifi.registry.db.entity.FlowEntity;
-import org.apache.nifi.registry.db.jdbc.configuration.BucketItemColumns;
-import org.apache.nifi.registry.db.jdbc.configuration.FlowColumns;
+import org.apache.nifi.registry.db.jdbc.configuration.Tables;
 import org.apache.nifi.registry.jdbc.api.Column;
 import org.apache.nifi.registry.jdbc.api.EntityRowMapper;
 import org.apache.nifi.registry.jdbc.api.EntityValueMapper;
@@ -33,20 +31,23 @@ public class FlowMapper implements EntityRowMapper<FlowEntity>, EntityValueMappe
     @Override
     public FlowEntity mapRow(final ResultSet rs, final int rowNum) throws SQLException {
         final FlowEntity flowEntity = new FlowEntity();
-        flowEntity.setId(rs.getString(FlowColumns.ID.getName()));
-        flowEntity.setName(rs.getString(BucketItemColumns.NAME.getName()));
-        flowEntity.setDescription(rs.getString(BucketItemColumns.DESCRIPTION.getName()));
-        flowEntity.setCreated(rs.getTimestamp(BucketItemColumns.CREATED.getName()));
-        flowEntity.setModified(rs.getTimestamp(BucketItemColumns.MODIFIED.getName()));
-        flowEntity.setBucketId(rs.getString(BucketItemColumns.BUCKET_ID.getName()));
+        flowEntity.setId(rs.getString(Tables.FLOW.ID.getName()));
+        flowEntity.setName(rs.getString(Tables.BUCKET_ITEM.NAME.getName()));
+        flowEntity.setDescription(rs.getString(Tables.BUCKET_ITEM.DESCRIPTION.getName()));
+        flowEntity.setCreated(rs.getTimestamp(Tables.BUCKET_ITEM.CREATED.getName()));
+        flowEntity.setModified(rs.getTimestamp(Tables.BUCKET_ITEM.MODIFIED.getName()));
+        flowEntity.setBucketId(rs.getString(Tables.BUCKET_ITEM.BUCKET_ID.getName()));
         flowEntity.setType(BucketItemEntityType.FLOW);
         return flowEntity;
     }
 
     @Override
     public Object map(final Column column, final FlowEntity entity) {
-        final EntityValueMapper<BucketItemEntity> bucketItemMapper = new BucketItemMapper();
-        return bucketItemMapper.map(column, entity);
+        if (column == Tables.FLOW.ID) {
+            return entity.getId();
+        } else {
+            throw new IllegalArgumentException("Unexpected column: " + column.getName());
+        }
     }
 
 }

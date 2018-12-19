@@ -18,7 +18,7 @@ package org.apache.nifi.registry.db.jdbc.mapper;
 
 import org.apache.nifi.registry.db.entity.ExtensionEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntityCategory;
-import org.apache.nifi.registry.db.jdbc.configuration.ExtensionColumns;
+import org.apache.nifi.registry.db.jdbc.configuration.Tables;
 import org.apache.nifi.registry.jdbc.api.Column;
 import org.apache.nifi.registry.jdbc.api.EntityRowMapper;
 import org.apache.nifi.registry.jdbc.api.EntityValueMapper;
@@ -31,31 +31,31 @@ public class ExtensionMapper implements EntityRowMapper<ExtensionEntity>, Entity
     @Override
     public ExtensionEntity mapRow(final ResultSet rs, final int rowNum) throws SQLException {
         final ExtensionEntity entity = new ExtensionEntity();
-        entity.setId(rs.getString(ExtensionColumns.ID.getName()));
-        entity.setExtensionBundleVersionId(rs.getString(ExtensionColumns.EXTENSION_BUNDLE_VERSION_ID.getName()));
-        entity.setType(rs.getString(ExtensionColumns.TYPE.getName()));
-        entity.setTypeDescription(rs.getString(ExtensionColumns.DESCRIPTION.getName()));
-        entity.setRestricted(rs.getInt(ExtensionColumns.IS_RESTRICTED.getName()) == 1);
-        entity.setCategory(ExtensionEntityCategory.valueOf(rs.getString(ExtensionColumns.CATEGORY.getName())));
-        entity.setTags(rs.getString(ExtensionColumns.TAGS.getName()));
+        entity.setId(rs.getString(Tables.EXTENSION.ID.getName()));
+        entity.setExtensionBundleVersionId(rs.getString(Tables.EXTENSION.EXTENSION_BUNDLE_VERSION_ID.getName()));
+        entity.setType(rs.getString(Tables.EXTENSION.TYPE.getName()));
+        entity.setTypeDescription(rs.getString(Tables.EXTENSION.DESCRIPTION.getName()));
+        entity.setRestricted(rs.getInt(Tables.EXTENSION.IS_RESTRICTED.getName()) == 1);
+        entity.setCategory(ExtensionEntityCategory.valueOf(rs.getString(Tables.EXTENSION.CATEGORY.getName())));
+        entity.setTags(rs.getString(Tables.EXTENSION.TAGS.getName()));
         return entity;
     }
 
     @Override
     public Object map(final Column column, final ExtensionEntity entity) {
-        if (column == ExtensionColumns.ID) {
+        if (column == Tables.EXTENSION.ID) {
             return entity.getId();
-        } else if (column == ExtensionColumns.EXTENSION_BUNDLE_VERSION_ID) {
+        } else if (column == Tables.EXTENSION.EXTENSION_BUNDLE_VERSION_ID) {
             return entity.getExtensionBundleVersionId();
-        } else if (column == ExtensionColumns.TYPE){
+        } else if (column == Tables.EXTENSION.TYPE){
             return entity.getType();
-        } else if (column == ExtensionColumns.DESCRIPTION) {
+        } else if (column == Tables.EXTENSION.DESCRIPTION) {
             return entity.getTypeDescription();
-        } else if (column == ExtensionColumns.IS_RESTRICTED) {
+        } else if (column == Tables.EXTENSION.IS_RESTRICTED) {
             return entity.isRestricted();
-        } else if (column == ExtensionColumns.CATEGORY) {
+        } else if (column == Tables.EXTENSION.CATEGORY) {
             return entity.getCategory().name();
-        } else if (column == ExtensionColumns.TAGS) {
+        } else if (column == Tables.EXTENSION.TAGS) {
             return entity.getTags();
         } else {
             throw new IllegalArgumentException("Unexpected column: " + column.getName());

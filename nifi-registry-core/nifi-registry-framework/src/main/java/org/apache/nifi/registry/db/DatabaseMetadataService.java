@@ -27,7 +27,7 @@ import org.apache.nifi.registry.db.entity.ExtensionEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntityCategory;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
-import org.apache.nifi.registry.db.jdbc.configuration.BucketItemColumns;
+import org.apache.nifi.registry.db.jdbc.configuration.Tables;
 import org.apache.nifi.registry.db.jdbc.repository.BucketRepository;
 import org.apache.nifi.registry.db.jdbc.repository.FlowRepository;
 import org.apache.nifi.registry.db.mapper.BucketItemEntityRowMapper;
@@ -90,7 +90,8 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public List<BucketEntity> getBucketsByName(final String name) {
-        final SortedMap<Column,Object> params = new StandardQueryParamBuilder().with(BucketItemColumns.NAME, name).build();
+        final SortedMap<Column,Object> params = new StandardQueryParamBuilder()
+                .with(Tables.BUCKET.NAME, name).build();
         return bucketRepository.findByFields(params);
     }
 
@@ -254,15 +255,16 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public List<FlowEntity> getFlowsByName(final String name) {
-        final SortedMap<Column,Object> params = new StandardQueryParamBuilder().with(BucketItemColumns.NAME, name).build();
+        final SortedMap<Column,Object> params = new StandardQueryParamBuilder()
+                .with(Tables.BUCKET_ITEM.NAME, name).build();
         return flowRepository.findByFields(params);
     }
 
     @Override
     public List<FlowEntity> getFlowsByName(final String bucketIdentifier, final String name) {
         final SortedMap<Column,Object> params = new StandardQueryParamBuilder()
-                .with(BucketItemColumns.BUCKET_ID, bucketIdentifier)
-                .with(BucketItemColumns.NAME, name)
+                .with(Tables.BUCKET_ITEM.BUCKET_ID, bucketIdentifier)
+                .with(Tables.BUCKET_ITEM.NAME, name)
                 .build();
         return flowRepository.findByFields(params);
     }
@@ -270,7 +272,7 @@ public class DatabaseMetadataService implements MetadataService {
     @Override
     public List<FlowEntity> getFlowsByBucket(final String bucketIdentifier) {
         final SortedMap<Column,Object> params = new StandardQueryParamBuilder()
-                .with(BucketItemColumns.BUCKET_ID, bucketIdentifier)
+                .with(Tables.BUCKET_ITEM.BUCKET_ID, bucketIdentifier)
                 .build();
 
         final List<FlowEntity> flows = flowRepository.findByFields(params);

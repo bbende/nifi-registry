@@ -26,15 +26,26 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class NiFiRegistryTableConfiguration {
+public class Tables {
+
+    public static final BucketTable BUCKET = new BucketTable();
+    public static final BucketItemTable BUCKET_ITEM = new BucketItemTable();
+    public static final FlowTable FLOW = new FlowTable();
+    public static final ExtensionTable EXTENSION = new ExtensionTable();
+
+    private final TableConfiguration tableConfiguration;
+
+    public Tables() {
+        tableConfiguration = new StandardTableConfiguration();
+        tableConfiguration.register(BucketEntity.class, Tables.BUCKET);
+        tableConfiguration.register(BucketItemEntity.class, Tables.BUCKET_ITEM);
+        tableConfiguration.register(FlowEntity.class, Tables.FLOW);
+        tableConfiguration.register(ExtensionEntity.class, Tables.EXTENSION);
+    }
 
     @Bean
-    public TableConfiguration getTableRegistry() {
-        final TableConfiguration tableConfiguration = new StandardTableConfiguration();
-        tableConfiguration.register(BucketEntity.class, NiFiRegistryTables.BUCKET);
-        tableConfiguration.register(BucketItemEntity.class, NiFiRegistryTables.BUCKET_ITEM);
-        tableConfiguration.register(FlowEntity.class, NiFiRegistryTables.FLOW);
-        tableConfiguration.register(ExtensionEntity.class, NiFiRegistryTables.EXTENSION);
+    public TableConfiguration getTableConfiguration() {
         return tableConfiguration;
     }
+
 }

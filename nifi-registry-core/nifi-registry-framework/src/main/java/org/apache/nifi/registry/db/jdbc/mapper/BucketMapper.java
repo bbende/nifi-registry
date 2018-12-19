@@ -17,7 +17,7 @@
 package org.apache.nifi.registry.db.jdbc.mapper;
 
 import org.apache.nifi.registry.db.entity.BucketEntity;
-import org.apache.nifi.registry.db.jdbc.configuration.BucketColumns;
+import org.apache.nifi.registry.db.jdbc.configuration.Tables;
 import org.apache.nifi.registry.jdbc.api.Column;
 import org.apache.nifi.registry.jdbc.api.EntityRowMapper;
 import org.apache.nifi.registry.jdbc.api.EntityValueMapper;
@@ -30,25 +30,25 @@ public class BucketMapper implements EntityRowMapper<BucketEntity>, EntityValueM
     @Override
     public BucketEntity mapRow(final ResultSet rs, final int rowNum) throws SQLException {
         final BucketEntity b = new BucketEntity();
-        b.setId(rs.getString(BucketColumns.ID.getName()));
-        b.setName(rs.getString(BucketColumns.NAME.getName()));
-        b.setDescription(rs.getString(BucketColumns.DESCRIPTION.getName()));
-        b.setCreated(rs.getTimestamp(BucketColumns.CREATED.getName()));
-        b.setAllowExtensionBundleRedeploy(rs.getInt(BucketColumns.ALLOW_EXTENSION_BUNDLE_REDEPLOY.getName()) == 0 ? false : true);
+        b.setId(rs.getString(Tables.BUCKET.ID.getName()));
+        b.setName(rs.getString(Tables.BUCKET.NAME.getName()));
+        b.setDescription(rs.getString(Tables.BUCKET.DESCRIPTION.getName()));
+        b.setCreated(rs.getTimestamp(Tables.BUCKET.CREATED.getName()));
+        b.setAllowExtensionBundleRedeploy(rs.getInt(Tables.BUCKET.ALLOW_EXTENSION_BUNDLE_REDEPLOY.getName()) == 0 ? false : true);
         return b;
     }
 
     @Override
     public Object map(final Column column, final BucketEntity entity) {
-        if (column == BucketColumns.ID) {
+        if (column == Tables.BUCKET.ID) {
             return entity.getId();
-        } else if (column == BucketColumns.NAME) {
+        } else if (column == Tables.BUCKET.NAME) {
             return entity.getName();
-        } else if (column == BucketColumns.DESCRIPTION) {
+        } else if (column == Tables.BUCKET.DESCRIPTION) {
             return entity.getDescription();
-        } else if (column == BucketColumns.CREATED) {
+        } else if (column == Tables.BUCKET.CREATED) {
             return entity.getCreated();
-        } else if (column == BucketColumns.ALLOW_EXTENSION_BUNDLE_REDEPLOY) {
+        } else if (column == Tables.BUCKET.ALLOW_EXTENSION_BUNDLE_REDEPLOY) {
             return entity.isAllowExtensionBundleRedeploy() ? 1 : 0;
         } else {
             throw new IllegalArgumentException("Unexpected colum: " + column.getName());

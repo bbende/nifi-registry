@@ -18,7 +18,10 @@ package org.apache.nifi.registry.jdbc.api;
 
 public interface Column extends Comparable<Column> {
 
+    Table getTable();
+
     String getName();
 
     boolean isUpdatable();
+
 }

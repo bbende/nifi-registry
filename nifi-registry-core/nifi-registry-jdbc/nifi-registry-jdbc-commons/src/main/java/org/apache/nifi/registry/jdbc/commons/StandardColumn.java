@@ -17,20 +17,28 @@
 package org.apache.nifi.registry.jdbc.commons;
 
 import org.apache.nifi.registry.jdbc.api.Column;
+import org.apache.nifi.registry.jdbc.api.Table;
 
-import java.util.Comparator;
 import java.util.Objects;
 
 public class StandardColumn implements Column {
 
+    private final Table table;
     private final String name;
     private final boolean updatable;
 
     private StandardColumn(final Builder builder) {
+        this.table = Objects.requireNonNull(builder.table);
         this.name = Objects.requireNonNull(builder.name);
         this.updatable = builder.updatable;
     }
 
+    @Override
+    public Table getTable() {
+        return table;
+    }
+
+    @Override
     public String getName() {
         return name;
     }
@@ -41,13 +49,18 @@ public class StandardColumn implements Column {
     }
 
     @Override
-    public int compareTo(Column o) {
-        return Comparator.comparing(Column::getName).compare(this, o);
+    public int compareTo(final Column o) {
+        final int tableCompare = table.getName().compareTo(o.getTable().getName());
+        if (tableCompare == 0) {
+            return name.compareTo(o.getName());
+        } else {
+            return tableCompare;
+        }
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(name);
+        return Objects.hash(table.getName(), name);
     }
 
     @Override
@@ -61,21 +74,28 @@ public class StandardColumn implements Column {
         }
 
         final Column other = (Column)obj;
-        return Objects.equals(name, other.getName());
+        return Objects.equals(table.getName(), other.getTable().getName())
+                && Objects.equals(name, other.getName());
     }
 
-    public static Column create(final String name) {
-        return new Builder().name(name).updatable(false).build();
+    public static Column create(final Table table, final String name) {
+        return new Builder().table(table).name(name).updatable(false).build();
     }
 
-    public static Column createUpdatable(final String name) {
-        return new Builder().name(name).updatable().build();
+    public static Column createUpdatable(final Table table, final String name) {
+        return new Builder().table(table).name(name).updatable().build();
     }
 
     public static class Builder {
 
+        private Table table;
         private String name;
         private boolean updatable;
+
+        public Builder table(final Table table) {
+            this.table = table;
+            return this;
+        }
 
         public Builder name(final String name) {
             this.name = name;
