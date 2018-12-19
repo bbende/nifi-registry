@@ -31,7 +31,10 @@ public class StandardQueryBuilder implements QueryBuilder {
     private List<String> from = new ArrayList<>();
     private List<String> whereClauses= new ArrayList<>();
 
-
+    @Override
+    public QueryBuilder select(final Table table) {
+        return select(table, table.getColumns());
+    }
 
     @Override
     public QueryBuilder select(final Table table, final SortedSet<Column> columns) {
@@ -57,8 +60,12 @@ public class StandardQueryBuilder implements QueryBuilder {
     }
 
     @Override
-    public QueryBuilder from(final Table table) {
-        from.add(table.getName() + " " + table.getAlias());
+    public QueryBuilder from(final Table ... tables) {
+        if (tables != null) {
+            for (final Table table : tables) {
+                from.add(table.getName() + " " + table.getAlias());
+            }
+        }
         return this;
     }
 
@@ -73,11 +80,41 @@ public class StandardQueryBuilder implements QueryBuilder {
     }
 
     @Override
+    public QueryBuilder whereEqual(final Table table1, final Column column1, final Table table2, final Column column2) {
+        whereClauses.add(
+                new StringBuilder(table1.getAlias()).append(".").append(column1.getName()).append(" ")
+                        .append(QueryOperator.EQ.getOperator())
+                        .append(table2.getAlias()).append(".").append(column2.getName())
+                        .toString());
+        return this;
+    }
+
+    @Override
+    public QueryBuilder whereEqual(final Table table, final SortedSet<Column> columns) {
+        if (columns == null || columns.isEmpty()) {
+            return this;
+        }
+
+        columns.forEach(c -> whereEqual(table, c));
+        return this;
+    }
+
+    @Override
     public QueryBuilder whereNotEqual(final Table table, final Column column) {
         whereClauses.add(
                 new StringBuilder(table.getAlias()).append(".").append(column.getName()).append(" ")
                         .append(QueryOperator.NEQ.getOperator())
                         .append(" ?")
+                        .toString());
+        return this;
+    }
+
+    @Override
+    public QueryBuilder whereNotEqual(Table table1, Column column1, Table table2, Column column2) {
+        whereClauses.add(
+                new StringBuilder(table1.getAlias()).append(".").append(column1.getName()).append(" ")
+                        .append(QueryOperator.NEQ.getOperator())
+                        .append(table2.getAlias()).append(".").append(column2.getName())
                         .toString());
         return this;
     }

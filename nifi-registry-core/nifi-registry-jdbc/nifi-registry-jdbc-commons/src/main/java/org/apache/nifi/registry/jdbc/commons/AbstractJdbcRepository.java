@@ -106,7 +106,7 @@ public abstract class AbstractJdbcRepository<I, E extends Entity<I>> implements 
         ids.forEach(i -> idArgs.add(i));
 
         final String sql = SqlFactory.query()
-                .select(table, table.getColumns())
+                .select(table)
                 .from(table)
                 .whereIn(table, table.getIdColumn(), idArgs.size())
                 .build();

@@ -38,6 +38,7 @@ import java.util.Optional;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 @Component
 public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
@@ -102,16 +103,17 @@ public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
                                                   final EntityRowMapper<E> entityRowMapper) {
 
         final List<Object> argValues = new ArrayList<>();
-
-        final QueryBuilder queryBuilder = SqlFactory.query()
-                .select(table, table.getColumns())
-                .from(table);
+        final SortedSet<Column> columns = new TreeSet<>();
 
         for (final Map.Entry<Column,Object> arg : args.entrySet()) {
-            final Column column = arg.getKey();
-            queryBuilder.whereEqual(table, column);
+            columns.add(arg.getKey());
             argValues.add(arg.getValue());
         }
+
+        final QueryBuilder queryBuilder = SqlFactory.query()
+                .select(table)
+                .from(table)
+                .whereEqual(table, columns);
 
         return query(queryBuilder.build(), argValues, entityRowMapper);
     }

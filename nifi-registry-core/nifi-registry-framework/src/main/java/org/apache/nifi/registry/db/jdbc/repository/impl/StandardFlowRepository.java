@@ -24,10 +24,9 @@ import org.apache.nifi.registry.db.jdbc.repository.FlowRepository;
 import org.apache.nifi.registry.jdbc.api.Column;
 import org.apache.nifi.registry.jdbc.api.JdbcEntityTemplate;
 import org.apache.nifi.registry.jdbc.api.QueryBuilder;
-import org.apache.nifi.registry.jdbc.api.QueryOperator;
 import org.apache.nifi.registry.jdbc.api.Table;
 import org.apache.nifi.registry.jdbc.api.TableConfiguration;
-import org.apache.nifi.registry.jdbc.commons.StandardQueryBuilder;
+import org.apache.nifi.registry.jdbc.commons.SqlFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -39,6 +38,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 @Repository
 public class StandardFlowRepository implements FlowRepository {
@@ -47,7 +47,6 @@ public class StandardFlowRepository implements FlowRepository {
     private static final BucketItemMapper BUCKET_ITEM_MAPPER = new BucketItemMapper();
 
     private final JdbcEntityTemplate jdbcEntityTemplate;
-    private final TableConfiguration tableConfiguration;
 
     private final Table<String> bucketItemTable;
     private final Table<String> flowTable;
@@ -56,8 +55,8 @@ public class StandardFlowRepository implements FlowRepository {
     @Autowired
     public StandardFlowRepository(final TableConfiguration tableConfiguration, final JdbcEntityTemplate jdbcEntityTemplate) {
         this.jdbcEntityTemplate = Objects.requireNonNull(jdbcEntityTemplate);
-        this.tableConfiguration = Objects.requireNonNull(tableConfiguration);
 
+        Objects.requireNonNull(tableConfiguration);
         this.bucketItemTable = tableConfiguration.getTable(BucketItemEntity.class);
         this.flowTable = tableConfiguration.getTable(FlowEntity.class);
 
@@ -65,16 +64,13 @@ public class StandardFlowRepository implements FlowRepository {
             throw new IllegalStateException("BucketItemEntity and FlowEntity must be mapped to Tables");
         }
 
-        final String whereBucketItemIdEqualsFlowId =
-                bucketItemTable.getAlias() + "." + bucketItemTable.getIdColumn().getName()
-                        + " " + QueryOperator.EQ.getOperator() + " "
-                        + flowTable.getAlias() + "." + flowTable.getIdColumn().getName();
-
-        baseSelectFlowQuery = new StandardQueryBuilder()
-                .select(bucketItemTable, bucketItemTable.getColumns())
-                .from(bucketItemTable)
-                .from(flowTable)
-                .where(whereBucketItemIdEqualsFlowId);
+        baseSelectFlowQuery = SqlFactory.query()
+                .select(bucketItemTable)
+                .from(bucketItemTable, flowTable)
+                .whereEqual(
+                        bucketItemTable, bucketItemTable.getIdColumn(),
+                        flowTable, flowTable.getIdColumn()
+                );
     }
 
     @Override
@@ -92,8 +88,7 @@ public class StandardFlowRepository implements FlowRepository {
 
     @Override
     public Optional<FlowEntity> findById(final String id) {
-        final String sql = baseSelectFlowQuery
-                .copy()
+        final String sql = baseSelectFlowQuery.copy()
                 .whereEqual(flowTable, flowTable.getIdColumn())
                 .build();
 
@@ -116,8 +111,7 @@ public class StandardFlowRepository implements FlowRepository {
         final List<Object> args = new ArrayList<>();
         ids.forEach(id -> args.add(id));
 
-        final QueryBuilder queryBuilder = baseSelectFlowQuery
-                .copy()
+        final QueryBuilder queryBuilder = baseSelectFlowQuery.copy()
                 .whereIn(flowTable, flowTable.getIdColumn(), args.size());
 
         return jdbcEntityTemplate.query(queryBuilder.build(), args, FLOW_MAPPER);
@@ -126,13 +120,15 @@ public class StandardFlowRepository implements FlowRepository {
     @Override
     public List<FlowEntity> findByFields(final SortedMap<Column, Object> params) {
         final List<Object> argValues = new ArrayList<>();
+        final SortedSet<Column> columns = new TreeSet<>();
 
-        final QueryBuilder queryBuilder = baseSelectFlowQuery.copy();
         for (final Map.Entry<Column,Object> arg : params.entrySet()) {
-            final Column column = arg.getKey();
-            queryBuilder.whereEqual(bucketItemTable, column);
+            columns.add(arg.getKey());
             argValues.add(arg.getValue());
         }
+
+        final QueryBuilder queryBuilder = baseSelectFlowQuery.copy()
+                .whereEqual(bucketItemTable, columns);
 
         return jdbcEntityTemplate.query(queryBuilder.build(), argValues, FLOW_MAPPER);
     }
