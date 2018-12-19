@@ -111,9 +111,9 @@ public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
         }
 
         final QueryBuilder queryBuilder = SqlFactory.query()
-                .select(table)
+                .select(table.getColumns())
                 .from(table)
-                .whereEqual(table, columns);
+                .whereEqual(columns);
 
         return query(queryBuilder.build(), argValues, entityRowMapper);
     }

@@ -20,31 +20,29 @@ import java.util.SortedSet;
 
 public interface QueryBuilder {
 
-    QueryBuilder select(Table table);
+    QueryBuilder select(SortedSet<Column> columns);
 
-    QueryBuilder select(Table table, SortedSet<Column> columns);
+    QueryBuilder select(Column column);
 
-    QueryBuilder select(Table table, Column column);
-
-    QueryBuilder select(Table table, Column column, String columnAlias);
+    QueryBuilder select(Column column, String columnAlias);
 
     QueryBuilder select(String expression);
 
     QueryBuilder from(Table ... tables);
 
-    QueryBuilder whereEqual(Table table, Column column);
+    QueryBuilder whereEqual(Column column);
 
-    QueryBuilder whereEqual(Table table1, Column column1, Table table2, Column column2);
+    QueryBuilder whereEqual(Column column1, Column column2);
 
-    QueryBuilder whereEqual(Table table, SortedSet<Column> columns);
+    QueryBuilder whereEqual(SortedSet<Column> columns);
 
-    QueryBuilder whereNotEqual(Table table, Column column);
+    QueryBuilder whereNotEqual(Column column);
 
-    QueryBuilder whereNotEqual(Table table1, Column column1, Table table2, Column column2);
+    QueryBuilder whereNotEqual(Column column1, Column column2);
 
-    QueryBuilder whereLike(Table table, Column column);
+    QueryBuilder whereLike(Column column);
 
-    QueryBuilder whereIn(Table table, Column column, int count);
+    QueryBuilder whereIn(Column column, int count);
 
     QueryBuilder where(String clause);
 

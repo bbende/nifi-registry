@@ -65,12 +65,9 @@ public class StandardFlowRepository implements FlowRepository {
         }
 
         baseSelectFlowQuery = SqlFactory.query()
-                .select(bucketItemTable)
+                .select(bucketItemTable.getColumns())
                 .from(bucketItemTable, flowTable)
-                .whereEqual(
-                        bucketItemTable, bucketItemTable.getIdColumn(),
-                        flowTable, flowTable.getIdColumn()
-                );
+                .whereEqual(bucketItemTable.getIdColumn(), flowTable.getIdColumn());
     }
 
     @Override
@@ -90,7 +87,7 @@ public class StandardFlowRepository implements FlowRepository {
     @Override
     public Optional<FlowEntity> findById(final String id) {
         final String sql = baseSelectFlowQuery.copy()
-                .whereEqual(flowTable, flowTable.getIdColumn())
+                .whereEqual(flowTable.getIdColumn())
                 .build();
 
         return jdbcEntityTemplate.queryForObject(sql, id, FLOW_MAPPER);
@@ -113,7 +110,7 @@ public class StandardFlowRepository implements FlowRepository {
         ids.forEach(id -> args.add(id));
 
         final QueryBuilder queryBuilder = baseSelectFlowQuery.copy()
-                .whereIn(flowTable, flowTable.getIdColumn(), args.size());
+                .whereIn(flowTable.getIdColumn(), args.size());
 
         return jdbcEntityTemplate.query(queryBuilder.build(), args, FLOW_MAPPER);
     }
@@ -129,7 +126,7 @@ public class StandardFlowRepository implements FlowRepository {
         }
 
         final QueryBuilder queryBuilder = baseSelectFlowQuery.copy()
-                .whereEqual(bucketItemTable, columns);
+                .whereEqual(columns);
 
         return jdbcEntityTemplate.query(queryBuilder.build(), argValues, FLOW_MAPPER);
     }

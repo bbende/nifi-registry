@@ -32,24 +32,19 @@ public class StandardQueryBuilder implements QueryBuilder {
     private List<String> whereClauses= new ArrayList<>();
 
     @Override
-    public QueryBuilder select(final Table table) {
-        return select(table, table.getColumns());
-    }
-
-    @Override
-    public QueryBuilder select(final Table table, final SortedSet<Column> columns) {
-        columns.forEach(c -> select(table, c));
+    public QueryBuilder select(final SortedSet<Column> columns) {
+        columns.forEach(c -> select(c));
         return this;
     }
 
     @Override
-    public QueryBuilder select(final Table table, final Column column) {
-        return select(table, column, column.getName());
+    public QueryBuilder select(final Column column) {
+        return select(column, column.getName());
     }
 
     @Override
-    public QueryBuilder select(final Table table, final Column column, final String columnAlias) {
-        returnFields.add(table.getAlias() + "." + column.getName() + " AS " + columnAlias);
+    public QueryBuilder select(final Column column, final String columnAlias) {
+        returnFields.add(column.getTable().getAlias() + "." + column.getName() + " AS " + columnAlias);
         return this;
     }
 
@@ -70,9 +65,12 @@ public class StandardQueryBuilder implements QueryBuilder {
     }
 
     @Override
-    public QueryBuilder whereEqual(final Table table, final Column column) {
+    public QueryBuilder whereEqual(final Column column) {
         whereClauses.add(
-                new StringBuilder(table.getAlias()).append(".").append(column.getName()).append(" ")
+                new StringBuilder(column.getTable().getAlias())
+                        .append(".")
+                        .append(column.getName())
+                        .append(" ")
                         .append(QueryOperator.EQ.getOperator())
                         .append(" ?")
                         .toString());
@@ -80,29 +78,32 @@ public class StandardQueryBuilder implements QueryBuilder {
     }
 
     @Override
-    public QueryBuilder whereEqual(final Table table1, final Column column1, final Table table2, final Column column2) {
+    public QueryBuilder whereEqual(final Column column1, final Column column2) {
         whereClauses.add(
-                new StringBuilder(table1.getAlias()).append(".").append(column1.getName()).append(" ")
+                new StringBuilder(column1.getTable().getAlias()).append(".").append(column1.getName()).append(" ")
                         .append(QueryOperator.EQ.getOperator())
-                        .append(table2.getAlias()).append(".").append(column2.getName())
+                        .append(column2.getTable().getAlias()).append(".").append(column2.getName())
                         .toString());
         return this;
     }
 
     @Override
-    public QueryBuilder whereEqual(final Table table, final SortedSet<Column> columns) {
+    public QueryBuilder whereEqual(final SortedSet<Column> columns) {
         if (columns == null || columns.isEmpty()) {
             return this;
         }
 
-        columns.forEach(c -> whereEqual(table, c));
+        columns.forEach(c -> whereEqual(c));
         return this;
     }
 
     @Override
-    public QueryBuilder whereNotEqual(final Table table, final Column column) {
+    public QueryBuilder whereNotEqual(final Column column) {
         whereClauses.add(
-                new StringBuilder(table.getAlias()).append(".").append(column.getName()).append(" ")
+                new StringBuilder(column.getTable().getAlias())
+                        .append(".")
+                        .append(column.getName())
+                        .append(" ")
                         .append(QueryOperator.NEQ.getOperator())
                         .append(" ?")
                         .toString());
@@ -110,19 +111,22 @@ public class StandardQueryBuilder implements QueryBuilder {
     }
 
     @Override
-    public QueryBuilder whereNotEqual(Table table1, Column column1, Table table2, Column column2) {
+    public QueryBuilder whereNotEqual(final Column column1, final Column column2) {
         whereClauses.add(
-                new StringBuilder(table1.getAlias()).append(".").append(column1.getName()).append(" ")
+                new StringBuilder(column1.getTable().getAlias()).append(".").append(column1.getName()).append(" ")
                         .append(QueryOperator.NEQ.getOperator())
-                        .append(table2.getAlias()).append(".").append(column2.getName())
+                        .append(column2.getTable().getAlias()).append(".").append(column2.getName())
                         .toString());
         return this;
     }
 
     @Override
-    public QueryBuilder whereLike(final Table table, final Column column) {
+    public QueryBuilder whereLike(final Column column) {
         whereClauses.add(
-                new StringBuilder(table.getAlias()).append(".").append(column.getName()).append(" ")
+                new StringBuilder(column.getTable().getAlias())
+                        .append(".")
+                        .append(column.getName())
+                        .append(" ")
                         .append(QueryOperator.LIKE.getOperator())
                         .append(" ?")
                         .toString());
@@ -130,10 +134,13 @@ public class StandardQueryBuilder implements QueryBuilder {
     }
 
     @Override
-    public QueryBuilder whereIn(final Table table, final Column column, final int count) {
-        final StringBuilder builder = new StringBuilder(table.getAlias()).append(".").append(column.getName())
+    public QueryBuilder whereIn(final Column column, final int count) {
+        final StringBuilder builder = new StringBuilder(column.getTable().getAlias())
+                .append(".").append(column.getName())
                 .append(" ").append(QueryOperator.IN.getOperator()).append(" ( ");
-            SqlUtils.appendValues(builder, "?", count);
+
+        SqlUtils.appendValues(builder, "?", count);
+
         builder.append(" ) ");
         whereClauses.add(builder.toString());
         return this;

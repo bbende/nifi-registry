@@ -74,9 +74,9 @@ public class SqlFactory {
 
     public static String selectById(final Table<?> table, final SortedSet<Column> columns) {
         final String sql = query()
-                .select(table, columns)
+                .select(columns)
                 .from(table)
-                .whereEqual(table, table.getIdColumn())
+                .whereEqual(table.getIdColumn())
                 .build();
 
         return sql;
