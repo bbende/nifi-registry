@@ -19,24 +19,77 @@ package org.apache.nifi.registry.jdbc.api;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * A repository than can perform CRUD operations for a given type of Entity.
+ *
+ * @param <ID> the type of ID for the Entity
+ * @param <E> the type of Entity
+ */
 public interface JdbcRepository<ID, E extends Entity<ID>> {
 
+    /**
+     * Creates the given entity.
+     *
+     * @param entity the entity to create
+     * @return the created entity
+     */
     E create(E entity);
 
+    /**
+     * Updates the given entity using any non-null fields.
+     *
+     * @param entity the entity to update
+     * @return the updated entity
+     */
     E update(E entity);
 
+    /**
+     * Retrieves an entity by id.
+     *
+     * @param id the id of the entity to retrieve
+     * @return the optional entity
+     */
     Optional<E> findById(ID id);
 
+    /**
+     * Determines if an entity exists with the given id.
+     *
+     * @param id the of the entity
+     * @return true if the entity exists, false otherwise
+     */
     boolean existsById(ID id);
 
+    /**
+     * @return all entities of the given type
+     */
     List<E> findAll();
 
+    /**
+     * @param ids the ids of the entities to return
+     * @return the entities with the given ids
+     */
     List<E> findAllById(Iterable<ID> ids);
 
+    /**
+     * Retrieves entities according to the supplied query parameters.
+     *
+     * @param params the query params
+     * @return the matching entities
+     */
     List<E> findByQueryParams(QueryParameters params);
 
+    /**
+     * Deletes an entity by id.
+     *
+     * @param id the id of the entity to delete
+     */
     void deleteById(ID id);
 
+    /**
+     * Deletes the given entity.
+     *
+     * @param entity the entity to delete
+     */
     void delete(E entity);
 
 }

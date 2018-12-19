@@ -19,12 +19,24 @@ package org.apache.nifi.registry.jdbc.api;
 import java.util.List;
 import java.util.SortedSet;
 
+/**
+ * A set of QueryParameter with convenience accessors.
+ */
 public interface QueryParameters {
 
+    /**
+     * @return the sorted set of columns from the parameters
+     */
     SortedSet<Column> getColumns();
 
+    /**
+     * @return the values of the parameters in the same order as the columns of getColumns
+     */
     List<Object> getValues();
 
+    /**
+     * @return the sorted set of all parameters
+     */
     SortedSet<QueryParameter> getParameters();
 
 }

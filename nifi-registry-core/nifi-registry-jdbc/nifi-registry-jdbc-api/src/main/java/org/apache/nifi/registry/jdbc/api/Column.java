@@ -16,12 +16,26 @@
  */
 package org.apache.nifi.registry.jdbc.api;
 
+/**
+ * Represents a column in a table.
+ *
+ * Must implement {@link Comparable} so that columns can be sorted in a consistent manner.
+ */
 public interface Column extends Comparable<Column> {
 
+    /**
+     * @return the table the column belongs to
+     */
     Table getTable();
 
+    /**
+     * @return the name of the column
+     */
     String getName();
 
+    /**
+     * @return whether or not the application allows this column to be updated
+     */
     boolean isUpdatable();
 
 }

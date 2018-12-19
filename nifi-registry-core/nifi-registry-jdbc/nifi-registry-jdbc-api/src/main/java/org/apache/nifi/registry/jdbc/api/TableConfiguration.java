@@ -18,14 +18,43 @@ package org.apache.nifi.registry.jdbc.api;
 
 import java.util.Collection;
 
+/**
+ * Configures the mapping from Entity class to Table and used to resolve this mapping later.
+ */
 public interface TableConfiguration {
 
+    /**
+     * Maps the given entity class to the given table.
+     *
+     * @param entityClass the entity class
+     * @param table the table
+     * @param <I> the type of ID of the table
+     * @param <E> the type of the entity
+     */
     <I, E extends Entity<I>> void register(Class<E> entityClass, Table<I> table);
 
+    /**
+     * Retrieves the Table for the given Entity instance.
+     *
+     * @param entity the entity instance
+     * @param <I> the type of ID for the table and Entity
+     * @return the Table
+     */
     <I> Table<I> getTable(Entity<I> entity);
 
+    /**
+     * Retrieves the Table for the given Entity class.
+     *
+     * @param entityClass the entity class
+     * @param <I> the type of ID for the table and Entity
+     * @param <E> the type of Entity
+     * @return the Table
+     */
     <I, E extends Entity<I>> Table<I> getTable(Class<E> entityClass);
 
+    /**
+     * @return all tables that are registered to an Entity
+     */
     Collection<Table> getTables();
 
 }

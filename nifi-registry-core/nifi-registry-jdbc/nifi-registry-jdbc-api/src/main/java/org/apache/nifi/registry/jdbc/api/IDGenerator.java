@@ -16,8 +16,16 @@
  */
 package org.apache.nifi.registry.jdbc.api;
 
+/**
+ * Generates an ID for an Entity.
+ *
+ * @param <ID> the type of ID
+ */
 public interface IDGenerator<ID> {
 
+    /**
+     * @return the created ID
+     */
     ID generate();
 
 }

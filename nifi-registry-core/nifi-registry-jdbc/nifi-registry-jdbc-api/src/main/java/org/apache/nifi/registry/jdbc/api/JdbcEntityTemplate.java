@@ -20,6 +20,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.SortedSet;
 
+/**
+ * Performs operations against tables and entities. Repositories use this interface to implement their logic.
+ *
+ * There is a provided implementation in the nifi-registry-jdbc-spring module, but a generic JDBC implementation could be created.
+ */
 public interface JdbcEntityTemplate {
 
     <I, E extends Entity<I>> E insert(Table<I> table, E entity, EntityValueMapper<E> entityValueMapper);

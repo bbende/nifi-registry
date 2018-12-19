@@ -18,6 +18,9 @@ package org.apache.nifi.registry.jdbc.api;
 
 import java.util.Objects;
 
+/**
+ * Possible query operators.
+ */
 public enum QueryOperator {
 
     EQ("="),

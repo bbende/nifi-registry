@@ -16,10 +16,21 @@
  */
 package org.apache.nifi.registry.jdbc.api;
 
+/**
+ * An object that will be created from a row in a table.
+ *
+ * @param <ID> the type of ID for the entity
+ */
 public interface Entity<ID> {
 
+    /**
+     * @return the id of the entity
+     */
     ID getId();
 
+    /**
+     * @param id the id to set in the entity
+     */
     void setId(ID id);
 
 }

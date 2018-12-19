@@ -16,8 +16,18 @@
  */
 package org.apache.nifi.registry.jdbc.api;
 
+/**
+ * Maps an Entity to it's value for a given Column.
+ *
+ * @param <E> the type of Entity
+ */
 public interface EntityValueMapper<E extends Entity> {
 
+    /**
+     * @param column the Column
+     * @param entity the Entity
+     * @return the value from the Entity for the given Column
+     */
     Object map(Column column, E entity);
 
 }

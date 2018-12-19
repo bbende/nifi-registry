@@ -16,12 +16,24 @@
  */
 package org.apache.nifi.registry.jdbc.api;
 
+/**
+ * A parameter for a query that will be translated to a where clause.
+ */
 public interface QueryParameter extends Comparable<QueryParameter> {
 
+    /**
+     * @return the column
+     */
     Column getColumn();
 
+    /**
+     * @return the operator
+     */
     QueryOperator getOperator();
 
+    /**
+     * @return the value
+     */
     Object getValue();
 
 }

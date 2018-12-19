@@ -22,6 +22,7 @@ import org.apache.nifi.registry.jdbc.api.EntityRowMapper;
 import org.apache.nifi.registry.jdbc.api.EntityValueMapper;
 import org.apache.nifi.registry.jdbc.api.JdbcEntityTemplate;
 import org.apache.nifi.registry.jdbc.api.QueryBuilder;
+import org.apache.nifi.registry.jdbc.api.QueryParameter;
 import org.apache.nifi.registry.jdbc.api.QueryParameters;
 import org.apache.nifi.registry.jdbc.api.Table;
 import org.apache.nifi.registry.jdbc.commons.SqlFactory;
@@ -32,6 +33,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -102,13 +104,42 @@ public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
     public <I, E extends Entity<I>> List<E> query(final Table<I> table, final QueryParameters params,
                                                   final EntityRowMapper<E> entityRowMapper) {
 
-        final List<Object> argValues = params.getValues();
-        final SortedSet<Column> columns = params.getColumns();
+        final List<Object> argValues = new ArrayList<>();
 
         final QueryBuilder queryBuilder = SqlFactory.query()
                 .select(table.getColumns())
-                .from(table)
-                .whereEqual(columns);
+                .from(table);
+
+        for (final QueryParameter param : params.getParameters()) {
+            final Column column = param.getColumn();
+            final Object value = param.getValue();
+
+            switch (param.getOperator()) {
+                case EQ:
+                    queryBuilder.whereEqual(column);
+                    argValues.add(param.getValue());
+                    break;
+                case NEQ:
+                    queryBuilder.whereNotEqual(column);
+                    argValues.add(param.getValue());
+                    break;
+                case LIKE:
+                    queryBuilder.whereLike(column);
+                    argValues.add(param.getValue());
+                    break;
+                case IN:
+                    if (value instanceof Collection) {
+                        final Collection<Object> collectionValue = (Collection<Object>) value;
+                        queryBuilder.whereIn(column, collectionValue.size());
+                        argValues.addAll(collectionValue);
+                    } else {
+                        throw new IllegalArgumentException("IN parameters must contain a value of type Collection");
+                    }
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unexpected query operator: " + param);
+            }
+        }
 
         return query(queryBuilder.build(), argValues, entityRowMapper);
     }

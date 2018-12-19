@@ -19,8 +19,19 @@ package org.apache.nifi.registry.jdbc.api;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * Maps a row to an Entity.
+ *
+ * @param <E> the type of Entity
+ */
 public interface EntityRowMapper<E extends Entity> {
 
+    /**
+     * @param rs the result set
+     * @param rowNum the row num
+     * @return the created Entity
+     * @throws SQLException if an error occurs accessing the ResultSet
+     */
     E mapRow(ResultSet rs, int rowNum) throws SQLException;
 
 }
