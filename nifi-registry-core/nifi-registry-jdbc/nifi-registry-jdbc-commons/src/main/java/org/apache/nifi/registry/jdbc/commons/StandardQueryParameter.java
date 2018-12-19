@@ -91,7 +91,7 @@ public class StandardQueryParameter implements QueryParameter {
         return new StandardQueryParameter(column, QueryOperator.LIKE, value);
     }
 
-    public static QueryParameter neq(final Column column, final Collection<Object> values) {
+    public static QueryParameter in(final Column column, final Collection<?> values) {
         return new StandardQueryParameter(column, QueryOperator.IN, values);
     }
 

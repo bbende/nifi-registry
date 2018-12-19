@@ -27,7 +27,7 @@ import org.apache.nifi.registry.jdbc.api.QueryParameters;
 import org.apache.nifi.registry.jdbc.api.Table;
 import org.apache.nifi.registry.jdbc.api.TableConfiguration;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -100,17 +100,10 @@ public abstract class AbstractJdbcRepository<I, E extends Entity<I>> implements 
     }
 
     @Override
-    public List<E> findAllById(final Iterable<I> ids) {
-        final List<Object> idArgs = new ArrayList<>();
-        ids.forEach(i -> idArgs.add(i));
-
-        final String sql = SqlFactory.query()
-                .select(table.getColumns())
-                .from(table)
-                .whereIn(table.getIdColumn(), idArgs.size())
-                .build();
-
-        return jdbcEntityTemplate.query(sql, idArgs, entityRowMapper);
+    public List<E> findAllById(final Collection<I> ids) {
+        final QueryParameters params = StandardQueryParameters.of(
+                StandardQueryParameter.in(table.getIdColumn(), ids));
+        return jdbcEntityTemplate.query(table, params, entityRowMapper);
     }
 
     @Override

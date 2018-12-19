@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -103,7 +104,7 @@ public class StandardFlowRepository implements FlowRepository {
     }
 
     @Override
-    public List<FlowEntity> findAllById(final Iterable<String> ids) {
+    public List<FlowEntity> findAllById(final Collection<String> ids) {
         final List<Object> args = new ArrayList<>();
         ids.forEach(id -> args.add(id));
 

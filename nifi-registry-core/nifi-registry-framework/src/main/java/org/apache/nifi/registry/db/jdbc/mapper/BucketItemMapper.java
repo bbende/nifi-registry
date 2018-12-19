@@ -19,19 +19,9 @@ package org.apache.nifi.registry.db.jdbc.mapper;
 import org.apache.nifi.registry.db.entity.BucketItemEntity;
 import org.apache.nifi.registry.db.jdbc.configuration.Tables;
 import org.apache.nifi.registry.jdbc.api.Column;
-import org.apache.nifi.registry.jdbc.api.EntityRowMapper;
 import org.apache.nifi.registry.jdbc.api.EntityValueMapper;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-public class BucketItemMapper implements EntityRowMapper<BucketItemEntity>, EntityValueMapper<BucketItemEntity> {
-
-    @Override
-    public BucketItemEntity mapRow(final ResultSet rs, final int rowNum) throws SQLException {
-        // TODO
-        return null;
-    }
+public class BucketItemMapper implements EntityValueMapper<BucketItemEntity> {
 
     @Override
     public Object map(final Column column, final BucketItemEntity entity) {

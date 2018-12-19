@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.jdbc.api;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -68,7 +69,7 @@ public interface JdbcRepository<ID, E extends Entity<ID>> {
      * @param ids the ids of the entities to return
      * @return the entities with the given ids
      */
-    List<E> findAllById(Iterable<ID> ids);
+    List<E> findAllById(Collection<ID> ids);
 
     /**
      * Retrieves entities according to the supplied query parameters.
