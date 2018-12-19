@@ -21,13 +21,13 @@ import org.apache.nifi.registry.jdbc.commons.StandardColumn;
 
 public interface BucketItemColumns {
 
-    Column ID = new StandardColumn("ID");
-    Column NAME = new StandardColumn("NAME");
-    Column DESCRIPTION = new StandardColumn("DESCRIPTION");
-    Column CREATED = new StandardColumn("CREATED");
-    Column MODIFIED = new StandardColumn("MODIFIED");
-    Column ITEM_TYPE = new StandardColumn("ITEM_TYPE");
-    Column BUCKET_ID = new StandardColumn("BUCKET_ID");
+    Column ID = StandardColumn.create("ID");
+    Column NAME = StandardColumn.createUpdatable("NAME");
+    Column DESCRIPTION = StandardColumn.createUpdatable("DESCRIPTION");
+    Column CREATED = StandardColumn.create("CREATED");
+    Column MODIFIED = StandardColumn.createUpdatable("MODIFIED");
+    Column ITEM_TYPE = StandardColumn.create("ITEM_TYPE");
+    Column BUCKET_ID = StandardColumn.create("BUCKET_ID");
 
     static Column[] values() {
         return new Column[] { ID, NAME, DESCRIPTION, CREATED, MODIFIED, ITEM_TYPE, BUCKET_ID};

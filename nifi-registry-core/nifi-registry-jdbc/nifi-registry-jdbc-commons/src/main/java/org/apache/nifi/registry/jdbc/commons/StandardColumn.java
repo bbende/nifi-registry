@@ -24,13 +24,20 @@ import java.util.Objects;
 public class StandardColumn implements Column {
 
     private final String name;
+    private final boolean updatable;
 
-    public StandardColumn(final String name) {
-        this.name = Objects.requireNonNull(name);
+    private StandardColumn(final Builder builder) {
+        this.name = Objects.requireNonNull(builder.name);
+        this.updatable = builder.updatable;
     }
 
     public String getName() {
         return name;
+    }
+
+    @Override
+    public boolean isUpdatable() {
+        return updatable;
     }
 
     @Override
@@ -57,4 +64,37 @@ public class StandardColumn implements Column {
         return Objects.equals(name, other.getName());
     }
 
+    public static Column create(final String name) {
+        return new Builder().name(name).updatable(false).build();
+    }
+
+    public static Column createUpdatable(final String name) {
+        return new Builder().name(name).updatable().build();
+    }
+
+    public static class Builder {
+
+        private String name;
+        private boolean updatable;
+
+        public Builder name(final String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder updatable(boolean updatable) {
+            this.updatable = updatable;
+            return this;
+        }
+
+        public Builder updatable() {
+            this.updatable = true;
+            return this;
+        }
+
+        public Column build() {
+            return new StandardColumn(this);
+        }
+
+    }
 }

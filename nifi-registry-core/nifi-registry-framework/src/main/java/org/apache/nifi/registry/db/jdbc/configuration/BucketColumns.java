@@ -21,11 +21,11 @@ import org.apache.nifi.registry.jdbc.commons.StandardColumn;
 
 public interface BucketColumns {
 
-    Column ID = new StandardColumn("ID");
-    Column NAME = new StandardColumn("NAME");
-    Column DESCRIPTION = new StandardColumn("DESCRIPTION");
-    Column CREATED = new StandardColumn("CREATED");
-    Column ALLOW_EXTENSION_BUNDLE_REDEPLOY = new StandardColumn("ALLOW_EXTENSION_BUNDLE_REDEPLOY");
+    Column ID = StandardColumn.create("ID");
+    Column NAME = StandardColumn.createUpdatable("NAME");
+    Column DESCRIPTION = StandardColumn.createUpdatable("DESCRIPTION");
+    Column CREATED = StandardColumn.create("CREATED");
+    Column ALLOW_EXTENSION_BUNDLE_REDEPLOY = StandardColumn.createUpdatable("ALLOW_EXTENSION_BUNDLE_REDEPLOY");
 
     static Column[] values() {
         return new Column[] { ID, NAME, DESCRIPTION, CREATED, ALLOW_EXTENSION_BUNDLE_REDEPLOY };

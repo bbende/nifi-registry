@@ -21,13 +21,13 @@ import org.apache.nifi.registry.jdbc.commons.StandardColumn;
 
 public interface ExtensionColumns {
 
-    Column ID = new StandardColumn("ID");
-    Column EXTENSION_BUNDLE_VERSION_ID = new StandardColumn("EXTENSION_BUNDLE_VERSION_ID");
-    Column TYPE = new StandardColumn("TYPE");
-    Column DESCRIPTION = new StandardColumn("TYPE_DESCRIPTION");
-    Column IS_RESTRICTED = new StandardColumn("IS_RESTRICTED");
-    Column CATEGORY = new StandardColumn("CATEGORY");
-    Column TAGS = new StandardColumn("TAGS");
+    Column ID = StandardColumn.create("ID");
+    Column EXTENSION_BUNDLE_VERSION_ID = StandardColumn.create("EXTENSION_BUNDLE_VERSION_ID");
+    Column TYPE = StandardColumn.create("TYPE");
+    Column DESCRIPTION = StandardColumn.create("TYPE_DESCRIPTION");
+    Column IS_RESTRICTED = StandardColumn.create("IS_RESTRICTED");
+    Column CATEGORY = StandardColumn.create("CATEGORY");
+    Column TAGS = StandardColumn.create("TAGS");
 
     static Column[] values() {
         return new Column[] {

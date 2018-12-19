@@ -18,7 +18,6 @@ package org.apache.nifi.registry.db.jdbc.repository.impl;
 
 import org.apache.nifi.registry.db.entity.BucketItemEntity;
 import org.apache.nifi.registry.db.entity.FlowEntity;
-import org.apache.nifi.registry.db.jdbc.configuration.BucketItemColumns;
 import org.apache.nifi.registry.db.jdbc.mapper.BucketItemMapper;
 import org.apache.nifi.registry.db.jdbc.mapper.FlowMapper;
 import org.apache.nifi.registry.db.jdbc.repository.FlowRepository;
@@ -40,7 +39,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 @Repository
 public class StandardFlowRepository implements FlowRepository {
@@ -54,7 +52,6 @@ public class StandardFlowRepository implements FlowRepository {
     private final Table<String> bucketItemTable;
     private final Table<String> flowTable;
     private final QueryBuilder baseSelectFlowQuery;
-    private final SortedSet<Column> updateColumns;
 
     @Autowired
     public StandardFlowRepository(final TableConfiguration tableConfiguration, final JdbcEntityTemplate jdbcEntityTemplate) {
@@ -78,11 +75,6 @@ public class StandardFlowRepository implements FlowRepository {
                 .from(bucketItemTable)
                 .from(flowTable)
                 .where(whereBucketItemIdEqualsFlowId);
-
-        updateColumns = new TreeSet<>();
-        updateColumns.add(BucketItemColumns.NAME);
-        updateColumns.add(BucketItemColumns.DESCRIPTION);
-        updateColumns.add(BucketItemColumns.MODIFIED);
     }
 
     @Override
@@ -94,7 +86,8 @@ public class StandardFlowRepository implements FlowRepository {
 
     @Override
     public FlowEntity update(final FlowEntity entity) {
-        return jdbcEntityTemplate.update(bucketItemTable, entity, updateColumns, FLOW_MAPPER);
+        final SortedSet<Column> updatableColumns = bucketItemTable.getUpdatableColumns();
+        return jdbcEntityTemplate.update(bucketItemTable, entity, updatableColumns, FLOW_MAPPER);
     }
 
     @Override

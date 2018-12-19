@@ -20,4 +20,5 @@ public interface Column extends Comparable<Column> {
 
     String getName();
 
+    boolean isUpdatable();
 }

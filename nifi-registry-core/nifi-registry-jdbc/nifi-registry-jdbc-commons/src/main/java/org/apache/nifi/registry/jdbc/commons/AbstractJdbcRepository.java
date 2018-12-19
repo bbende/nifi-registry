@@ -33,7 +33,6 @@ import java.util.Optional;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 public abstract class AbstractJdbcRepository<I, E extends Entity<I>> implements JdbcRepository<I, E> {
 
@@ -75,7 +74,7 @@ public abstract class AbstractJdbcRepository<I, E extends Entity<I>> implements 
 
     @Override
     public E update(final E entity) {
-        final SortedSet<Column> columnsToUpdate = new TreeSet<>(getColumnsToUpdate(entity));
+        final SortedSet<Column> columnsToUpdate = table.getUpdatableColumns();
         if (columnsToUpdate.contains(table.getIdColumn())) {
             columnsToUpdate.remove(table.getIdColumn());
         }
@@ -84,8 +83,6 @@ public abstract class AbstractJdbcRepository<I, E extends Entity<I>> implements 
         }
         return jdbcEntityTemplate.update(table, entity, columnsToUpdate, entityValueMapper);
     }
-
-    protected abstract SortedSet<Column> getColumnsToUpdate(final E entity);
 
     @Override
     public Optional<E> findById(final I i) {

@@ -32,6 +32,7 @@ public class StandardTable<ID> implements Table<ID> {
     private final String alias;
     private final Column idColumn;
     private final SortedSet<Column> columns;
+    private final SortedSet<Column> updatableColumns;
     private final Optional<IDGenerator<ID>> idGenerator;
 
     private StandardTable(final Builder<ID> builder) {
@@ -41,6 +42,10 @@ public class StandardTable<ID> implements Table<ID> {
         this.columns = Collections.unmodifiableSortedSet(
                 new TreeSet<>(Objects.requireNonNull(builder.columns)));
         this.idGenerator = Optional.ofNullable(builder.idGenerator);
+
+        final SortedSet<Column> updatableCols = new TreeSet<>();
+        this.columns.stream().filter(c -> c.isUpdatable()).forEach(c -> updatableCols.add(c));
+        this.updatableColumns = Collections.unmodifiableSortedSet(updatableCols);
     }
 
     @Override
@@ -63,6 +68,12 @@ public class StandardTable<ID> implements Table<ID> {
         return columns;
     }
 
+    @Override
+    public SortedSet<Column> getUpdatableColumns() {
+        return updatableColumns;
+    }
+
+    @Override
     public Optional<IDGenerator<ID>> getIDGenerator() {
         return idGenerator;
     }

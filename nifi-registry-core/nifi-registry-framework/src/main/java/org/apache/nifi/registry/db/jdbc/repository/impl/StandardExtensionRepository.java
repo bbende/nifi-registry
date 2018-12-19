@@ -19,15 +19,11 @@ package org.apache.nifi.registry.db.jdbc.repository.impl;
 import org.apache.nifi.registry.db.entity.ExtensionEntity;
 import org.apache.nifi.registry.db.jdbc.mapper.ExtensionMapper;
 import org.apache.nifi.registry.db.jdbc.repository.ExtensionRepository;
-import org.apache.nifi.registry.jdbc.api.Column;
 import org.apache.nifi.registry.jdbc.api.JdbcEntityTemplate;
 import org.apache.nifi.registry.jdbc.api.TableConfiguration;
 import org.apache.nifi.registry.jdbc.commons.AbstractJdbcRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-
-import java.util.Collections;
-import java.util.SortedSet;
 
 @Repository
 public class StandardExtensionRepository extends AbstractJdbcRepository<String, ExtensionEntity> implements ExtensionRepository {
@@ -35,12 +31,9 @@ public class StandardExtensionRepository extends AbstractJdbcRepository<String, 
     private static final ExtensionMapper MAPPER = new ExtensionMapper();
 
     @Autowired
-    public StandardExtensionRepository(final JdbcEntityTemplate jdbcEntityTemplate, final TableConfiguration tableConfiguration) {
+    public StandardExtensionRepository(final JdbcEntityTemplate jdbcEntityTemplate,
+                                       final TableConfiguration tableConfiguration) {
         super(ExtensionEntity.class, tableConfiguration, MAPPER, MAPPER, jdbcEntityTemplate);
     }
 
-    @Override
-    protected SortedSet<Column> getColumnsToUpdate(final ExtensionEntity entity) {
-        return Collections.emptySortedSet();
-    }
 }

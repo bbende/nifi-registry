@@ -29,6 +29,8 @@ public interface Table<ID> {
 
     SortedSet<Column> getColumns();
 
+    SortedSet<Column> getUpdatableColumns();
+
     Optional<IDGenerator<ID>> getIDGenerator();
 
 }
