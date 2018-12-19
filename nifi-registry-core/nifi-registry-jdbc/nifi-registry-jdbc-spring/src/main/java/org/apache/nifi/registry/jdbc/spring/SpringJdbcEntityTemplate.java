@@ -22,6 +22,7 @@ import org.apache.nifi.registry.jdbc.api.EntityRowMapper;
 import org.apache.nifi.registry.jdbc.api.EntityValueMapper;
 import org.apache.nifi.registry.jdbc.api.JdbcEntityTemplate;
 import org.apache.nifi.registry.jdbc.api.QueryBuilder;
+import org.apache.nifi.registry.jdbc.api.QueryParameters;
 import org.apache.nifi.registry.jdbc.api.Table;
 import org.apache.nifi.registry.jdbc.commons.SqlFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,6 @@ import java.util.Optional;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 @Component
 public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
@@ -99,16 +99,11 @@ public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
     }
 
     @Override
-    public <I, E extends Entity<I>> List<E> query(final Table<I> table, final SortedMap<Column,Object> args,
+    public <I, E extends Entity<I>> List<E> query(final Table<I> table, final QueryParameters params,
                                                   final EntityRowMapper<E> entityRowMapper) {
 
-        final List<Object> argValues = new ArrayList<>();
-        final SortedSet<Column> columns = new TreeSet<>();
-
-        for (final Map.Entry<Column,Object> arg : args.entrySet()) {
-            columns.add(arg.getKey());
-            argValues.add(arg.getValue());
-        }
+        final List<Object> argValues = params.getValues();
+        final SortedSet<Column> columns = params.getColumns();
 
         final QueryBuilder queryBuilder = SqlFactory.query()
                 .select(table.getColumns())

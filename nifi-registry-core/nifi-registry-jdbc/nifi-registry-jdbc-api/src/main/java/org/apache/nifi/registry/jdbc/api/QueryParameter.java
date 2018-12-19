@@ -16,7 +16,7 @@
  */
 package org.apache.nifi.registry.jdbc.api;
 
-public interface QueryParameter {
+public interface QueryParameter extends Comparable<QueryParameter> {
 
     Column getColumn();
 

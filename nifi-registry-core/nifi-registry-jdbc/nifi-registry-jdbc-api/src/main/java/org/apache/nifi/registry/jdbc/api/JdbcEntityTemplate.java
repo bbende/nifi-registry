@@ -18,7 +18,6 @@ package org.apache.nifi.registry.jdbc.api;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.SortedMap;
 import java.util.SortedSet;
 
 public interface JdbcEntityTemplate {
@@ -31,7 +30,7 @@ public interface JdbcEntityTemplate {
 
     <I, E extends Entity<I>> Optional<E> queryForObject(String sql, I id, EntityRowMapper<E> rowMapper);
 
-    <I, E extends Entity<I>> List<E> query(Table<I> table, SortedMap<Column,Object> args, EntityRowMapper<E> rowMapper);
+    <I, E extends Entity<I>> List<E> query(Table<I> table, QueryParameters params, EntityRowMapper<E> rowMapper);
 
     <I, E extends Entity<I>> List<E> query(String sql, List<Object> args, EntityRowMapper<E> rowMapper);
 

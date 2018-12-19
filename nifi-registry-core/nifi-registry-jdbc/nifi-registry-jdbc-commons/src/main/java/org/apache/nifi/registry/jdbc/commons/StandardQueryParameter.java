@@ -50,6 +50,35 @@ public class StandardQueryParameter implements QueryParameter {
         return value;
     }
 
+    @Override
+    public int compareTo(final QueryParameter o) {
+        final int columnCompare = column.compareTo(o.getColumn());
+        if (columnCompare == 0) {
+            return operator.getOperator().compareTo(o.getOperator().getOperator());
+        } else {
+            return columnCompare;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(column, operator);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (!(obj instanceof QueryParameter)) {
+            return false;
+        }
+
+        final QueryParameter other = (QueryParameter) obj;
+        return Objects.equals(column, other.getColumn()) && Objects.equals(operator, other.getOperator());
+    }
+
     public static QueryParameter eq(final Column column, final Object value) {
         return new StandardQueryParameter(column, QueryOperator.EQ, value);
     }

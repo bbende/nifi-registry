@@ -16,12 +16,15 @@
  */
 package org.apache.nifi.registry.jdbc.api;
 
-import java.util.SortedMap;
+import java.util.List;
+import java.util.SortedSet;
 
-public interface QueryParamBuilder {
+public interface QueryParameters {
 
-    QueryParamBuilder with(Column column, Object value);
+    SortedSet<Column> getColumns();
 
-    SortedMap<Column,Object> build();
+    List<Object> getValues();
+
+    SortedSet<QueryParameter> getParameters();
 
 }

@@ -18,7 +18,6 @@ package org.apache.nifi.registry.jdbc.api;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.SortedMap;
 
 public interface JdbcRepository<ID, E extends Entity<ID>> {
 
@@ -34,7 +33,7 @@ public interface JdbcRepository<ID, E extends Entity<ID>> {
 
     List<E> findAllById(Iterable<ID> ids);
 
-    List<E> findByFields(SortedMap<Column,Object> params);
+    List<E> findByQueryParams(QueryParameters params);
 
     void deleteById(ID id);
 

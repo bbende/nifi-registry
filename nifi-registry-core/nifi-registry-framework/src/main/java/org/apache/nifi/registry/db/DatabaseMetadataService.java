@@ -39,8 +39,7 @@ import org.apache.nifi.registry.db.mapper.ExtensionEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.FlowSnapshotEntityRowMapper;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
-import org.apache.nifi.registry.jdbc.api.Column;
-import org.apache.nifi.registry.jdbc.commons.StandardQueryParamBuilder;
+import org.apache.nifi.registry.jdbc.api.QueryParameters;
 import org.apache.nifi.registry.service.MetadataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -57,7 +56,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedMap;
+
+import static org.apache.nifi.registry.jdbc.commons.StandardQueryParameter.eq;
+import static org.apache.nifi.registry.jdbc.commons.StandardQueryParameters.of;
 
 @Repository
 public class DatabaseMetadataService implements MetadataService {
@@ -90,9 +91,8 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public List<BucketEntity> getBucketsByName(final String name) {
-        final SortedMap<Column,Object> params = new StandardQueryParamBuilder()
-                .with(Tables.BUCKET.NAME, name).build();
-        return bucketRepository.findByFields(params);
+        final QueryParameters params = of(eq(Tables.BUCKET.NAME, name));
+        return bucketRepository.findByQueryParams(params);
     }
 
     @Override
@@ -255,27 +255,27 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public List<FlowEntity> getFlowsByName(final String name) {
-        final SortedMap<Column,Object> params = new StandardQueryParamBuilder()
-                .with(Tables.BUCKET_ITEM.NAME, name).build();
-        return flowRepository.findByFields(params);
+        final QueryParameters params = of(eq(Tables.BUCKET_ITEM.NAME, name));
+        return flowRepository.findByQueryParams(params);
     }
 
     @Override
     public List<FlowEntity> getFlowsByName(final String bucketIdentifier, final String name) {
-        final SortedMap<Column,Object> params = new StandardQueryParamBuilder()
-                .with(Tables.BUCKET_ITEM.BUCKET_ID, bucketIdentifier)
-                .with(Tables.BUCKET_ITEM.NAME, name)
-                .build();
-        return flowRepository.findByFields(params);
+        final QueryParameters params = of(
+                eq(Tables.BUCKET_ITEM.BUCKET_ID, bucketIdentifier),
+                eq(Tables.BUCKET_ITEM.NAME, name)
+        );
+
+        return flowRepository.findByQueryParams(params);
     }
 
     @Override
     public List<FlowEntity> getFlowsByBucket(final String bucketIdentifier) {
-        final SortedMap<Column,Object> params = new StandardQueryParamBuilder()
-                .with(Tables.BUCKET_ITEM.BUCKET_ID, bucketIdentifier)
-                .build();
+        final QueryParameters params = of(
+                eq(Tables.BUCKET_ITEM.BUCKET_ID, bucketIdentifier)
+        );
 
-        final List<FlowEntity> flows = flowRepository.findByFields(params);
+        final List<FlowEntity> flows = flowRepository.findByQueryParams(params);
 
         // TODO update
         final Map<String,Long> snapshotCounts = getFlowSnapshotCounts();

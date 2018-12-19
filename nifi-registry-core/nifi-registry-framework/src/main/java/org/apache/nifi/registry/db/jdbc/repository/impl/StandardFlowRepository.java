@@ -24,6 +24,7 @@ import org.apache.nifi.registry.db.jdbc.repository.FlowRepository;
 import org.apache.nifi.registry.jdbc.api.Column;
 import org.apache.nifi.registry.jdbc.api.JdbcEntityTemplate;
 import org.apache.nifi.registry.jdbc.api.QueryBuilder;
+import org.apache.nifi.registry.jdbc.api.QueryParameters;
 import org.apache.nifi.registry.jdbc.api.Table;
 import org.apache.nifi.registry.jdbc.api.TableConfiguration;
 import org.apache.nifi.registry.jdbc.commons.SqlFactory;
@@ -33,12 +34,9 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 @Repository
 public class StandardFlowRepository implements FlowRepository {
@@ -116,14 +114,9 @@ public class StandardFlowRepository implements FlowRepository {
     }
 
     @Override
-    public List<FlowEntity> findByFields(final SortedMap<Column, Object> params) {
-        final List<Object> argValues = new ArrayList<>();
-        final SortedSet<Column> columns = new TreeSet<>();
-
-        for (final Map.Entry<Column,Object> arg : params.entrySet()) {
-            columns.add(arg.getKey());
-            argValues.add(arg.getValue());
-        }
+    public List<FlowEntity> findByQueryParams(final QueryParameters params) {
+        final List<Object> argValues = params.getValues();
+        final SortedSet<Column> columns = params.getColumns();
 
         final QueryBuilder queryBuilder = baseSelectFlowQuery.copy()
                 .whereEqual(columns);
