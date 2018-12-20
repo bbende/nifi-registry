@@ -37,23 +37,48 @@ public interface QueryBuilder {
     QueryBuilder select(Column column);
 
     /**
-     * @param column the column to add to the return fields
-     * @param columnAlias the alias to use for the column
+     * @param column a column to count in the return fields
      * @return this builder
      */
-    QueryBuilder select(Column column, String columnAlias);
-
-    /**
-     * @param expression the raw expression to add to the return fields, such as "f.foo AS foo"
-     * @return this builder
-     */
-    QueryBuilder select(String expression);
+    QueryBuilder selectCount(Column column);
 
     /**
      * @param tables the tables for the from clause
      * @return this builder
      */
     QueryBuilder from(Table ... tables);
+
+    /**
+     * @param table the table to join on
+     * @param column1 the first column of the join
+     * @param column2 the second column of the join
+     * @return this builder
+     */
+    QueryBuilder innerJoin(Table table, Column column1, Column column2);
+
+    /**
+     * @param table the table to join on
+     * @param column1 the first column of the join
+     * @param column2 the second column of the join
+     * @return this builder
+     */
+    QueryBuilder outerJoin(Table table, Column column1, Column column2);
+
+    /**
+     * @param table the table to join on
+     * @param column1 the first column of the join
+     * @param column2 the second column of the join
+     * @return this builder
+     */
+    QueryBuilder leftJoin(Table table, Column column1, Column column2);
+
+    /**
+     * @param table the table to join on
+     * @param column1 the first column of the join
+     * @param column2 the second column of the join
+     * @return this builder
+     */
+    QueryBuilder rightJoin(Table table, Column column1, Column column2);
 
     /**
      * @param column a column to add to the where clause with am equal operator and a prepared statement placeholder
@@ -105,6 +130,12 @@ public interface QueryBuilder {
      * @return this builder
      */
     QueryBuilder where(String clause);
+
+    /**
+     * @param columns the coulmns to group by
+     * @return this builder
+     */
+    QueryBuilder groupBy(Column ... columns);
 
     /**
      * @return a copy of this builder

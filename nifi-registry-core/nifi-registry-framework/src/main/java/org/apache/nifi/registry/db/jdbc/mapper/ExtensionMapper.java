@@ -26,18 +26,22 @@ import org.apache.nifi.registry.jdbc.api.EntityValueMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import static org.apache.nifi.registry.db.jdbc.configuration.Tables.EXTENSION;
+
 public class ExtensionMapper implements EntityRowMapper<ExtensionEntity>, EntityValueMapper<ExtensionEntity> {
 
     @Override
     public ExtensionEntity mapRow(final ResultSet rs, final int rowNum) throws SQLException {
         final ExtensionEntity entity = new ExtensionEntity();
-        entity.setId(rs.getString(Tables.EXTENSION.ID.getName()));
-        entity.setExtensionBundleVersionId(rs.getString(Tables.EXTENSION.EXTENSION_BUNDLE_VERSION_ID.getName()));
-        entity.setType(rs.getString(Tables.EXTENSION.TYPE.getName()));
-        entity.setTypeDescription(rs.getString(Tables.EXTENSION.DESCRIPTION.getName()));
-        entity.setRestricted(rs.getInt(Tables.EXTENSION.IS_RESTRICTED.getName()) == 1);
-        entity.setCategory(ExtensionEntityCategory.valueOf(rs.getString(Tables.EXTENSION.CATEGORY.getName())));
+        entity.setId(rs.getString(EXTENSION.ID.getAlias()));
+        entity.setExtensionBundleVersionId(rs.getString(Tables.EXTENSION.EXTENSION_BUNDLE_VERSION_ID.getAlias()));
+        entity.setType(rs.getString(Tables.EXTENSION.TYPE.getAlias()));
+        entity.setTypeDescription(rs.getString(Tables.EXTENSION.DESCRIPTION.getAlias()));
+        entity.setRestricted(rs.getInt(Tables.EXTENSION.IS_RESTRICTED.getAlias()) == 1);
         entity.setTags(rs.getString(Tables.EXTENSION.TAGS.getName()));
+
+        final String categoryString = rs.getString(Tables.EXTENSION.CATEGORY.getAlias());
+        entity.setCategory(ExtensionEntityCategory.valueOf(categoryString));
         return entity;
     }
 

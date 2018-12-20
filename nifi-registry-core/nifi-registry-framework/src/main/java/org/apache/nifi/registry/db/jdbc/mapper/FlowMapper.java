@@ -31,12 +31,12 @@ public class FlowMapper implements EntityRowMapper<FlowEntity>, EntityValueMappe
     @Override
     public FlowEntity mapRow(final ResultSet rs, final int rowNum) throws SQLException {
         final FlowEntity flowEntity = new FlowEntity();
-        flowEntity.setId(rs.getString(Tables.FLOW.ID.getName()));
-        flowEntity.setName(rs.getString(Tables.BUCKET_ITEM.NAME.getName()));
-        flowEntity.setDescription(rs.getString(Tables.BUCKET_ITEM.DESCRIPTION.getName()));
-        flowEntity.setCreated(rs.getTimestamp(Tables.BUCKET_ITEM.CREATED.getName()));
-        flowEntity.setModified(rs.getTimestamp(Tables.BUCKET_ITEM.MODIFIED.getName()));
-        flowEntity.setBucketId(rs.getString(Tables.BUCKET_ITEM.BUCKET_ID.getName()));
+        flowEntity.setId(rs.getString(Tables.FLOW.ID.getAlias()));
+        flowEntity.setName(rs.getString(Tables.BUCKET_ITEM.NAME.getAlias()));
+        flowEntity.setDescription(rs.getString(Tables.BUCKET_ITEM.DESCRIPTION.getAlias()));
+        flowEntity.setCreated(rs.getTimestamp(Tables.BUCKET_ITEM.CREATED.getAlias()));
+        flowEntity.setModified(rs.getTimestamp(Tables.BUCKET_ITEM.MODIFIED.getAlias()));
+        flowEntity.setBucketId(rs.getString(Tables.BUCKET_ITEM.BUCKET_ID.getAlias()));
         flowEntity.setType(BucketItemEntityType.FLOW);
         return flowEntity;
     }

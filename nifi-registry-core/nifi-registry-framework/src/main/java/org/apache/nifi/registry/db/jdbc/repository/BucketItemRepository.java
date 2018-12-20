@@ -14,35 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.jdbc.api;
+package org.apache.nifi.registry.db.jdbc.repository;
 
-/**
- * Represents a column in a table.
- *
- * Must implement {@link Comparable} so that columns can be sorted in a consistent manner.
- */
-public interface Column extends Comparable<Column> {
+import org.apache.nifi.registry.db.entity.BucketItemEntity;
 
-    /**
-     * @return the table the column belongs to
-     */
-    Table getTable();
+import java.util.List;
+import java.util.Set;
 
-    /**
-     * @return the name of the column
-     */
-    String getName();
+public interface BucketItemRepository {
 
-    /**
-     * @return the alias to use when returning this field in a select statement
-     */
-    default String getAlias() {
-        return getTable().getAlias() + "_" + getName();
-    }
+    List<BucketItemEntity> getBucketItems(String bucketIdentifier);
 
-    /**
-     * @return whether or not the application allows this column to be updated
-     */
-    boolean isUpdatable();
+    List<BucketItemEntity> getBucketItems(Set<String> bucketIds);
 
 }

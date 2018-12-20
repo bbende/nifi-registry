@@ -28,9 +28,9 @@ import org.apache.nifi.registry.db.entity.ExtensionEntityCategory;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
 import org.apache.nifi.registry.db.jdbc.configuration.Tables;
+import org.apache.nifi.registry.db.jdbc.repository.BucketItemRepository;
 import org.apache.nifi.registry.db.jdbc.repository.BucketRepository;
 import org.apache.nifi.registry.db.jdbc.repository.FlowRepository;
-import org.apache.nifi.registry.db.mapper.BucketItemEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.ExtensionBundleEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.ExtensionBundleEntityWithBucketNameRowMapper;
 import org.apache.nifi.registry.db.mapper.ExtensionBundleVersionDependencyEntityRowMapper;
@@ -65,14 +65,17 @@ public class DatabaseMetadataService implements MetadataService {
 
     private final JdbcTemplate jdbcTemplate;
     private final BucketRepository bucketRepository;
+    private final BucketItemRepository itemRepository;
     private final FlowRepository flowRepository;
 
     @Autowired
     public DatabaseMetadataService(final JdbcTemplate jdbcTemplate,
                                    final BucketRepository bucketRepository,
+                                   final BucketItemRepository itemRepository,
                                    final FlowRepository flowRepository) {
         this.jdbcTemplate = jdbcTemplate;
         this.bucketRepository = bucketRepository;
+        this.itemRepository = itemRepository;
         this.flowRepository = flowRepository;
     }
 
@@ -120,27 +123,9 @@ public class DatabaseMetadataService implements MetadataService {
 
     //----------------- BucketItems ---------------------------------
 
-    private static final String BASE_BUCKET_ITEMS_SQL =
-            "SELECT " +
-                "item.id as ID, " +
-                "item.name as NAME, " +
-                "item.description as DESCRIPTION, " +
-                "item.created as CREATED, " +
-                "item.modified as MODIFIED, " +
-                "item.item_type as ITEM_TYPE, " +
-                "b.id as BUCKET_ID, " +
-                "b.name as BUCKET_NAME ," +
-                "eb.bundle_type as BUNDLE_TYPE, " +
-                "eb.group_id as BUNDLE_GROUP_ID, " +
-                "eb.artifact_id as BUNDLE_ARTIFACT_ID " +
-            "FROM bucket_item item " +
-            "INNER JOIN bucket b ON item.bucket_id = b.id " +
-            "LEFT JOIN extension_bundle eb ON item.id = eb.id ";
-
     @Override
     public List<BucketItemEntity> getBucketItems(final String bucketIdentifier) {
-        final String sql = BASE_BUCKET_ITEMS_SQL + " WHERE item.bucket_id = ?";
-        final List<BucketItemEntity> items = jdbcTemplate.query(sql, new Object[] { bucketIdentifier }, new BucketItemEntityRowMapper());
+        final List<BucketItemEntity> items = itemRepository.getBucketItems(bucketIdentifier);
         return getItemsWithCounts(items);
     }
 
@@ -150,16 +135,7 @@ public class DatabaseMetadataService implements MetadataService {
             return Collections.emptyList();
         }
 
-        final StringBuilder sqlBuilder = new StringBuilder(BASE_BUCKET_ITEMS_SQL + " WHERE item.bucket_id IN (");
-        for (int i=0; i < bucketIds.size(); i++) {
-            if (i > 0) {
-                sqlBuilder.append(", ");
-            }
-            sqlBuilder.append("?");
-        }
-        sqlBuilder.append(")");
-
-        final List<BucketItemEntity> items = jdbcTemplate.query(sqlBuilder.toString(), bucketIds.toArray(), new BucketItemEntityRowMapper());
+        final List<BucketItemEntity> items = itemRepository.getBucketItems(bucketIds);
         return getItemsWithCounts(items);
     }
 
@@ -190,7 +166,9 @@ public class DatabaseMetadataService implements MetadataService {
     }
 
     private Map<String,Long> getFlowSnapshotCounts() {
-        final String sql = "SELECT flow_id, count(*) FROM flow_snapshot GROUP BY flow_id";
+        final String sql =
+                "SELECT fs.flow_id AS fid, count(fs.flow_id) " +
+                "FROM flow_snapshot fs GROUP BY fs.flow_id";
 
         final Map<String,Long> results = new HashMap<>();
         jdbcTemplate.query(sql, (rs) -> {
@@ -200,7 +178,7 @@ public class DatabaseMetadataService implements MetadataService {
     }
 
     private Long getFlowSnapshotCount(final String flowIdentifier) {
-        final String sql = "SELECT count(*) FROM flow_snapshot WHERE flow_id = ?";
+        final String sql = "SELECT count(fs.flow_id) FROM flow_snapshot fs WHERE fs.flow_id = ?";
 
         return jdbcTemplate.queryForObject(sql, new Object[] {flowIdentifier}, (rs, num) -> {
             return rs.getLong(1);
@@ -208,7 +186,9 @@ public class DatabaseMetadataService implements MetadataService {
     }
 
     private Map<String,Long> getExtensionBundleVersionCounts() {
-        final String sql = "SELECT extension_bundle_id, count(*) FROM extension_bundle_version GROUP BY extension_bundle_id";
+        final String sql =
+                "SELECT ebv.extension_bundle_id AS eb_id, count(ebv.extension_bundle_id) " +
+                "FROM extension_bundle_version ebv GROUP BY  ebv.extension_bundle_id";
 
         final Map<String,Long> results = new HashMap<>();
         jdbcTemplate.query(sql, (rs) -> {
@@ -218,7 +198,8 @@ public class DatabaseMetadataService implements MetadataService {
     }
 
     private Long getExtensionBundleVersionCount(final String extensionBundleIdentifier) {
-        final String sql = "SELECT count(*) FROM extension_bundle_version WHERE extension_bundle_id = ?";
+        final String sql = "SELECT count(ebv.extension_bundle_id) " +
+                "FROM extension_bundle_version ebv WHERE ebv.extension_bundle_id = ?";
 
         return jdbcTemplate.queryForObject(sql, new Object[] {extensionBundleIdentifier}, (rs, num) -> {
             return rs.getLong(1);

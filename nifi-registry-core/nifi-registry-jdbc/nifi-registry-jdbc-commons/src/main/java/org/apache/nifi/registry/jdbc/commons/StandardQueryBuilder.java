@@ -29,7 +29,9 @@ public class StandardQueryBuilder implements QueryBuilder {
 
     private List<String> returnFields = new ArrayList<>();
     private List<String> from = new ArrayList<>();
+    private List<String> joins = new ArrayList<>();
     private List<String> whereClauses= new ArrayList<>();
+    private List<String> groupBy = new ArrayList<>();
 
     @Override
     public QueryBuilder select(final SortedSet<Column> columns) {
@@ -39,18 +41,13 @@ public class StandardQueryBuilder implements QueryBuilder {
 
     @Override
     public QueryBuilder select(final Column column) {
-        return select(column, column.getName());
-    }
-
-    @Override
-    public QueryBuilder select(final Column column, final String columnAlias) {
-        returnFields.add(column.getTable().getAlias() + "." + column.getName() + " AS " + columnAlias);
+        returnFields.add(getQualifiedColumnName(column) + " AS " + column.getAlias());
         return this;
     }
 
     @Override
-    public QueryBuilder select(final String expression) {
-        returnFields.add(expression);
+    public QueryBuilder selectCount(final Column column) {
+        returnFields.add("count(" + getQualifiedColumnName(column) + ") AS " + column.getAlias() + "_COUNT");
         return this;
     }
 
@@ -65,11 +62,45 @@ public class StandardQueryBuilder implements QueryBuilder {
     }
 
     @Override
+    public QueryBuilder innerJoin(final Table table, final Column column1, final Column column2) {
+        return join("INNER", table, column1, column2);
+    }
+
+    @Override
+    public QueryBuilder outerJoin(final Table table, final Column column1, final Column column2) {
+        return join("OUTER", table, column1, column2);
+    }
+
+    @Override
+    public QueryBuilder leftJoin(final Table table, final Column column1, final Column column2) {
+        return join("LEFT", table, column1, column2);
+    }
+
+    @Override
+    public QueryBuilder rightJoin(final Table table, final Column column1, final Column column2) {
+        return join("RIGHT", table, column1, column2);
+    }
+
+    private QueryBuilder join(final String joinType, final Table table, final Column column1, final Column column2) {
+        joins.add(
+                new StringBuilder(joinType)
+                        .append(" JOIN ")
+                        .append(table.getName()).append(" ").append(table.getAlias())
+                        .append(" ON ")
+                        .append(getQualifiedColumnName(column1))
+                        .append(" ")
+                        .append(QueryOperator.EQ.getOperator())
+                        .append(" ")
+                        .append(getQualifiedColumnName(column2))
+                        .toString()
+        );
+        return this;
+    }
+
+    @Override
     public QueryBuilder whereEqual(final Column column) {
         whereClauses.add(
-                new StringBuilder(column.getTable().getAlias())
-                        .append(".")
-                        .append(column.getName())
+                new StringBuilder(getQualifiedColumnName(column))
                         .append(" ")
                         .append(QueryOperator.EQ.getOperator())
                         .append(" ?")
@@ -80,9 +111,10 @@ public class StandardQueryBuilder implements QueryBuilder {
     @Override
     public QueryBuilder whereEqual(final Column column1, final Column column2) {
         whereClauses.add(
-                new StringBuilder(column1.getTable().getAlias()).append(".").append(column1.getName()).append(" ")
+                new StringBuilder(getQualifiedColumnName(column1))
+                        .append(" ")
                         .append(QueryOperator.EQ.getOperator())
-                        .append(column2.getTable().getAlias()).append(".").append(column2.getName())
+                        .append(getQualifiedColumnName(column2))
                         .toString());
         return this;
     }
@@ -100,9 +132,7 @@ public class StandardQueryBuilder implements QueryBuilder {
     @Override
     public QueryBuilder whereNotEqual(final Column column) {
         whereClauses.add(
-                new StringBuilder(column.getTable().getAlias())
-                        .append(".")
-                        .append(column.getName())
+                new StringBuilder(getQualifiedColumnName(column))
                         .append(" ")
                         .append(QueryOperator.NEQ.getOperator())
                         .append(" ?")
@@ -113,9 +143,9 @@ public class StandardQueryBuilder implements QueryBuilder {
     @Override
     public QueryBuilder whereNotEqual(final Column column1, final Column column2) {
         whereClauses.add(
-                new StringBuilder(column1.getTable().getAlias()).append(".").append(column1.getName()).append(" ")
+                new StringBuilder(getQualifiedColumnName(column1)).append(" ")
                         .append(QueryOperator.NEQ.getOperator())
-                        .append(column2.getTable().getAlias()).append(".").append(column2.getName())
+                        .append(getQualifiedColumnName(column2))
                         .toString());
         return this;
     }
@@ -123,9 +153,7 @@ public class StandardQueryBuilder implements QueryBuilder {
     @Override
     public QueryBuilder whereLike(final Column column) {
         whereClauses.add(
-                new StringBuilder(column.getTable().getAlias())
-                        .append(".")
-                        .append(column.getName())
+                new StringBuilder(getQualifiedColumnName(column))
                         .append(" ")
                         .append(QueryOperator.LIKE.getOperator())
                         .append(" ?")
@@ -135,9 +163,10 @@ public class StandardQueryBuilder implements QueryBuilder {
 
     @Override
     public QueryBuilder whereIn(final Column column, final int count) {
-        final StringBuilder builder = new StringBuilder(column.getTable().getAlias())
-                .append(".").append(column.getName())
-                .append(" ").append(QueryOperator.IN.getOperator()).append(" ( ");
+        final StringBuilder builder = new StringBuilder(getQualifiedColumnName(column))
+                .append(" ")
+                .append(QueryOperator.IN.getOperator())
+                .append(" ( ");
 
         SqlUtils.appendValues(builder, "?", count);
 
@@ -153,11 +182,23 @@ public class StandardQueryBuilder implements QueryBuilder {
     }
 
     @Override
+    public QueryBuilder groupBy(final Column... columns) {
+        if (columns != null) {
+            for (final Column column : columns) {
+                groupBy.add(getQualifiedColumnName(column));
+            }
+        }
+        return this;
+    }
+
+    @Override
     public QueryBuilder copy() {
         final StandardQueryBuilder copy = new StandardQueryBuilder();
         copy.returnFields.addAll(this.returnFields);
         copy.from.addAll(this.from);
+        copy.joins.addAll(this.joins);
         copy.whereClauses.addAll(this.whereClauses);
+        copy.groupBy.addAll(this.groupBy);
         return copy;
     }
 
@@ -177,10 +218,25 @@ public class StandardQueryBuilder implements QueryBuilder {
         builder.append(" FROM ");
         SqlUtils.appendValues(builder, from);
 
+        if (!joins.isEmpty()) {
+            builder.append(" ");
+            SqlUtils.appendValues(builder, joins, " ");
+        }
+
         if (!whereClauses.isEmpty()) {
             builder.append(" WHERE ");
             SqlUtils.appendValues(builder, whereClauses, QueryOperator.AND.getOperator());
         }
+
+        if (!groupBy.isEmpty()) {
+            builder.append(" GROUP BY ");
+            SqlUtils.appendValues(builder, groupBy);
+        }
+
         return builder.toString();
+    }
+
+    private String getQualifiedColumnName(final Column column){
+        return column.getTable().getAlias() + "." + column.getName();
     }
 }

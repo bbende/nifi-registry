@@ -30,11 +30,13 @@ public class BucketMapper implements EntityRowMapper<BucketEntity>, EntityValueM
     @Override
     public BucketEntity mapRow(final ResultSet rs, final int rowNum) throws SQLException {
         final BucketEntity b = new BucketEntity();
-        b.setId(rs.getString(Tables.BUCKET.ID.getName()));
-        b.setName(rs.getString(Tables.BUCKET.NAME.getName()));
-        b.setDescription(rs.getString(Tables.BUCKET.DESCRIPTION.getName()));
-        b.setCreated(rs.getTimestamp(Tables.BUCKET.CREATED.getName()));
-        b.setAllowExtensionBundleRedeploy(rs.getInt(Tables.BUCKET.ALLOW_EXTENSION_BUNDLE_REDEPLOY.getName()) == 0 ? false : true);
+        b.setId(rs.getString(Tables.BUCKET.ID.getAlias()));
+        b.setName(rs.getString(Tables.BUCKET.NAME.getAlias()));
+        b.setDescription(rs.getString(Tables.BUCKET.DESCRIPTION.getAlias()));
+        b.setCreated(rs.getTimestamp(Tables.BUCKET.CREATED.getAlias()));
+
+        final int allowRedeploy = rs.getInt(Tables.BUCKET.ALLOW_EXTENSION_BUNDLE_REDEPLOY.getAlias());
+        b.setAllowExtensionBundleRedeploy(allowRedeploy == 0 ? false : true);
         return b;
     }
 

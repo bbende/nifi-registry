@@ -17,11 +17,57 @@
 package org.apache.nifi.registry.db.jdbc.mapper;
 
 import org.apache.nifi.registry.db.entity.BucketItemEntity;
+import org.apache.nifi.registry.db.entity.BucketItemEntityType;
+import org.apache.nifi.registry.db.entity.ExtensionBundleEntity;
+import org.apache.nifi.registry.db.entity.ExtensionBundleEntityType;
+import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.jdbc.configuration.Tables;
 import org.apache.nifi.registry.jdbc.api.Column;
+import org.apache.nifi.registry.jdbc.api.EntityRowMapper;
 import org.apache.nifi.registry.jdbc.api.EntityValueMapper;
 
-public class BucketItemMapper implements EntityValueMapper<BucketItemEntity> {
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class BucketItemMapper implements EntityRowMapper<BucketItemEntity>, EntityValueMapper<BucketItemEntity> {
+
+    @Override
+    public BucketItemEntity mapRow(final ResultSet rs, final int rowNum) throws SQLException {
+        final String typeString = rs.getString(Tables.BUCKET_ITEM.ITEM_TYPE.getAlias());
+        final BucketItemEntityType type = BucketItemEntityType.valueOf(typeString);
+
+        // Create the appropriate type of sub-class, eventually populate specific data for each type
+        final BucketItemEntity item;
+        switch (type) {
+            case FLOW:
+                item = new FlowEntity();
+                break;
+            case EXTENSION_BUNDLE:
+                final String bundleTypeString = rs.getString(Tables.EXTENSION_BUNDLE.BUNDLE_TYPE.getAlias());
+
+                final ExtensionBundleEntity bundleEntity = new ExtensionBundleEntity();
+                bundleEntity.setBundleType(ExtensionBundleEntityType.valueOf(bundleTypeString));
+                bundleEntity.setGroupId(rs.getString(Tables.EXTENSION_BUNDLE.GROUP_ID.getAlias()));
+                bundleEntity.setArtifactId(rs.getString(Tables.EXTENSION_BUNDLE.ARTIFACT_ID.getAlias()));
+                item = bundleEntity;
+                break;
+            default:
+                // should never happen
+                item = new BucketItemEntity();
+                break;
+        }
+
+        // populate fields common to all bucket items
+        item.setId(rs.getString(Tables.BUCKET_ITEM.ID.getAlias()));
+        item.setName(rs.getString(Tables.BUCKET_ITEM.NAME.getAlias()));
+        item.setDescription(rs.getString(Tables.BUCKET_ITEM.DESCRIPTION.getAlias()));
+        item.setCreated(rs.getTimestamp(Tables.BUCKET_ITEM.CREATED.getAlias()));
+        item.setModified(rs.getTimestamp(Tables.BUCKET_ITEM.MODIFIED.getAlias()));
+        item.setBucketId(rs.getString(Tables.BUCKET_ITEM.BUCKET_ID.getAlias()));
+        item.setBucketName(rs.getString(Tables.BUCKET.NAME.getAlias()));
+        item.setType(type);
+        return item;
+    }
 
     @Override
     public Object map(final Column column, final BucketItemEntity entity) {

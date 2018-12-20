@@ -86,6 +86,7 @@ public class StandardColumn implements Column {
         return new Builder().table(table).name(name).updatable().build();
     }
 
+
     public static class Builder {
 
         private Table table;

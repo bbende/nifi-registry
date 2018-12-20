@@ -18,6 +18,7 @@ package org.apache.nifi.registry.db.jdbc.configuration;
 
 import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntity;
+import org.apache.nifi.registry.db.entity.ExtensionBundleEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntity;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.jdbc.api.TableConfiguration;
@@ -30,7 +31,10 @@ public class Tables {
 
     public static final BucketTable BUCKET = new BucketTable();
     public static final BucketItemTable BUCKET_ITEM = new BucketItemTable();
+
     public static final FlowTable FLOW = new FlowTable();
+
+    public static final ExtensionBundleTable EXTENSION_BUNDLE = new ExtensionBundleTable();
     public static final ExtensionTable EXTENSION = new ExtensionTable();
 
     private final TableConfiguration tableConfiguration;
@@ -40,6 +44,7 @@ public class Tables {
         tableConfiguration.register(BucketEntity.class, Tables.BUCKET);
         tableConfiguration.register(BucketItemEntity.class, Tables.BUCKET_ITEM);
         tableConfiguration.register(FlowEntity.class, Tables.FLOW);
+        tableConfiguration.register(ExtensionBundleEntity.class, Tables.EXTENSION_BUNDLE);
         tableConfiguration.register(ExtensionEntity.class, Tables.EXTENSION);
     }
 

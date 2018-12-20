@@ -65,6 +65,7 @@ public class StandardFlowRepository implements FlowRepository {
 
         baseSelectFlowQuery = SqlFactory.query()
                 .select(bucketItemTable.getColumns())
+                .select(flowTable.getColumns())
                 .from(bucketItemTable, flowTable)
                 .whereEqual(bucketItemTable.getIdColumn(), flowTable.getIdColumn());
     }
