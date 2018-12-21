@@ -20,9 +20,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.db.jdbc.repository.BucketItemRepository;
 import org.apache.nifi.registry.db.jdbc.repository.BucketRepository;
 import org.apache.nifi.registry.db.jdbc.repository.FlowRepository;
+import org.apache.nifi.registry.db.jdbc.repository.FlowSnapshotRepository;
 import org.apache.nifi.registry.db.jdbc.repository.impl.StandardBucketItemRepository;
 import org.apache.nifi.registry.db.jdbc.repository.impl.StandardBucketRepository;
 import org.apache.nifi.registry.db.jdbc.repository.impl.StandardFlowRepository;
+import org.apache.nifi.registry.db.jdbc.repository.impl.StandardFlowSnapshotRepository;
 import org.apache.nifi.registry.db.migration.BucketEntityV1;
 import org.apache.nifi.registry.db.migration.FlowEntityV1;
 import org.apache.nifi.registry.db.migration.FlowSnapshotEntityV1;
@@ -139,13 +141,15 @@ public class CustomFlywayMigrationStrategy implements FlywayMigrationStrategy {
         final BucketRepository bucketRepository = new StandardBucketRepository(tableConfiguration, destJdbcEntityTemplate);
         final BucketItemRepository itemRepository = new StandardBucketItemRepository(tableConfiguration, destJdbcEntityTemplate);
         final FlowRepository flowRepository = new StandardFlowRepository(tableConfiguration, destJdbcEntityTemplate);
+        final FlowSnapshotRepository flowSnapshotRepository = new StandardFlowSnapshotRepository(tableConfiguration, destJdbcEntityTemplate);
 
         final MetadataService destMetadataService = new DatabaseMetadataService(
                 destJdbcTemplate,
                 destJdbcEntityTemplate,
                 bucketRepository,
                 itemRepository,
-                flowRepository
+                flowRepository,
+                flowSnapshotRepository
         );
 
         LOGGER.info("Migrating data from legacy database to new new database...");

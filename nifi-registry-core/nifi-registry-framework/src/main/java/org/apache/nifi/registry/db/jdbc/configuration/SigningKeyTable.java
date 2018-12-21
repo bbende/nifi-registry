@@ -19,14 +19,13 @@ package org.apache.nifi.registry.db.jdbc.configuration;
 import org.apache.nifi.registry.jdbc.api.Column;
 import org.apache.nifi.registry.jdbc.commons.AbstractTable;
 import org.apache.nifi.registry.jdbc.commons.StandardColumn;
-import org.apache.nifi.registry.jdbc.commons.UUIDStringGenerator;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class SigningKeyTable extends AbstractTable<String> {
+public class SigningKeyTable extends AbstractTable {
 
     public final Column ID;
     public final Column TENANT_IDENTITY;
@@ -35,7 +34,7 @@ public class SigningKeyTable extends AbstractTable<String> {
     private SortedSet<Column> allColumns;
 
     SigningKeyTable() {
-        super("SIGNING_KEY", "sk", new UUIDStringGenerator());
+        super("SIGNING_KEY", "sk");
         ID = StandardColumn.create(this, "ID");
         TENANT_IDENTITY = StandardColumn.create(this, "TENANT_IDENTITY");
         KEY_VALUE = StandardColumn.create(this, "KEY_VALUE");

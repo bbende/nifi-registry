@@ -21,6 +21,7 @@ import org.apache.nifi.registry.jdbc.api.Entity;
 import org.apache.nifi.registry.jdbc.api.EntityRowMapper;
 import org.apache.nifi.registry.jdbc.api.EntityValueMapper;
 import org.apache.nifi.registry.jdbc.api.IDGenerator;
+import org.apache.nifi.registry.jdbc.api.IDValueMapper;
 import org.apache.nifi.registry.jdbc.api.JdbcEntityTemplate;
 import org.apache.nifi.registry.jdbc.api.JdbcRepository;
 import org.apache.nifi.registry.jdbc.api.QueryParameters;
@@ -35,20 +36,23 @@ import java.util.SortedSet;
 
 public abstract class AbstractJdbcRepository<I, E extends Entity<I>> implements JdbcRepository<I, E> {
 
-    protected final Table<I> table;
+    protected final Table table;
     protected final Class<E> entityClass;
     protected final TableConfiguration tableConfiguration;
+    protected final IDValueMapper<I> idValueMapper;
     protected final EntityValueMapper<E> entityValueMapper;
     protected final EntityRowMapper<E> entityRowMapper;
     protected final JdbcEntityTemplate jdbcEntityTemplate;
 
     public AbstractJdbcRepository(final Class<E> entityClass,
                                   final TableConfiguration tableConfiguration,
+                                  final IDValueMapper<I> idValueMapper,
                                   final EntityValueMapper<E> entityValueMapper,
                                   final EntityRowMapper<E> entityRowMapper,
                                   final JdbcEntityTemplate jdbcEntityTemplate) {
         this.entityClass = Objects.requireNonNull(entityClass);
         this.tableConfiguration = Objects.requireNonNull(tableConfiguration);
+        this.idValueMapper = Objects.requireNonNull(idValueMapper);
         this.entityValueMapper = Objects.requireNonNull(entityValueMapper);
         this.entityRowMapper = Objects.requireNonNull(entityRowMapper);
         this.jdbcEntityTemplate = Objects.requireNonNull(jdbcEntityTemplate);
@@ -59,10 +63,19 @@ public abstract class AbstractJdbcRepository<I, E extends Entity<I>> implements 
         }
     }
 
+    /**
+     * Sub-classes should override this method if they want to provide an IDGenerator.
+     *
+     * @return the optional IDGenerator
+     */
+    protected Optional<IDGenerator<I>> getIDGenerator() {
+        return Optional.empty();
+    }
+
     @Override
     public E create(final E entity) {
         if (entity.getId() == null) {
-            final Optional<IDGenerator<I>> idGenerator = table.getIDGenerator();
+            final Optional<IDGenerator<I>> idGenerator = getIDGenerator();
             if (idGenerator.isPresent()) {
                 final I id = idGenerator.get().generate();
                 entity.setId(id);
@@ -74,9 +87,6 @@ public abstract class AbstractJdbcRepository<I, E extends Entity<I>> implements 
     @Override
     public E update(final E entity) {
         final SortedSet<Column> columnsToUpdate = table.getUpdatableColumns();
-        if (columnsToUpdate.contains(table.getIdColumn())) {
-            columnsToUpdate.remove(table.getIdColumn());
-        }
         if (columnsToUpdate.isEmpty()) {
             throw new IllegalStateException("This repository does not support updating columns");
         }
@@ -85,12 +95,12 @@ public abstract class AbstractJdbcRepository<I, E extends Entity<I>> implements 
 
     @Override
     public Optional<E> findById(final I i) {
-        return jdbcEntityTemplate.queryForObject(table, i, entityRowMapper);
+        return jdbcEntityTemplate.queryForObject(table, i, idValueMapper, entityRowMapper);
     }
 
     @Override
     public boolean existsById(final I i) {
-        final Optional<E> optional = jdbcEntityTemplate.queryForObject(table, i, entityRowMapper);
+        final Optional<E> optional = jdbcEntityTemplate.queryForObject(table, i, idValueMapper, entityRowMapper);
         return optional.isPresent();
     }
 
@@ -113,7 +123,7 @@ public abstract class AbstractJdbcRepository<I, E extends Entity<I>> implements 
 
     @Override
     public void deleteById(final I i) {
-        jdbcEntityTemplate.deleteById(table, i);
+        jdbcEntityTemplate.deleteById(table, i, idValueMapper);
     }
 
     @Override

@@ -17,28 +17,20 @@
 package org.apache.nifi.registry.jdbc.commons;
 
 import org.apache.nifi.registry.jdbc.api.Column;
-import org.apache.nifi.registry.jdbc.api.IDGenerator;
 import org.apache.nifi.registry.jdbc.api.Table;
 
 import java.util.Collections;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.SortedSet;
 
-public abstract class AbstractTable<ID> implements Table<ID> {
+public abstract class AbstractTable implements Table {
 
     private final String name;
     private final String alias;
-    private final Optional<IDGenerator<ID>> idGenerator;
 
     public AbstractTable(final String name, final String alias) {
-       this(name, alias, null);
-    }
-
-    public AbstractTable(final String name, final String alias, final IDGenerator<ID> idGenerator) {
         this.name = Objects.requireNonNull(name);
         this.alias = Objects.requireNonNull(alias);
-        this.idGenerator = Optional.ofNullable(idGenerator);
     }
 
     @Override
@@ -49,11 +41,6 @@ public abstract class AbstractTable<ID> implements Table<ID> {
     @Override
     public String getAlias() {
         return alias;
-    }
-
-    @Override
-    public Optional<IDGenerator<ID>> getIDGenerator() {
-        return idGenerator;
     }
 
     @Override

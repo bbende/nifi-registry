@@ -46,10 +46,10 @@ public class StandardBucketItemRepository implements BucketItemRepository {
 
     private final JdbcEntityTemplate jdbcEntityTemplate;
 
-    private final Table<String> bucketTable;
-    private final Table<String> bucketItemTable;
-    private final Table<String> flowTable;
-    private final Table<String> extensionBundleTable;
+    private final Table bucketTable;
+    private final Table bucketItemTable;
+    private final Table flowTable;
+    private final Table extensionBundleTable;
 
     private final QueryBuilder baseSelectItemsQuery;
 

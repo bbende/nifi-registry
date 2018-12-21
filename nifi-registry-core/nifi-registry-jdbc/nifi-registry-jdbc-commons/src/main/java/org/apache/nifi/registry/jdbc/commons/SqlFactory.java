@@ -17,6 +17,7 @@
 package org.apache.nifi.registry.jdbc.commons;
 
 import org.apache.nifi.registry.jdbc.api.Column;
+import org.apache.nifi.registry.jdbc.api.CompositeIDTable;
 import org.apache.nifi.registry.jdbc.api.QueryBuilder;
 import org.apache.nifi.registry.jdbc.api.Table;
 
@@ -27,19 +28,18 @@ import java.util.TreeSet;
 
 public class SqlFactory {
 
-    public static String insert(final Table<?> table) {
+    public static String insert(final Table table) {
         final StringBuilder builder = new StringBuilder("INSERT INTO ")
                 .append(table.getName())
                 .append(" ( ");
-            SqlUtils.appendValues(builder, getColumnNames(table));
+        SqlUtils.appendValues(builder, getColumnNames(table));
         builder.append(" ) VALUES (");
-            SqlUtils.appendValues(builder, "?", table.getColumns().size());
+        SqlUtils.appendValues(builder, "?", table.getColumns().size());
         builder.append(")");
         return builder.toString();
     }
 
-    public static String update(final Table<?> table, final SortedMap<Column,Object> values) {
-        final String idColumn = table.getIdColumn().getName();
+    public static String update(final Table table, final SortedMap<Column,Object> values) {
 
         final StringBuilder builder = new StringBuilder("UPDATE ")
                 .append(table.getName())
@@ -59,8 +59,8 @@ public class SqlFactory {
             first = false;
         }
 
-        builder.append(" WHERE ").append(idColumn).append(" = ?");
-
+        builder.append(" WHERE ");
+        appendIDClause(table, builder);
         return builder.toString();
     }
 
@@ -68,29 +68,46 @@ public class SqlFactory {
         return new StandardQueryBuilder();
     }
 
-    public static String selectById(final Table<?> table) {
+    public static String selectById(final Table table) {
         return selectById(table, table.getColumns());
     }
 
-    public static String selectById(final Table<?> table, final SortedSet<Column> columns) {
-        final String sql = query()
-                .select(columns)
-                .from(table)
-                .whereEqual(table.getIdColumn())
-                .build();
+    public static String selectById(final Table table, final SortedSet<Column> returnColumns) {
+        final String sql = query().select(returnColumns).from(table).build();
 
-        return sql;
+        final StringBuilder builder = new StringBuilder(sql).append(" WHERE ");
+        appendIDClause(table, builder);
+        return builder.toString();
     }
 
-    public static String delete(final Table<?> table) {
-        final String idColumn = table.getIdColumn().getName();
-
-        return new StringBuilder("DELETE FROM ").append(table.getName())
-                .append(" WHERE ").append(idColumn).append(" = ?")
-                .toString();
+    public static String delete(final Table table) {
+        final StringBuilder builder = new StringBuilder("DELETE FROM ")
+                .append(table.getName())
+                .append(" WHERE ");
+        appendIDClause(table, builder);
+        return builder.toString();
     }
 
-    private static SortedSet<String> getColumnNames(final Table<?> table) {
+    private static void appendIDClause(final Table table, final StringBuilder builder) {
+        if (table instanceof CompositeIDTable) {
+            final CompositeIDTable compositeIDTable = (CompositeIDTable)table;
+
+            boolean first = false;
+            for (final Column idColumn : compositeIDTable.getIdColumns()) {
+                if (!first) {
+                    builder.append(" AND ");
+                }
+                builder.append(idColumn).append(" = ?");
+                first = false;
+            }
+
+        } else {
+            final String idColumn = table.getIdColumn().getName();
+            builder.append(idColumn).append(" = ?");
+        }
+    }
+
+    private static SortedSet<String> getColumnNames(final Table table) {
         final SortedSet<String> cols = new TreeSet<>();
         table.getColumns().forEach(c -> cols.add(c.getName()));
         return cols;

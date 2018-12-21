@@ -16,36 +16,19 @@
  */
 package org.apache.nifi.registry.jdbc.api;
 
-import java.util.SortedSet;
+import java.util.List;
 
 /**
- * Represents a table in the database.
+ * Maps an ID value to its object arguments for use in a query.
+ *
+ * @param <ID> the type of ID
  */
-public interface Table {
+public interface IDValueMapper<ID> {
 
     /**
-     * @return the name of the table
+     * @param id the id to map
+     * @return the mapped values
      */
-    String getName();
-
-    /**
-     * @return an alias to use for the table in sql statements
-     */
-    String getAlias();
-
-    /**
-     * @return the id column of the table
-     */
-    Column getIdColumn();
-
-    /**
-     * @return all columns in the table
-     */
-    SortedSet<Column> getColumns();
-
-    /**
-     * @return columns that allow updating
-     */
-    SortedSet<Column> getUpdatableColumns();
+    List<Object> map(ID id);
 
 }

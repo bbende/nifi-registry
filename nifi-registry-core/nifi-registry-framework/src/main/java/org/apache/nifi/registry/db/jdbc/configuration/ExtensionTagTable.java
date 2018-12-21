@@ -25,8 +25,9 @@ import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class ExtensionTagTable extends AbstractTable<String> {
+public class ExtensionTagTable extends AbstractTable {
 
+    public final Column ID;
     public final Column EXTENSION_ID;
     public final Column TAG;
 
@@ -34,17 +35,17 @@ public class ExtensionTagTable extends AbstractTable<String> {
 
     ExtensionTagTable() {
         super("EXTENSION_TAG", "etag");
+        ID = StandardColumn.create(this, "ID");
         EXTENSION_ID = StandardColumn.create(this, "EXTENSION_ID");
         TAG = StandardColumn.create(this, "TAG");
 
         allColumns = Collections.unmodifiableSortedSet(
-                new TreeSet<>(Arrays.asList(EXTENSION_ID, TAG)));
+                new TreeSet<>(Arrays.asList(ID, EXTENSION_ID, TAG)));
     }
 
     @Override
     public Column getIdColumn() {
-        // TODO this needs a composite key
-        return EXTENSION_ID;
+        return ID;
     }
 
     @Override

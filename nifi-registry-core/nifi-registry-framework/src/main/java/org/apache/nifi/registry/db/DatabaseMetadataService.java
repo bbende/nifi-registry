@@ -30,6 +30,7 @@ import org.apache.nifi.registry.db.jdbc.configuration.Tables;
 import org.apache.nifi.registry.db.jdbc.repository.BucketItemRepository;
 import org.apache.nifi.registry.db.jdbc.repository.BucketRepository;
 import org.apache.nifi.registry.db.jdbc.repository.FlowRepository;
+import org.apache.nifi.registry.db.jdbc.repository.FlowSnapshotRepository;
 import org.apache.nifi.registry.db.jdbc.repository.impl.RepositoryUtils;
 import org.apache.nifi.registry.db.mapper.ExtensionBundleEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.ExtensionBundleEntityWithBucketNameRowMapper;
@@ -69,18 +70,21 @@ public class DatabaseMetadataService implements MetadataService {
     private final BucketRepository bucketRepository;
     private final BucketItemRepository itemRepository;
     private final FlowRepository flowRepository;
+    private final FlowSnapshotRepository flowSnapshotRepository;
 
     @Autowired
     public DatabaseMetadataService(final JdbcTemplate jdbcTemplate,
                                    final JdbcEntityTemplate jdbcEntityTemplate,
                                    final BucketRepository bucketRepository,
                                    final BucketItemRepository itemRepository,
-                                   final FlowRepository flowRepository) {
+                                   final FlowRepository flowRepository,
+                                   final FlowSnapshotRepository flowSnapshotRepository) {
         this.jdbcTemplate = jdbcTemplate;
         this.jdbcEntityTemplate = jdbcEntityTemplate;
         this.bucketRepository = bucketRepository;
         this.itemRepository = itemRepository;
         this.flowRepository = flowRepository;
+        this.flowSnapshotRepository = flowSnapshotRepository;
     }
 
     //----------------- Buckets ---------------------------------
@@ -156,17 +160,8 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public FlowEntity getFlowByIdWithSnapshotCounts(final String flowIdentifier) {
-        final FlowEntity flowEntity = getFlowById(flowIdentifier);
-        if (flowEntity == null) {
-            return flowEntity;
-        }
-
-        final Long snapshotCount = RepositoryUtils.getFlowSnapshotCount(jdbcEntityTemplate, flowIdentifier);
-        if (snapshotCount != null) {
-            flowEntity.setSnapshotCount(snapshotCount);
-        }
-
-        return flowEntity;
+        final Optional<FlowEntity> result = flowRepository.findByIdWithSnapshotCounts(flowIdentifier);
+        return result.isPresent() ? result.get() : null;
     }
 
     @Override
@@ -187,21 +182,7 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public List<FlowEntity> getFlowsByBucket(final String bucketIdentifier) {
-        final QueryParameters params = of(
-                eq(Tables.BUCKET_ITEM.BUCKET_ID, bucketIdentifier)
-        );
-
-        final List<FlowEntity> flows = flowRepository.findByQueryParams(params);
-
-        final Map<String,Long> snapshotCounts = RepositoryUtils.getFlowSnapshotCounts(jdbcEntityTemplate);
-        for (final FlowEntity flowEntity : flows) {
-            final Long snapshotCount = snapshotCounts.get(flowEntity.getId());
-            if (snapshotCount != null) {
-                flowEntity.setSnapshotCount(snapshotCount);
-            }
-        }
-
-        return flows;
+        return flowRepository.findByBucket(bucketIdentifier);
     }
 
     @Override
@@ -212,25 +193,14 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public void deleteFlow(final FlowEntity flow) {
-        // NOTE: Cascading deletes will delete from child tables
-        final String itemDeleteSql = "DELETE FROM bucket_item WHERE id = ?";
-        jdbcTemplate.update(itemDeleteSql, flow.getId());
+        flowRepository.delete(flow);
     }
 
     //----------------- Flow Snapshots ---------------------------------
 
     @Override
     public FlowSnapshotEntity createFlowSnapshot(final FlowSnapshotEntity flowSnapshot) {
-        final String sql = "INSERT INTO flow_snapshot (FLOW_ID, VERSION, CREATED, CREATED_BY, COMMENTS) VALUES (?, ?, ?, ?, ?)";
-
-        jdbcTemplate.update(sql,
-                flowSnapshot.getFlowId(),
-                flowSnapshot.getVersion(),
-                flowSnapshot.getCreated(),
-                flowSnapshot.getCreatedBy(),
-                flowSnapshot.getComments());
-
-        return flowSnapshot;
+        return flowSnapshotRepository.create(flowSnapshot);
     }
 
     @Override

@@ -17,6 +17,7 @@
 package org.apache.nifi.registry.db.jdbc.configuration;
 
 import org.apache.nifi.registry.jdbc.api.Column;
+import org.apache.nifi.registry.jdbc.api.CompositeIDTable;
 import org.apache.nifi.registry.jdbc.commons.AbstractTable;
 import org.apache.nifi.registry.jdbc.commons.StandardColumn;
 
@@ -25,7 +26,7 @@ import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class FlowSnapshotTable extends AbstractTable<String> {
+public class FlowSnapshotTable extends AbstractTable implements CompositeIDTable {
 
     public final Column FLOW_ID;
     public final Column VERSION;
@@ -34,6 +35,7 @@ public class FlowSnapshotTable extends AbstractTable<String> {
     public final Column COMMENTS;
 
     private SortedSet<Column> allColumns;
+    private SortedSet<Column> idColumns;
 
     FlowSnapshotTable() {
         super("FLOW_SNAPSHOT", "fs");
@@ -45,17 +47,19 @@ public class FlowSnapshotTable extends AbstractTable<String> {
 
         allColumns = Collections.unmodifiableSortedSet(
                 new TreeSet<>(Arrays.asList(FLOW_ID, VERSION, CREATED, CREATED_BY, COMMENTS)));
-    }
 
-    @Override
-    public Column getIdColumn() {
-        // TODO this table needs a composite key
-        return FLOW_ID;
+        idColumns = Collections.unmodifiableSortedSet(
+                new TreeSet<>(Arrays.asList(FLOW_ID, VERSION)));
     }
 
     @Override
     public SortedSet<Column> getColumns() {
         return allColumns;
+    }
+
+    @Override
+    public SortedSet<Column> getIdColumns() {
+        return idColumns;
     }
 
 }

@@ -14,38 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.jdbc.api;
+package org.apache.nifi.registry.db.jdbc.repository;
 
-import java.util.SortedSet;
+import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
+import org.apache.nifi.registry.db.entity.FlowSnapshotId;
+import org.apache.nifi.registry.jdbc.api.JdbcRepository;
 
-/**
- * Represents a table in the database.
- */
-public interface Table {
-
-    /**
-     * @return the name of the table
-     */
-    String getName();
-
-    /**
-     * @return an alias to use for the table in sql statements
-     */
-    String getAlias();
-
-    /**
-     * @return the id column of the table
-     */
-    Column getIdColumn();
-
-    /**
-     * @return all columns in the table
-     */
-    SortedSet<Column> getColumns();
-
-    /**
-     * @return columns that allow updating
-     */
-    SortedSet<Column> getUpdatableColumns();
+public interface FlowSnapshotRepository extends JdbcRepository<FlowSnapshotId, FlowSnapshotEntity> {
 
 }

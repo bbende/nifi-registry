@@ -19,14 +19,13 @@ package org.apache.nifi.registry.db.jdbc.configuration;
 import org.apache.nifi.registry.jdbc.api.Column;
 import org.apache.nifi.registry.jdbc.commons.AbstractTable;
 import org.apache.nifi.registry.jdbc.commons.StandardColumn;
-import org.apache.nifi.registry.jdbc.commons.UUIDStringGenerator;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class ExtensionTable extends AbstractTable<String> {
+public class ExtensionTable extends AbstractTable {
 
     public final Column ID;
     public final Column EXTENSION_BUNDLE_VERSION_ID;
@@ -39,7 +38,7 @@ public class ExtensionTable extends AbstractTable<String> {
     private final SortedSet<Column> allColumns;
 
     ExtensionTable() {
-        super("EXTENSION", "ext", new UUIDStringGenerator());
+        super("EXTENSION", "ext");
         ID = StandardColumn.create(this, "ID");
         EXTENSION_BUNDLE_VERSION_ID = StandardColumn.create(this, "EXTENSION_BUNDLE_VERSION_ID");
         TYPE = StandardColumn.create(this, "TYPE");

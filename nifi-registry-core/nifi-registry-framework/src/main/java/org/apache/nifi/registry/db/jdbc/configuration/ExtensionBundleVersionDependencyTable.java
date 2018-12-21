@@ -19,14 +19,13 @@ package org.apache.nifi.registry.db.jdbc.configuration;
 import org.apache.nifi.registry.jdbc.api.Column;
 import org.apache.nifi.registry.jdbc.commons.AbstractTable;
 import org.apache.nifi.registry.jdbc.commons.StandardColumn;
-import org.apache.nifi.registry.jdbc.commons.UUIDStringGenerator;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class ExtensionBundleVersionDependencyTable extends AbstractTable<String> {
+public class ExtensionBundleVersionDependencyTable extends AbstractTable {
 
     public final Column ID;
     public final Column EXTENSION_BUNDLE_ID;
@@ -37,7 +36,7 @@ public class ExtensionBundleVersionDependencyTable extends AbstractTable<String>
     private SortedSet<Column> allColumns;
 
     ExtensionBundleVersionDependencyTable() {
-        super("EXTENSION_BUNDLE_VERSION_DEPENDENCY", "ebvd", new UUIDStringGenerator());
+        super("EXTENSION_BUNDLE_VERSION_DEPENDENCY", "ebvd");
         ID = StandardColumn.create(this, "ID");
         EXTENSION_BUNDLE_ID = StandardColumn.create(this, "EXTENSION_BUNDLE_ID");
         GROUP_ID = StandardColumn.create(this, "GROUP_ID");

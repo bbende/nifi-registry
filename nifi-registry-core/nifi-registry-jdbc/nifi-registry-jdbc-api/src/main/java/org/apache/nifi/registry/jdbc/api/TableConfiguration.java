@@ -31,7 +31,7 @@ public interface TableConfiguration {
      * @param <I> the type of ID of the table
      * @param <E> the type of the entity
      */
-    <I, E extends Entity<I>> void register(Class<E> entityClass, Table<I> table);
+    <I, E extends Entity<I>> void register(Class<E> entityClass, Table table);
 
     /**
      * Retrieves the Table for the given Entity instance.
@@ -40,7 +40,7 @@ public interface TableConfiguration {
      * @param <I> the type of ID for the table and Entity
      * @return the Table
      */
-    <I> Table<I> getTable(Entity<I> entity);
+    <I> Table getTable(Entity<I> entity);
 
     /**
      * Retrieves the Table for the given Entity class.
@@ -50,7 +50,7 @@ public interface TableConfiguration {
      * @param <E> the type of Entity
      * @return the Table
      */
-    <I, E extends Entity<I>> Table<I> getTable(Class<E> entityClass);
+    <I, E extends Entity<I>> Table getTable(Class<E> entityClass);
 
     /**
      * @return all tables that are registered to an Entity

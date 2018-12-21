@@ -17,9 +17,11 @@
 package org.apache.nifi.registry.jdbc.spring;
 
 import org.apache.nifi.registry.jdbc.api.Column;
+import org.apache.nifi.registry.jdbc.api.CompositeIDTable;
 import org.apache.nifi.registry.jdbc.api.Entity;
 import org.apache.nifi.registry.jdbc.api.EntityRowMapper;
 import org.apache.nifi.registry.jdbc.api.EntityValueMapper;
+import org.apache.nifi.registry.jdbc.api.IDValueMapper;
 import org.apache.nifi.registry.jdbc.api.JdbcEntityTemplate;
 import org.apache.nifi.registry.jdbc.api.QueryBuilder;
 import org.apache.nifi.registry.jdbc.api.QueryParameter;
@@ -54,7 +56,7 @@ public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
     }
 
     @Override
-    public <I, E extends Entity<I>> E insert(final Table<I> table, final E entity, final EntityValueMapper<E> entityValueMapper) {
+    public <I, E extends Entity<I>> E insert(final Table table, final E entity, final EntityValueMapper<E> entityValueMapper) {
         final String sql = SqlFactory.insert(table);
         final SortedMap<Column,Object> entityValues = getEntityValues(entity, table.getColumns(), entityValueMapper);
         final List<Object> values = getArgs(entityValues);
@@ -63,7 +65,7 @@ public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
     }
 
     @Override
-    public <I, E extends Entity<I>> E update(final Table<I> table, final E entity, final SortedSet<Column> columns,
+    public <I, E extends Entity<I>> E update(final Table table, final E entity, final SortedSet<Column> columns,
                                              final EntityValueMapper<E> entityValueMapper) {
         final SortedMap<Column,Object> entityValues = getEntityValues(entity, columns, entityValueMapper);
 
@@ -76,33 +78,35 @@ public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
 
         final String sql = SqlFactory.update(table, nonNullEntityValues);
 
-        // Get the args based on the values map, but then add an additional arg for the id in the where statement
+        // Get the args based on the values map, but then add an additional arg for the id(s) in the where statement
         final List<Object> values = getArgs(nonNullEntityValues);
-        values.add(entityValueMapper.map(table.getIdColumn(), entity));
+        values.addAll(getIdValues(table, entity, entityValueMapper));
 
         jdbcTemplate.update(sql, values.toArray());
         return entity;
     }
 
     @Override
-    public <I, E extends Entity<I>> Optional<E> queryForObject(final Table<I> table, final I id,
+    public <I, E extends Entity<I>> Optional<E> queryForObject(final Table table, final I id,
+                                                               final IDValueMapper<I> idValueMapper,
                                                                final EntityRowMapper<E> entityRowMapper) {
         final String sql = SqlFactory.selectById(table);
-        return queryForObject(sql, id, entityRowMapper);
+        final List<Object> idArgs = idValueMapper.map(id);
+        return queryForObject(sql, idArgs, entityRowMapper);
     }
 
-    public <I, E extends Entity<I>> Optional<E> queryForObject(final String sql, final I id,
+    public <I, E extends Entity<I>> Optional<E> queryForObject(final String sql, List<Object> args,
                                                                final EntityRowMapper<E> entityRowMapper) {
         final RowMapper<E> rowMapper = createSpringRowMapper(entityRowMapper);
         try {
-            return Optional.of(jdbcTemplate.queryForObject(sql, rowMapper, id));
+            return Optional.of(jdbcTemplate.queryForObject(sql, rowMapper, args.toArray()));
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
     }
 
     @Override
-    public <I, E extends Entity<I>> List<E> query(final Table<I> table, final QueryParameters params,
+    public <I, E extends Entity<I>> List<E> query(final Table table, final QueryParameters params,
                                                   final EntityRowMapper<E> entityRowMapper) {
 
         final List<Object> argValues = new ArrayList<>();
@@ -153,15 +157,16 @@ public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
     }
 
     @Override
-    public <I, E extends Entity<I>> void deleteByEntity(final Table<I> table, final E entity) {
+    public <I, E extends Entity<I>> void deleteByEntity(final Table table, final E entity) {
         final String sql = SqlFactory.delete(table);
         jdbcTemplate.update(sql, new Object[]{entity.getId()});
     }
 
     @Override
-    public <I, E extends Entity<I>> void deleteById(final Table<I> table, final I id) {
+    public <I, E extends Entity<I>> void deleteById(final Table table, final I id, IDValueMapper<I> idValueMapper) {
         final String sql = SqlFactory.delete(table);
-        jdbcTemplate.update(sql, new Object[]{id});
+        final List<Object> idValues = idValueMapper.map(id);
+        jdbcTemplate.update(sql, idValues.toArray());
     }
 
     @Override
@@ -189,4 +194,21 @@ public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
           return entityRowMapper.mapRow(rs, rowNum);
         };
     }
+
+    private <I, E extends Entity<I>> List<Object> getIdValues(final Table table, final E entity, final EntityValueMapper<E> entityValueMapper) {
+        final List<Object> idValues = new ArrayList<>();
+        if (table instanceof CompositeIDTable) {
+            final CompositeIDTable compositeIDTable = (CompositeIDTable) table;
+            for (final Column idColumn : compositeIDTable.getIdColumns()) {
+                final Object idValue = entityValueMapper.map(idColumn, entity);
+                idValues.add(idValue);
+            }
+        } else {
+            final Column idColumn = table.getIdColumn();
+            final Object idValue = entityValueMapper.map(idColumn, entity);
+            idValues.add(idValue);
+        }
+        return idValues;
+    }
+
 }

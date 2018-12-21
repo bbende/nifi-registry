@@ -29,7 +29,7 @@ public class StandardTableConfiguration implements TableConfiguration {
     private Map<Class<? extends Entity>,Table> tableMap = new HashMap<>();
 
     @Override
-    public <I, E extends Entity<I>> void register(final Class<E> entityClass, final Table<I> table) {
+    public <I, E extends Entity<I>> void register(final Class<E> entityClass, final Table table) {
         if (tableMap.containsKey(entityClass)) {
             throw new IllegalStateException("Entity class '" + entityClass.getCanonicalName()
                     + "' already registered to a different table");
@@ -39,12 +39,12 @@ public class StandardTableConfiguration implements TableConfiguration {
     }
 
     @Override
-    public <I> Table<I> getTable(final Entity<I> entity) {
+    public <I> Table getTable(final Entity<I> entity) {
         return tableMap.get(entity.getClass());
     }
 
     @Override
-    public <I, E extends Entity<I>> Table<I> getTable(final Class<E> entityClass) {
+    public <I, E extends Entity<I>> Table getTable(final Class<E> entityClass) {
         return tableMap.get(entityClass);
     }
 

@@ -14,37 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.db.jdbc.configuration;
+package org.apache.nifi.registry.jdbc.commons;
 
-import org.apache.nifi.registry.jdbc.api.Column;
-import org.apache.nifi.registry.jdbc.commons.AbstractTable;
-import org.apache.nifi.registry.jdbc.commons.StandardColumn;
+import org.apache.nifi.registry.jdbc.api.IDValueMapper;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.List;
 
-public class FlowTable extends AbstractTable {
-
-    public final Column ID;
-
-    private SortedSet<Column> allColumns;
-
-    FlowTable() {
-        super("FLOW", "f");
-        ID = StandardColumn.create(this, "ID");
-        allColumns = Collections.unmodifiableSortedSet(new TreeSet<>(Arrays.asList(ID)));
-    }
+public class StringIDValueMapper implements IDValueMapper<String> {
 
     @Override
-    public Column getIdColumn() {
-        return ID;
+    public List<Object> map(final String s) {
+        return Collections.singletonList(s);
     }
-
-    @Override
-    public SortedSet<Column> getColumns() {
-        return allColumns;
-    }
-
 }

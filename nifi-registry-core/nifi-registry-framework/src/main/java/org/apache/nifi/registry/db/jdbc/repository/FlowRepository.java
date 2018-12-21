@@ -19,6 +19,13 @@ package org.apache.nifi.registry.db.jdbc.repository;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.jdbc.api.JdbcRepository;
 
+import java.util.List;
+import java.util.Optional;
+
 public interface FlowRepository extends JdbcRepository<String, FlowEntity> {
+
+    Optional<FlowEntity> findByIdWithSnapshotCounts(String flowIdentifier);
+
+    List<FlowEntity> findByBucket(String bucketIdentifier);
 
 }

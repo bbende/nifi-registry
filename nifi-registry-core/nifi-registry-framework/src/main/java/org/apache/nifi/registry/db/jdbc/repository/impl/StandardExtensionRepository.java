@@ -19,11 +19,16 @@ package org.apache.nifi.registry.db.jdbc.repository.impl;
 import org.apache.nifi.registry.db.entity.ExtensionEntity;
 import org.apache.nifi.registry.db.jdbc.mapper.ExtensionMapper;
 import org.apache.nifi.registry.db.jdbc.repository.ExtensionRepository;
+import org.apache.nifi.registry.jdbc.api.IDGenerator;
 import org.apache.nifi.registry.jdbc.api.JdbcEntityTemplate;
 import org.apache.nifi.registry.jdbc.api.TableConfiguration;
 import org.apache.nifi.registry.jdbc.commons.AbstractJdbcRepository;
+import org.apache.nifi.registry.jdbc.commons.StringIDValueMapper;
+import org.apache.nifi.registry.jdbc.commons.UUIDStringGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 @Repository
 public class StandardExtensionRepository extends AbstractJdbcRepository<String, ExtensionEntity> implements ExtensionRepository {
@@ -33,7 +38,11 @@ public class StandardExtensionRepository extends AbstractJdbcRepository<String, 
     @Autowired
     public StandardExtensionRepository(final JdbcEntityTemplate jdbcEntityTemplate,
                                        final TableConfiguration tableConfiguration) {
-        super(ExtensionEntity.class, tableConfiguration, MAPPER, MAPPER, jdbcEntityTemplate);
+        super(ExtensionEntity.class, tableConfiguration, new StringIDValueMapper(), MAPPER, MAPPER, jdbcEntityTemplate);
     }
 
+    @Override
+    protected Optional<IDGenerator<String>> getIDGenerator() {
+        return Optional.of(new UUIDStringGenerator());
+    }
 }

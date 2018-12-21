@@ -19,7 +19,6 @@ package org.apache.nifi.registry.db.jdbc.configuration;
 import org.apache.nifi.registry.jdbc.api.Column;
 import org.apache.nifi.registry.jdbc.commons.AbstractTable;
 import org.apache.nifi.registry.jdbc.commons.StandardColumn;
-import org.apache.nifi.registry.jdbc.commons.UUIDStringGenerator;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,7 +26,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-public class BucketItemTable extends AbstractTable<String> {
+public class BucketItemTable extends AbstractTable {
 
     public final Column ID;
     public final Column NAME;
@@ -41,7 +40,7 @@ public class BucketItemTable extends AbstractTable<String> {
     private final SortedSet<Column> updatableColumns;
 
     BucketItemTable() {
-        super("BUCKET_ITEM", "bi", new UUIDStringGenerator());
+        super("BUCKET_ITEM", "bi");
         ID = StandardColumn.create(this,"ID");
         NAME = StandardColumn.createUpdatable(this,"NAME");
         DESCRIPTION = StandardColumn.createUpdatable(this,"DESCRIPTION");

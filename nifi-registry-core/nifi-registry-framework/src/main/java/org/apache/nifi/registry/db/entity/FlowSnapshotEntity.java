@@ -21,7 +21,7 @@ import org.apache.nifi.registry.jdbc.commons.AbstractEntity;
 import java.util.Date;
 import java.util.Objects;
 
-public class FlowSnapshotEntity extends AbstractEntity<String> {
+public class FlowSnapshotEntity extends AbstractEntity<FlowSnapshotId> {
 
     private String flowId;
 
