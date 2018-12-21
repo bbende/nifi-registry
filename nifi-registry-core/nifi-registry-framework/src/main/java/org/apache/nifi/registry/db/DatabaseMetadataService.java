@@ -19,7 +19,6 @@ package org.apache.nifi.registry.db;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntity;
-import org.apache.nifi.registry.db.entity.BucketItemEntityType;
 import org.apache.nifi.registry.db.entity.ExtensionBundleEntity;
 import org.apache.nifi.registry.db.entity.ExtensionBundleVersionDependencyEntity;
 import org.apache.nifi.registry.db.entity.ExtensionBundleVersionEntity;
@@ -31,6 +30,7 @@ import org.apache.nifi.registry.db.jdbc.configuration.Tables;
 import org.apache.nifi.registry.db.jdbc.repository.BucketItemRepository;
 import org.apache.nifi.registry.db.jdbc.repository.BucketRepository;
 import org.apache.nifi.registry.db.jdbc.repository.FlowRepository;
+import org.apache.nifi.registry.db.jdbc.repository.impl.RepositoryUtils;
 import org.apache.nifi.registry.db.mapper.ExtensionBundleEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.ExtensionBundleEntityWithBucketNameRowMapper;
 import org.apache.nifi.registry.db.mapper.ExtensionBundleVersionDependencyEntityRowMapper;
@@ -39,6 +39,7 @@ import org.apache.nifi.registry.db.mapper.ExtensionEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.FlowSnapshotEntityRowMapper;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
+import org.apache.nifi.registry.jdbc.api.JdbcEntityTemplate;
 import org.apache.nifi.registry.jdbc.api.QueryParameters;
 import org.apache.nifi.registry.service.MetadataService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,12 +51,12 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.apache.nifi.registry.jdbc.commons.StandardQueryParameter.eq;
 import static org.apache.nifi.registry.jdbc.commons.StandardQueryParameters.of;
@@ -64,16 +65,19 @@ import static org.apache.nifi.registry.jdbc.commons.StandardQueryParameters.of;
 public class DatabaseMetadataService implements MetadataService {
 
     private final JdbcTemplate jdbcTemplate;
+    private JdbcEntityTemplate jdbcEntityTemplate;
     private final BucketRepository bucketRepository;
     private final BucketItemRepository itemRepository;
     private final FlowRepository flowRepository;
 
     @Autowired
     public DatabaseMetadataService(final JdbcTemplate jdbcTemplate,
+                                   final JdbcEntityTemplate jdbcEntityTemplate,
                                    final BucketRepository bucketRepository,
                                    final BucketItemRepository itemRepository,
                                    final FlowRepository flowRepository) {
         this.jdbcTemplate = jdbcTemplate;
+        this.jdbcEntityTemplate = jdbcEntityTemplate;
         this.bucketRepository = bucketRepository;
         this.itemRepository = itemRepository;
         this.flowRepository = flowRepository;
@@ -125,8 +129,7 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public List<BucketItemEntity> getBucketItems(final String bucketIdentifier) {
-        final List<BucketItemEntity> items = itemRepository.getBucketItems(bucketIdentifier);
-        return getItemsWithCounts(items);
+        return itemRepository.getBucketItems(bucketIdentifier);
     }
 
     @Override
@@ -135,75 +138,7 @@ public class DatabaseMetadataService implements MetadataService {
             return Collections.emptyList();
         }
 
-        final List<BucketItemEntity> items = itemRepository.getBucketItems(bucketIds);
-        return getItemsWithCounts(items);
-    }
-
-    private List<BucketItemEntity> getItemsWithCounts(final Iterable<BucketItemEntity> items) {
-        final Map<String,Long> snapshotCounts = getFlowSnapshotCounts();
-        final Map<String,Long> extensionBundleVersionCounts = getExtensionBundleVersionCounts();
-
-        final List<BucketItemEntity> itemWithCounts = new ArrayList<>();
-        for (final BucketItemEntity item : items) {
-            if (item.getType() == BucketItemEntityType.FLOW) {
-                final Long snapshotCount = snapshotCounts.get(item.getId());
-                if (snapshotCount != null) {
-                    final FlowEntity flowEntity = (FlowEntity) item;
-                    flowEntity.setSnapshotCount(snapshotCount);
-                }
-            } else if (item.getType() == BucketItemEntityType.EXTENSION_BUNDLE) {
-                final Long versionCount = extensionBundleVersionCounts.get(item.getId());
-                if (versionCount != null) {
-                    final ExtensionBundleEntity extensionBundleEntity = (ExtensionBundleEntity) item;
-                    extensionBundleEntity.setVersionCount(versionCount);
-                }
-            }
-
-            itemWithCounts.add(item);
-        }
-
-        return itemWithCounts;
-    }
-
-    private Map<String,Long> getFlowSnapshotCounts() {
-        final String sql =
-                "SELECT fs.flow_id AS fid, count(fs.flow_id) " +
-                "FROM flow_snapshot fs GROUP BY fs.flow_id";
-
-        final Map<String,Long> results = new HashMap<>();
-        jdbcTemplate.query(sql, (rs) -> {
-            results.put(rs.getString(1), rs.getLong(2));
-        });
-        return results;
-    }
-
-    private Long getFlowSnapshotCount(final String flowIdentifier) {
-        final String sql = "SELECT count(fs.flow_id) FROM flow_snapshot fs WHERE fs.flow_id = ?";
-
-        return jdbcTemplate.queryForObject(sql, new Object[] {flowIdentifier}, (rs, num) -> {
-            return rs.getLong(1);
-        });
-    }
-
-    private Map<String,Long> getExtensionBundleVersionCounts() {
-        final String sql =
-                "SELECT ebv.extension_bundle_id AS eb_id, count(ebv.extension_bundle_id) " +
-                "FROM extension_bundle_version ebv GROUP BY  ebv.extension_bundle_id";
-
-        final Map<String,Long> results = new HashMap<>();
-        jdbcTemplate.query(sql, (rs) -> {
-            results.put(rs.getString(1), rs.getLong(2));
-        });
-        return results;
-    }
-
-    private Long getExtensionBundleVersionCount(final String extensionBundleIdentifier) {
-        final String sql = "SELECT count(ebv.extension_bundle_id) " +
-                "FROM extension_bundle_version ebv WHERE ebv.extension_bundle_id = ?";
-
-        return jdbcTemplate.queryForObject(sql, new Object[] {extensionBundleIdentifier}, (rs, num) -> {
-            return rs.getLong(1);
-        });
+        return itemRepository.getBucketItems(bucketIds);
     }
 
     //----------------- Flows ---------------------------------
@@ -226,7 +161,7 @@ public class DatabaseMetadataService implements MetadataService {
             return flowEntity;
         }
 
-        final Long snapshotCount = getFlowSnapshotCount(flowIdentifier);
+        final Long snapshotCount = RepositoryUtils.getFlowSnapshotCount(jdbcEntityTemplate, flowIdentifier);
         if (snapshotCount != null) {
             flowEntity.setSnapshotCount(snapshotCount);
         }
@@ -258,8 +193,7 @@ public class DatabaseMetadataService implements MetadataService {
 
         final List<FlowEntity> flows = flowRepository.findByQueryParams(params);
 
-        // TODO update
-        final Map<String,Long> snapshotCounts = getFlowSnapshotCounts();
+        final Map<String,Long> snapshotCounts = RepositoryUtils.getFlowSnapshotCounts(jdbcEntityTemplate);
         for (final FlowEntity flowEntity : flows) {
             final Long snapshotCount = snapshotCounts.get(flowEntity.getId());
             if (snapshotCount != null) {
@@ -417,7 +351,7 @@ public class DatabaseMetadataService implements MetadataService {
         try {
             final ExtensionBundleEntity entity = jdbcTemplate.queryForObject(sql, new ExtensionBundleEntityRowMapper(), extensionBundleId);
 
-            final Long versionCount = getExtensionBundleVersionCount(extensionBundleId);
+            final Long versionCount = RepositoryUtils.getExtensionBundleVersionCount(jdbcEntityTemplate, extensionBundleId);
             if (versionCount != null) {
                 entity.setVersionCount(versionCount);
             }
@@ -443,7 +377,7 @@ public class DatabaseMetadataService implements MetadataService {
         try {
             final ExtensionBundleEntity entity = jdbcTemplate.queryForObject(sql, new ExtensionBundleEntityRowMapper(), bucketId, groupId, artifactId);
 
-            final Long versionCount = getExtensionBundleVersionCount(entity.getId());
+            final Long versionCount = RepositoryUtils.getExtensionBundleVersionCount(jdbcEntityTemplate, entity.getId());
             if (versionCount != null) {
                 entity.setVersionCount(versionCount);
             }
@@ -541,7 +475,7 @@ public class DatabaseMetadataService implements MetadataService {
 
     private List<ExtensionBundleEntity> populateVersionCounts(final List<ExtensionBundleEntity> bundles) {
         if (!bundles.isEmpty()) {
-            final Map<String, Long> versionCounts = getExtensionBundleVersionCounts();
+            final Map<String, Long> versionCounts = RepositoryUtils.getExtensionBundleVersionCounts(jdbcEntityTemplate);
             for (final ExtensionBundleEntity entity : bundles) {
                 final Long versionCount = versionCounts.get(entity.getId());
                 if (versionCount != null) {
@@ -782,13 +716,14 @@ public class DatabaseMetadataService implements MetadataService {
                 extension.getTags()
         );
 
-        final String insertTagSql = "INSERT INTO extension_tag (EXTENSION_ID, TAG) VALUES (?, ?);";
+        final String insertTagSql = "INSERT INTO extension_tag (ID, EXTENSION_ID, TAG) VALUES (?, ?, ?);";
 
         if (extension.getTags() != null) {
             final String tags[] = extension.getTags().split("[,]");
             for (final String tag : tags) {
                 if (tag != null) {
-                    jdbcTemplate.update(insertTagSql, extension.getId(), tag.trim().toLowerCase());
+                    final Object[] args = new Object[] {UUID.randomUUID().toString(), extension.getId(), tag.trim().toLowerCase()};
+                    jdbcTemplate.update(insertTagSql, args);
                 }
             }
         }
@@ -853,7 +788,7 @@ public class DatabaseMetadataService implements MetadataService {
                 "FROM extension e, extension_tag et " +
                 "WHERE e.id = et.extension_id AND et.tag = ?";
 
-        final Object[] args = { tag };
+        final Object[] args = { tag.trim().toLowerCase() };
         return jdbcTemplate.query(selectSql, args, new ExtensionEntityRowMapper());
     }
 

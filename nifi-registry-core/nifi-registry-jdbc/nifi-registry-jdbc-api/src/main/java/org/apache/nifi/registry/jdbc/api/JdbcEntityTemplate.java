@@ -43,4 +43,6 @@ public interface JdbcEntityTemplate {
 
     <I, E extends Entity<I>> void deleteById(Table<I> table, I id);
 
+    void query(String sql, List<Object> args, ResultSetHandler handler);
+
 }

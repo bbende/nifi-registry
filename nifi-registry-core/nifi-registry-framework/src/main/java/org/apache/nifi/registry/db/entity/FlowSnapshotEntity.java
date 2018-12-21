@@ -16,10 +16,12 @@
  */
 package org.apache.nifi.registry.db.entity;
 
+import org.apache.nifi.registry.jdbc.commons.AbstractEntity;
+
 import java.util.Date;
 import java.util.Objects;
 
-public class FlowSnapshotEntity {
+public class FlowSnapshotEntity extends AbstractEntity<String> {
 
     private String flowId;
 

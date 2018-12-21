@@ -26,31 +26,22 @@ import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class ExtensionTable extends AbstractTable<String> {
+public class SigningKeyTable extends AbstractTable<String> {
 
     public final Column ID;
-    public final Column EXTENSION_BUNDLE_VERSION_ID;
-    public final Column TYPE;
-    public final Column DESCRIPTION;
-    public final Column IS_RESTRICTED;
-    public final Column CATEGORY;
-    public final Column TAGS;
+    public final Column TENANT_IDENTITY;
+    public final Column KEY_VALUE;
 
-    private final SortedSet<Column> allColumns;
+    private SortedSet<Column> allColumns;
 
-    ExtensionTable() {
-        super("EXTENSION", "ext", new UUIDStringGenerator());
+    SigningKeyTable() {
+        super("SIGNING_KEY", "sk", new UUIDStringGenerator());
         ID = StandardColumn.create(this, "ID");
-        EXTENSION_BUNDLE_VERSION_ID = StandardColumn.create(this, "EXTENSION_BUNDLE_VERSION_ID");
-        TYPE = StandardColumn.create(this, "TYPE");
-        DESCRIPTION = StandardColumn.create(this, "TYPE_DESCRIPTION");
-        IS_RESTRICTED = StandardColumn.create(this, "IS_RESTRICTED");
-        CATEGORY = StandardColumn.create(this, "CATEGORY");
-        TAGS = StandardColumn.create(this, "TAGS");
+        TENANT_IDENTITY = StandardColumn.create(this, "TENANT_IDENTITY");
+        KEY_VALUE = StandardColumn.create(this, "KEY_VALUE");
 
-        allColumns = Collections.unmodifiableSortedSet(new TreeSet<>(
-                Arrays.asList(ID, EXTENSION_BUNDLE_VERSION_ID, TYPE, DESCRIPTION, IS_RESTRICTED, CATEGORY, TAGS)
-        ));
+        allColumns = Collections.unmodifiableSortedSet(
+                new TreeSet<>(Arrays.asList(ID, TENANT_IDENTITY, KEY_VALUE)));
     }
 
     @Override

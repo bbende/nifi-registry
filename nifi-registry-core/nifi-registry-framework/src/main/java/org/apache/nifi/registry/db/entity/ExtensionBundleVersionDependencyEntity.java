@@ -16,7 +16,9 @@
  */
 package org.apache.nifi.registry.db.entity;
 
-public class ExtensionBundleVersionDependencyEntity {
+import org.apache.nifi.registry.jdbc.api.Entity;
+
+public class ExtensionBundleVersionDependencyEntity implements Entity<String> {
 
     // Database id for this specific dependency
     private String id;

@@ -16,11 +16,14 @@
  */
 package org.apache.nifi.registry.jdbc.commons;
 
+import org.apache.nifi.registry.jdbc.api.Column;
 import org.apache.nifi.registry.jdbc.api.IDGenerator;
 import org.apache.nifi.registry.jdbc.api.Table;
 
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.SortedSet;
 
 public abstract class AbstractTable<ID> implements Table<ID> {
 
@@ -51,6 +54,11 @@ public abstract class AbstractTable<ID> implements Table<ID> {
     @Override
     public Optional<IDGenerator<ID>> getIDGenerator() {
         return idGenerator;
+    }
+
+    @Override
+    public SortedSet<Column> getUpdatableColumns() {
+        return Collections.emptySortedSet();
     }
 
 }

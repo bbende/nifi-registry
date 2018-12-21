@@ -142,6 +142,7 @@ public class CustomFlywayMigrationStrategy implements FlywayMigrationStrategy {
 
         final MetadataService destMetadataService = new DatabaseMetadataService(
                 destJdbcTemplate,
+                destJdbcEntityTemplate,
                 bucketRepository,
                 itemRepository,
                 flowRepository

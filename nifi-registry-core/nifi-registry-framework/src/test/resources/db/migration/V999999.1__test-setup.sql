@@ -286,12 +286,12 @@ values (
 
 -- test data for extension tags
 
-insert into extension_tag (extension_id, tag) values ('e1', 'example');
-insert into extension_tag (extension_id, tag) values ('e1', 'processor');
+insert into extension_tag (id, extension_id, tag) values ('etag1', 'e1', 'example');
+insert into extension_tag (id, extension_id, tag) values ('etag2', 'e1', 'processor');
 
-insert into extension_tag (extension_id, tag) values ('e2', 'example');
-insert into extension_tag (extension_id, tag) values ('e2', 'processor');
-insert into extension_tag (extension_id, tag) values ('e2', 'restricted');
+insert into extension_tag (id, extension_id, tag) values ('etag3', 'e2', 'example');
+insert into extension_tag (id, extension_id, tag) values ('etag4', 'e2', 'processor');
+insert into extension_tag (id, extension_id, tag) values ('etag5', 'e2', 'restricted');
 
-insert into extension_tag (extension_id, tag) values ('e3', 'example');
-insert into extension_tag (extension_id, tag) values ('e3', 'service');
+insert into extension_tag (id, extension_id, tag) values ('etag6', 'e3', 'example');
+insert into extension_tag (id, extension_id, tag) values ('etag7', 'e3', 'service');

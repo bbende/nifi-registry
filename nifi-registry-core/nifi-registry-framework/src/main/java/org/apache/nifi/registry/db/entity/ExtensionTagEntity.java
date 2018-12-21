@@ -16,11 +16,25 @@
  */
 package org.apache.nifi.registry.db.entity;
 
-public class ExtensionTagEntity {
+import org.apache.nifi.registry.jdbc.api.Entity;
+
+public class ExtensionTagEntity implements Entity<String> {
+
+    private String id;
 
     private String extensionId;
 
     private String tag;
+
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getExtensionId() {
         return extensionId;

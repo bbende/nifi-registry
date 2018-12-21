@@ -18,6 +18,7 @@ package org.apache.nifi.registry.db.jdbc.repository.impl;
 
 import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntity;
+import org.apache.nifi.registry.db.entity.BucketItemEntityType;
 import org.apache.nifi.registry.db.entity.ExtensionBundleEntity;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.jdbc.configuration.Tables;
@@ -34,6 +35,7 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -94,7 +96,8 @@ public class StandardBucketItemRepository implements BucketItemRepository {
                 .whereEqual(Tables.BUCKET_ITEM.BUCKET_ID)
                 .build();
 
-        return jdbcEntityTemplate.query(sql, Collections.singletonList(bucketIdentifier), BUCKET_ITEM_MAPPER);
+        final List<BucketItemEntity> items = jdbcEntityTemplate.query(sql, Collections.singletonList(bucketIdentifier), BUCKET_ITEM_MAPPER);
+        return getItemsWithCounts(items);
     }
 
     @Override
@@ -105,7 +108,34 @@ public class StandardBucketItemRepository implements BucketItemRepository {
                 .whereIn(Tables.BUCKET_ITEM.BUCKET_ID, idArgs.size())
                 .build();
 
-        return jdbcEntityTemplate.query(sql, idArgs, BUCKET_ITEM_MAPPER);
+        final List<BucketItemEntity> items = jdbcEntityTemplate.query(sql, idArgs, BUCKET_ITEM_MAPPER);
+        return getItemsWithCounts(items);
+    }
+
+    private List<BucketItemEntity> getItemsWithCounts(final Iterable<BucketItemEntity> items) {
+        final Map<String,Long> snapshotCounts = RepositoryUtils.getFlowSnapshotCounts(jdbcEntityTemplate);
+        final Map<String,Long> extensionBundleVersionCounts = RepositoryUtils.getExtensionBundleVersionCounts(jdbcEntityTemplate);
+
+        final List<BucketItemEntity> itemWithCounts = new ArrayList<>();
+        for (final BucketItemEntity item : items) {
+            if (item.getType() == BucketItemEntityType.FLOW) {
+                final Long snapshotCount = snapshotCounts.get(item.getId());
+                if (snapshotCount != null) {
+                    final FlowEntity flowEntity = (FlowEntity) item;
+                    flowEntity.setSnapshotCount(snapshotCount);
+                }
+            } else if (item.getType() == BucketItemEntityType.EXTENSION_BUNDLE) {
+                final Long versionCount = extensionBundleVersionCounts.get(item.getId());
+                if (versionCount != null) {
+                    final ExtensionBundleEntity extensionBundleEntity = (ExtensionBundleEntity) item;
+                    extensionBundleEntity.setVersionCount(versionCount);
+                }
+            }
+
+            itemWithCounts.add(item);
+        }
+
+        return itemWithCounts;
     }
 
 }

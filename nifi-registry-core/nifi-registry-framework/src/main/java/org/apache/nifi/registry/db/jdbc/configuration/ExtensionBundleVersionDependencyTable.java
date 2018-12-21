@@ -26,31 +26,26 @@ import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class ExtensionTable extends AbstractTable<String> {
+public class ExtensionBundleVersionDependencyTable extends AbstractTable<String> {
 
     public final Column ID;
-    public final Column EXTENSION_BUNDLE_VERSION_ID;
-    public final Column TYPE;
-    public final Column DESCRIPTION;
-    public final Column IS_RESTRICTED;
-    public final Column CATEGORY;
-    public final Column TAGS;
+    public final Column EXTENSION_BUNDLE_ID;
+    public final Column GROUP_ID;
+    public final Column ARTIFACT_ID;
+    public final Column VERSION;
 
-    private final SortedSet<Column> allColumns;
+    private SortedSet<Column> allColumns;
 
-    ExtensionTable() {
-        super("EXTENSION", "ext", new UUIDStringGenerator());
+    ExtensionBundleVersionDependencyTable() {
+        super("EXTENSION_BUNDLE_VERSION_DEPENDENCY", "ebvd", new UUIDStringGenerator());
         ID = StandardColumn.create(this, "ID");
-        EXTENSION_BUNDLE_VERSION_ID = StandardColumn.create(this, "EXTENSION_BUNDLE_VERSION_ID");
-        TYPE = StandardColumn.create(this, "TYPE");
-        DESCRIPTION = StandardColumn.create(this, "TYPE_DESCRIPTION");
-        IS_RESTRICTED = StandardColumn.create(this, "IS_RESTRICTED");
-        CATEGORY = StandardColumn.create(this, "CATEGORY");
-        TAGS = StandardColumn.create(this, "TAGS");
+        EXTENSION_BUNDLE_ID = StandardColumn.create(this, "EXTENSION_BUNDLE_ID");
+        GROUP_ID = StandardColumn.create(this, "GROUP_ID");
+        ARTIFACT_ID = StandardColumn.create(this, "ARTIFACT_ID");
+        VERSION = StandardColumn.create(this, "VERSION");
 
-        allColumns = Collections.unmodifiableSortedSet(new TreeSet<>(
-                Arrays.asList(ID, EXTENSION_BUNDLE_VERSION_ID, TYPE, DESCRIPTION, IS_RESTRICTED, CATEGORY, TAGS)
-        ));
+        allColumns = Collections.unmodifiableSortedSet(
+                new TreeSet<>(Arrays.asList(ID, EXTENSION_BUNDLE_ID, GROUP_ID, ARTIFACT_ID, VERSION)));
     }
 
     @Override

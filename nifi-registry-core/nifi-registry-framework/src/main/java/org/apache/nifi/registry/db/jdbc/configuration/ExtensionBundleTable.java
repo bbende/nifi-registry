@@ -58,9 +58,4 @@ public class ExtensionBundleTable extends AbstractTable<String> {
         return allColumns;
     }
 
-    @Override
-    public SortedSet<Column> getUpdatableColumns() {
-        return Collections.emptySortedSet();
-    }
-
 }

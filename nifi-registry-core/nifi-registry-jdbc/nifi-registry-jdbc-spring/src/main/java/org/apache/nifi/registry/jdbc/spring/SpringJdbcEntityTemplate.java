@@ -24,6 +24,7 @@ import org.apache.nifi.registry.jdbc.api.JdbcEntityTemplate;
 import org.apache.nifi.registry.jdbc.api.QueryBuilder;
 import org.apache.nifi.registry.jdbc.api.QueryParameter;
 import org.apache.nifi.registry.jdbc.api.QueryParameters;
+import org.apache.nifi.registry.jdbc.api.ResultSetHandler;
 import org.apache.nifi.registry.jdbc.api.Table;
 import org.apache.nifi.registry.jdbc.commons.SqlFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -161,6 +162,13 @@ public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
     public <I, E extends Entity<I>> void deleteById(final Table<I> table, final I id) {
         final String sql = SqlFactory.delete(table);
         jdbcTemplate.update(sql, new Object[]{id});
+    }
+
+    @Override
+    public void query(final String sql, final List<Object> args, final ResultSetHandler handler) {
+        jdbcTemplate.query(sql, args.toArray(), (rs) -> {
+            handler.handle(rs);
+        });
     }
 
     private <I, E extends Entity<I>> SortedMap<Column,Object> getEntityValues(

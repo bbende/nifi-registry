@@ -14,40 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.db.entity;
+package org.apache.nifi.registry.jdbc.api;
 
-import org.apache.nifi.registry.jdbc.api.Entity;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
-public class KeyEntity implements Entity<String> {
+/**
+ * A callback to process a ResultSet.
+ */
+public interface ResultSetHandler {
 
-    private String id;
-
-    private String tenantIdentity;
-
-    private String keyValue;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getTenantIdentity() {
-        return tenantIdentity;
-    }
-
-    public void setTenantIdentity(String tenantIdentity) {
-        this.tenantIdentity = tenantIdentity;
-    }
-
-    public String getKeyValue() {
-        return keyValue;
-    }
-
-    public void setKeyValue(String keyValue) {
-        this.keyValue = keyValue;
-    }
+    /**
+     * Handles the ResultSet.
+     *
+     * @param rs the ResultSet
+     * @throws SQLException if an error occurs processing the result set
+     */
+    void handle(ResultSet rs) throws SQLException;
 
 }

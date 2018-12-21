@@ -26,31 +26,44 @@ import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class ExtensionTable extends AbstractTable<String> {
+public class ExtensionBundleVersionTable extends AbstractTable<String> {
 
     public final Column ID;
-    public final Column EXTENSION_BUNDLE_VERSION_ID;
-    public final Column TYPE;
+    public final Column EXTENSION_BUNDLE_ID;
+    public final Column VERSION;
+    public final Column CREATED;
+    public final Column CREATED_BY;
     public final Column DESCRIPTION;
-    public final Column IS_RESTRICTED;
-    public final Column CATEGORY;
-    public final Column TAGS;
+    public final Column SHA_256_HEX;
+    public final Column SHA_256_SUPPLIED;
+    public final Column CONTENT_SIZE;
 
-    private final SortedSet<Column> allColumns;
+    private SortedSet<Column> allColumns;
 
-    ExtensionTable() {
-        super("EXTENSION", "ext", new UUIDStringGenerator());
+    ExtensionBundleVersionTable() {
+        super("EXTENSION_BUNDLE_VERSION", "ebv", new UUIDStringGenerator());
         ID = StandardColumn.create(this, "ID");
-        EXTENSION_BUNDLE_VERSION_ID = StandardColumn.create(this, "EXTENSION_BUNDLE_VERSION_ID");
-        TYPE = StandardColumn.create(this, "TYPE");
-        DESCRIPTION = StandardColumn.create(this, "TYPE_DESCRIPTION");
-        IS_RESTRICTED = StandardColumn.create(this, "IS_RESTRICTED");
-        CATEGORY = StandardColumn.create(this, "CATEGORY");
-        TAGS = StandardColumn.create(this, "TAGS");
+        EXTENSION_BUNDLE_ID = StandardColumn.create(this, "EXTENSION_BUNDLE_ID");
+        VERSION = StandardColumn.create(this, "VERSION");
+        CREATED = StandardColumn.create(this, "CREATED");
+        CREATED_BY = StandardColumn.create(this, "CREATED_BY");
+        DESCRIPTION = StandardColumn.create(this, "DESCRIPTION");
+        SHA_256_HEX = StandardColumn.create(this, "SHA_256_HEX");
+        SHA_256_SUPPLIED = StandardColumn.create(this, "SHA_256_SUPPLIED");
+        CONTENT_SIZE = StandardColumn.create(this, "CONTENT_SIZE");
 
-        allColumns = Collections.unmodifiableSortedSet(new TreeSet<>(
-                Arrays.asList(ID, EXTENSION_BUNDLE_VERSION_ID, TYPE, DESCRIPTION, IS_RESTRICTED, CATEGORY, TAGS)
-        ));
+        allColumns = Collections.unmodifiableSortedSet(
+                new TreeSet<>(Arrays.asList(
+                        ID,
+                        EXTENSION_BUNDLE_ID,
+                        VERSION,
+                        CREATED,
+                        CREATED_BY,
+                        DESCRIPTION,
+                        SHA_256_HEX,
+                        SHA_256_SUPPLIED,
+                        CONTENT_SIZE
+                )));
     }
 
     @Override

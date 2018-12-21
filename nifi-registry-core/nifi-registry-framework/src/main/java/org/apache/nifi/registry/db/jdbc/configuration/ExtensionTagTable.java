@@ -19,48 +19,36 @@ package org.apache.nifi.registry.db.jdbc.configuration;
 import org.apache.nifi.registry.jdbc.api.Column;
 import org.apache.nifi.registry.jdbc.commons.AbstractTable;
 import org.apache.nifi.registry.jdbc.commons.StandardColumn;
-import org.apache.nifi.registry.jdbc.commons.UUIDStringGenerator;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class ExtensionTable extends AbstractTable<String> {
+public class ExtensionTagTable extends AbstractTable<String> {
 
-    public final Column ID;
-    public final Column EXTENSION_BUNDLE_VERSION_ID;
-    public final Column TYPE;
-    public final Column DESCRIPTION;
-    public final Column IS_RESTRICTED;
-    public final Column CATEGORY;
-    public final Column TAGS;
+    public final Column EXTENSION_ID;
+    public final Column TAG;
 
-    private final SortedSet<Column> allColumns;
+    private SortedSet<Column> allColumns;
 
-    ExtensionTable() {
-        super("EXTENSION", "ext", new UUIDStringGenerator());
-        ID = StandardColumn.create(this, "ID");
-        EXTENSION_BUNDLE_VERSION_ID = StandardColumn.create(this, "EXTENSION_BUNDLE_VERSION_ID");
-        TYPE = StandardColumn.create(this, "TYPE");
-        DESCRIPTION = StandardColumn.create(this, "TYPE_DESCRIPTION");
-        IS_RESTRICTED = StandardColumn.create(this, "IS_RESTRICTED");
-        CATEGORY = StandardColumn.create(this, "CATEGORY");
-        TAGS = StandardColumn.create(this, "TAGS");
+    ExtensionTagTable() {
+        super("EXTENSION_TAG", "etag");
+        EXTENSION_ID = StandardColumn.create(this, "EXTENSION_ID");
+        TAG = StandardColumn.create(this, "TAG");
 
-        allColumns = Collections.unmodifiableSortedSet(new TreeSet<>(
-                Arrays.asList(ID, EXTENSION_BUNDLE_VERSION_ID, TYPE, DESCRIPTION, IS_RESTRICTED, CATEGORY, TAGS)
-        ));
+        allColumns = Collections.unmodifiableSortedSet(
+                new TreeSet<>(Arrays.asList(EXTENSION_ID, TAG)));
     }
 
     @Override
     public Column getIdColumn() {
-        return ID;
+        // TODO this needs a composite key
+        return EXTENSION_ID;
     }
 
     @Override
     public SortedSet<Column> getColumns() {
         return allColumns;
     }
-
 }

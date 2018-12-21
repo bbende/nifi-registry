@@ -16,9 +16,11 @@
  */
 package org.apache.nifi.registry.db.entity;
 
+import org.apache.nifi.registry.jdbc.api.Entity;
+
 import java.util.Date;
 
-public class ExtensionBundleVersionEntity {
+public class ExtensionBundleVersionEntity implements Entity<String> {
 
     // Database id for this specific version of an extension bundle
     private String id;
