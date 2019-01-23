@@ -30,9 +30,11 @@ public class FlowSnapshotMapper implements EntityRowMapper<FlowSnapshotEntity>, 
 
     @Override
     public FlowSnapshotEntity mapRow(final ResultSet rs, final int rowNum) throws SQLException {
+        final String flowId = rs.getString(Tables.FLOW_SNAPSHOT.FLOW_ID.getAlias());
+        final int version = rs.getInt(Tables.FLOW_SNAPSHOT.VERSION.getAlias());
+
         final FlowSnapshotEntity entity = new FlowSnapshotEntity();
-        entity.setFlowId(rs.getString(Tables.FLOW_SNAPSHOT.FLOW_ID.getAlias()));
-        entity.setVersion(rs.getInt(Tables.FLOW_SNAPSHOT.VERSION.getAlias()));
+        entity.setId(new FlowSnapshotId(flowId, version));
         entity.setCreated(rs.getTimestamp(Tables.FLOW_SNAPSHOT.CREATED.getAlias()));
         entity.setCreatedBy(rs.getString(Tables.FLOW_SNAPSHOT.CREATED_BY.getAlias()));
         entity.setComments(rs.getString(Tables.FLOW_SNAPSHOT.COMMENTS.getAlias()));
@@ -42,9 +44,9 @@ public class FlowSnapshotMapper implements EntityRowMapper<FlowSnapshotEntity>, 
     @Override
     public Object mapValue(final Column column, final FlowSnapshotEntity entity) {
         if (column == Tables.FLOW_SNAPSHOT.FLOW_ID) {
-            return entity.getFlowId();
+            return entity.getId().getFlowId();
         } else if (column == Tables.FLOW_SNAPSHOT.VERSION) {
-            return entity.getVersion();
+            return entity.getId().getVersion();
         } else if (column == Tables.FLOW_SNAPSHOT.CREATED) {
             return entity.getCreated();
         } else if (column == Tables.FLOW_SNAPSHOT.CREATED_BY) {

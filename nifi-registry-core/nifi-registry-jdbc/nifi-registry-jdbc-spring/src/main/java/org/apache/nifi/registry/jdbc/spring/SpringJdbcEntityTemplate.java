@@ -156,9 +156,8 @@ public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
     }
 
     @Override
-    public <I, E extends Entity<I>> void deleteByEntity(final Table table, final E entity) {
-        final String sql = SqlFactory.delete(table);
-        jdbcTemplate.update(sql, new Object[]{entity.getId()});
+    public <I, E extends Entity<I>> void deleteByEntity(final Table table, final E entity, final EntityValueMapper<I,E> entityValueMapper) {
+        deleteById(table, entity.getId(), entityValueMapper);
     }
 
     @Override

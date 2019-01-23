@@ -26,6 +26,7 @@ import org.apache.nifi.registry.db.entity.ExtensionEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntityCategory;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
+import org.apache.nifi.registry.db.entity.FlowSnapshotId;
 import org.apache.nifi.registry.db.jdbc.configuration.Tables;
 import org.apache.nifi.registry.db.jdbc.repository.BucketItemRepository;
 import org.apache.nifi.registry.db.jdbc.repository.BucketRepository;
@@ -205,29 +206,33 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public FlowSnapshotEntity getFlowSnapshot(final String flowIdentifier, final Integer version) {
-        final String sql =
-                "SELECT " +
-                        "fs.flow_id, " +
-                        "fs.version, " +
-                        "fs.created, " +
-                        "fs.created_by, " +
-                        "fs.comments " +
-                "FROM " +
-                        "flow_snapshot fs, " +
-                        "flow f, " +
-                        "bucket_item item " +
-                "WHERE " +
-                        "item.id = f.id AND " +
-                        "f.id = ? AND " +
-                        "f.id = fs.flow_id AND " +
-                        "fs.version = ?";
-
-        try {
-            return jdbcTemplate.queryForObject(sql, new FlowSnapshotEntityRowMapper(),
-                    flowIdentifier, version);
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
+        final FlowSnapshotId flowSnapshotId = new FlowSnapshotId(flowIdentifier, version);
+        final Optional<FlowSnapshotEntity> result = flowSnapshotRepository.findById(flowSnapshotId);
+        return result.isPresent() ? result.get() : null;
+//
+//        final String sql =
+//                "SELECT " +
+//                        "fs.flow_id, " +
+//                        "fs.version, " +
+//                        "fs.created, " +
+//                        "fs.created_by, " +
+//                        "fs.comments " +
+//                "FROM " +
+//                        "flow_snapshot fs, " +
+//                        "flow f, " +
+//                        "bucket_item item " +
+//                "WHERE " +
+//                        "item.id = f.id AND " +
+//                        "f.id = ? AND " +
+//                        "f.id = fs.flow_id AND " +
+//                        "fs.version = ?";
+//
+//        try {
+//            return jdbcTemplate.queryForObject(sql, new FlowSnapshotEntityRowMapper(),
+//                    flowIdentifier, version);
+//        } catch (EmptyResultDataAccessException e) {
+//            return null;
+//        }
     }
 
     @Override
@@ -243,30 +248,35 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public List<FlowSnapshotEntity> getSnapshots(final String flowIdentifier) {
-        final String sql =
-                "SELECT " +
-                        "fs.flow_id, " +
-                        "fs.version, " +
-                        "fs.created, " +
-                        "fs.created_by, " +
-                        "fs.comments " +
-                "FROM " +
-                        "flow_snapshot fs, " +
-                        "flow f, " +
-                        "bucket_item item " +
-                "WHERE " +
-                        "item.id = f.id AND " +
-                        "f.id = ? AND " +
-                        "f.id = fs.flow_id";
+        final QueryParameters params = of(
+                eq(Tables.FLOW_SNAPSHOT.FLOW_ID, flowIdentifier)
+        );
 
-        final Object[] args = new Object[] { flowIdentifier };
-        return jdbcTemplate.query(sql, args, new FlowSnapshotEntityRowMapper());
+        return flowSnapshotRepository.findByQueryParams(params);
+
+//        final String sql =
+//                "SELECT " +
+//                        "fs.flow_id, " +
+//                        "fs.version, " +
+//                        "fs.created, " +
+//                        "fs.created_by, " +
+//                        "fs.comments " +
+//                "FROM " +
+//                        "flow_snapshot fs, " +
+//                        "flow f, " +
+//                        "bucket_item item " +
+//                "WHERE " +
+//                        "item.id = f.id AND " +
+//                        "f.id = ? AND " +
+//                        "f.id = fs.flow_id";
+//
+//        final Object[] args = new Object[] { flowIdentifier };
+//        return jdbcTemplate.query(sql, args, new FlowSnapshotEntityRowMapper());
     }
 
     @Override
     public void deleteFlowSnapshot(final FlowSnapshotEntity flowSnapshot) {
-        final String sql = "DELETE FROM flow_snapshot WHERE flow_id = ? AND version = ?";
-        jdbcTemplate.update(sql, flowSnapshot.getFlowId(), flowSnapshot.getVersion());
+        flowSnapshotRepository.delete(flowSnapshot);
     }
 
     //----------------- Extension Bundles ---------------------------------

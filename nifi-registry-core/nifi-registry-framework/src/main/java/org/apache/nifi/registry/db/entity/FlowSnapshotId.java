@@ -16,25 +16,43 @@
  */
 package org.apache.nifi.registry.db.entity;
 
+import java.util.Objects;
+
 public class FlowSnapshotId {
 
-    private String flowId;
+    private final String flowId;
 
-    private Integer version;
+    private final Integer version;
+
+    public FlowSnapshotId(final String flowId, final Integer version) {
+        this.flowId = flowId;
+        this.version = version;
+    }
 
     public String getFlowId() {
         return flowId;
-    }
-
-    public void setFlowId(String flowId) {
-        this.flowId = flowId;
     }
 
     public Integer getVersion() {
         return version;
     }
 
-    public void setVersion(Integer version) {
-        this.version = version;
+    @Override
+    public int hashCode() {
+        return Objects.hash(flowId, version);
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (!(obj instanceof FlowSnapshotId)) {
+            return false;
+        }
+
+        final FlowSnapshotId other = (FlowSnapshotId) obj;
+        return Objects.equals(this.flowId, other.flowId) && Objects.equals(this.version, other.version);
     }
 }

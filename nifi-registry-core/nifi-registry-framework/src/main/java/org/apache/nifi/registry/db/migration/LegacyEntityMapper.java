@@ -20,6 +20,7 @@ import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntityType;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
+import org.apache.nifi.registry.db.entity.FlowSnapshotId;
 
 /**
  * Utility methods to map legacy DB entities to current DB entities.
@@ -51,9 +52,10 @@ public class LegacyEntityMapper {
     }
 
     public static FlowSnapshotEntity createFlowSnapshotEntity(final FlowSnapshotEntityV1 flowSnapshotEntityV1) {
+        final FlowSnapshotId id = new FlowSnapshotId(flowSnapshotEntityV1.getFlowId(), flowSnapshotEntityV1.getVersion());
+
         final FlowSnapshotEntity flowSnapshotEntity = new FlowSnapshotEntity();
-        flowSnapshotEntity.setFlowId(flowSnapshotEntityV1.getFlowId());
-        flowSnapshotEntity.setVersion(flowSnapshotEntityV1.getVersion());
+        flowSnapshotEntity.setId(id);
         flowSnapshotEntity.setComments(flowSnapshotEntityV1.getComments());
         flowSnapshotEntity.setCreated(flowSnapshotEntityV1.getCreated());
         flowSnapshotEntity.setCreatedBy(flowSnapshotEntityV1.getCreatedBy());

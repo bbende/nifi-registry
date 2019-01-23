@@ -39,7 +39,7 @@ public interface JdbcEntityTemplate {
 
     <I, E extends Entity<I>> List<E> query(String sql, List<Object> args, EntityRowMapper<E> rowMapper);
 
-    <I, E extends Entity<I>> void deleteByEntity(Table table, E entity);
+    <I, E extends Entity<I>> void deleteByEntity(Table table, E entity, EntityValueMapper<I,E> entityValueMapper);
 
     <I, E extends Entity<I>> void deleteById(Table table, I id, EntityValueMapper<I,E> entityValueMapper);
 

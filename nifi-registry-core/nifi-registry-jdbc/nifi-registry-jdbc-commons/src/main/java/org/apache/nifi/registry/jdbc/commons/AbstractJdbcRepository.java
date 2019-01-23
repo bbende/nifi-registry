@@ -125,7 +125,7 @@ public abstract class AbstractJdbcRepository<I, E extends Entity<I>> implements 
 
     @Override
     public void delete(final E entity) {
-        jdbcEntityTemplate.deleteByEntity(table, entity);
+        jdbcEntityTemplate.deleteByEntity(table, entity, entityValueMapper);
     }
 
 }

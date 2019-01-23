@@ -173,7 +173,7 @@ public class StandardFlowRepository implements FlowRepository {
 
     @Override
     public void delete(final FlowEntity entity) {
-        jdbcEntityTemplate.deleteByEntity(flowTable, entity);
-        jdbcEntityTemplate.deleteByEntity(bucketItemTable, entity);
+        jdbcEntityTemplate.deleteByEntity(flowTable, entity, FLOW_MAPPER);
+        jdbcEntityTemplate.deleteByEntity(bucketItemTable, entity, BUCKET_ITEM_MAPPER);
     }
 }

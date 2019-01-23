@@ -17,6 +17,7 @@
 package org.apache.nifi.registry.db.mapper;
 
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
+import org.apache.nifi.registry.db.entity.FlowSnapshotId;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.lang.Nullable;
 
@@ -28,9 +29,11 @@ public class FlowSnapshotEntityRowMapper implements RowMapper<FlowSnapshotEntity
     @Nullable
     @Override
     public FlowSnapshotEntity mapRow(ResultSet rs, int rowNum) throws SQLException {
+        final String flowId = rs.getString("FLOW_ID");
+        final int version = rs.getInt("VERSION");
+
         final FlowSnapshotEntity entity = new FlowSnapshotEntity();
-        entity.setFlowId(rs.getString("FLOW_ID"));
-        entity.setVersion(rs.getInt("VERSION"));
+        entity.setId(new FlowSnapshotId(flowId, version));
         entity.setCreated(rs.getTimestamp("CREATED"));
         entity.setCreatedBy(rs.getString("CREATED_BY"));
         entity.setComments(rs.getString("COMMENTS"));

@@ -69,8 +69,9 @@ public class TestLegacyEntityMapper {
 
         final FlowSnapshotEntity flowSnapshotEntity = LegacyEntityMapper.createFlowSnapshotEntity(flowSnapshotEntityV1);
         assertNotNull(flowSnapshotEntity);
-        assertEquals(flowSnapshotEntityV1.getFlowId(), flowSnapshotEntity.getFlowId());
-        assertEquals(flowSnapshotEntityV1.getVersion(), flowSnapshotEntity.getVersion());
+        assertNotNull(flowSnapshotEntity.getId());
+        assertEquals(flowSnapshotEntityV1.getFlowId(), flowSnapshotEntity.getId().getFlowId());
+        assertEquals(flowSnapshotEntityV1.getVersion(), flowSnapshotEntity.getId().getVersion());
         assertEquals(flowSnapshotEntityV1.getComments(), flowSnapshotEntity.getComments());
         assertEquals(flowSnapshotEntityV1.getCreatedBy(), flowSnapshotEntity.getCreatedBy());
         assertEquals(flowSnapshotEntityV1.getCreated(), flowSnapshotEntity.getCreated());

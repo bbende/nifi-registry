@@ -92,12 +92,12 @@ public class SqlFactory {
         if (table instanceof CompositeIDTable) {
             final CompositeIDTable compositeIDTable = (CompositeIDTable)table;
 
-            boolean first = false;
+            boolean first = true;
             for (final Column idColumn : compositeIDTable.getIdColumns()) {
                 if (!first) {
                     builder.append(" AND ");
                 }
-                builder.append(idColumn).append(" = ?");
+                builder.append(idColumn.getName()).append(" = ?");
                 first = false;
             }
 

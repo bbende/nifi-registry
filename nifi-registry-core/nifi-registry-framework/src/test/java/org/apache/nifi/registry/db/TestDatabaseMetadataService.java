@@ -27,6 +27,7 @@ import org.apache.nifi.registry.db.entity.ExtensionEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntityCategory;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
+import org.apache.nifi.registry.db.entity.FlowSnapshotId;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
 import org.apache.nifi.registry.service.MetadataService;
@@ -328,8 +329,8 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
     public void testGetFlowSnapshot() {
         final FlowSnapshotEntity entity = metadataService.getFlowSnapshot( "1", 1);
         assertNotNull(entity);
-        assertEquals("1", entity.getFlowId());
-        assertEquals(1, entity.getVersion().intValue());
+        assertEquals("1", entity.getId().getFlowId());
+        assertEquals(1, entity.getId().getVersion().intValue());
     }
 
     @Test
@@ -341,18 +342,19 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
     @Test
     public void testCreateFlowSnapshot() {
         final FlowSnapshotEntity flowSnapshot = new FlowSnapshotEntity();
-        flowSnapshot.setFlowId("1");
-        flowSnapshot.setVersion(4);
+        flowSnapshot.setId(new FlowSnapshotId("1", 4));
         flowSnapshot.setCreated(new Date());
         flowSnapshot.setCreatedBy("test-user");
         flowSnapshot.setComments("Comments");
 
         metadataService.createFlowSnapshot(flowSnapshot);
 
-        final FlowSnapshotEntity createdFlowSnapshot = metadataService.getFlowSnapshot(flowSnapshot.getFlowId(), flowSnapshot.getVersion());
+        final FlowSnapshotEntity createdFlowSnapshot = metadataService.getFlowSnapshot(
+                flowSnapshot.getId().getFlowId(), flowSnapshot.getId().getVersion());
+
         assertNotNull(createdFlowSnapshot);
-        assertEquals(flowSnapshot.getFlowId(), createdFlowSnapshot.getFlowId());
-        assertEquals(flowSnapshot.getVersion(), createdFlowSnapshot.getVersion());
+        assertEquals(flowSnapshot.getId().getFlowId(), createdFlowSnapshot.getId().getFlowId());
+        assertEquals(flowSnapshot.getId().getVersion(), createdFlowSnapshot.getId().getVersion());
         assertEquals(flowSnapshot.getComments(), createdFlowSnapshot.getComments());
         assertEquals(flowSnapshot.getCreated(), createdFlowSnapshot.getCreated());
         assertEquals(flowSnapshot.getCreatedBy(), createdFlowSnapshot.getCreatedBy());
@@ -362,8 +364,9 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
     public void testGetLatestSnapshot() {
         final FlowSnapshotEntity latest = metadataService.getLatestSnapshot("1");
         assertNotNull(latest);
-        assertEquals("1", latest.getFlowId());
-        assertEquals(3, latest.getVersion().intValue());
+        assertNotNull(latest.getId());
+        assertEquals("1", latest.getId().getFlowId());
+        assertEquals(3, latest.getId().getVersion().intValue());
     }
 
     @Test

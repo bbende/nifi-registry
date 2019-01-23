@@ -25,6 +25,7 @@ import org.apache.nifi.registry.db.entity.ExtensionBundleVersionDependencyEntity
 import org.apache.nifi.registry.db.entity.ExtensionBundleVersionEntity;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
+import org.apache.nifi.registry.db.entity.FlowSnapshotId;
 import org.apache.nifi.registry.db.entity.KeyEntity;
 import org.apache.nifi.registry.diff.ComponentDifference;
 import org.apache.nifi.registry.diff.ComponentDifferenceGroup;
@@ -102,9 +103,10 @@ public class DataModelMapper {
     // --- Map snapshots
 
     public static FlowSnapshotEntity map(final VersionedFlowSnapshotMetadata versionedFlowSnapshot) {
+        final FlowSnapshotId id = new FlowSnapshotId(versionedFlowSnapshot.getFlowIdentifier(), versionedFlowSnapshot.getVersion());
+
         final FlowSnapshotEntity flowSnapshotEntity = new FlowSnapshotEntity();
-        flowSnapshotEntity.setFlowId(versionedFlowSnapshot.getFlowIdentifier());
-        flowSnapshotEntity.setVersion(versionedFlowSnapshot.getVersion());
+        flowSnapshotEntity.setId(id);
         flowSnapshotEntity.setComments(versionedFlowSnapshot.getComments());
         flowSnapshotEntity.setCreated(new Date(versionedFlowSnapshot.getTimestamp()));
         flowSnapshotEntity.setCreatedBy(versionedFlowSnapshot.getAuthor());
@@ -113,8 +115,8 @@ public class DataModelMapper {
 
     public static VersionedFlowSnapshotMetadata map(final BucketEntity bucketEntity, final FlowSnapshotEntity flowSnapshotEntity) {
         final VersionedFlowSnapshotMetadata metadata = new VersionedFlowSnapshotMetadata();
-        metadata.setFlowIdentifier(flowSnapshotEntity.getFlowId());
-        metadata.setVersion(flowSnapshotEntity.getVersion());
+        metadata.setFlowIdentifier(flowSnapshotEntity.getId().getFlowId());
+        metadata.setVersion(flowSnapshotEntity.getId().getVersion());
         metadata.setComments(flowSnapshotEntity.getComments());
         metadata.setTimestamp(flowSnapshotEntity.getCreated().getTime());
         metadata.setAuthor(flowSnapshotEntity.getCreatedBy());

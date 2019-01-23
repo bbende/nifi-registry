@@ -23,31 +23,11 @@ import java.util.Objects;
 
 public class FlowSnapshotEntity extends AbstractEntity<FlowSnapshotId> {
 
-    private String flowId;
-
-    private Integer version;
-
     private Date created;
 
     private String createdBy;
 
     private String comments;
-
-    public String getFlowId() {
-        return flowId;
-    }
-
-    public void setFlowId(String flowId) {
-        this.flowId = flowId;
-    }
-
-    public Integer getVersion() {
-        return version;
-    }
-
-    public void setVersion(Integer version) {
-        this.version = version;
-    }
 
     public Date getCreated() {
         return created;
@@ -75,7 +55,7 @@ public class FlowSnapshotEntity extends AbstractEntity<FlowSnapshotId> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.flowId, this.version);
+        return Objects.hash(getId());
     }
 
     @Override
@@ -89,7 +69,7 @@ public class FlowSnapshotEntity extends AbstractEntity<FlowSnapshotId> {
         }
 
         final FlowSnapshotEntity other = (FlowSnapshotEntity) obj;
-        return Objects.equals(this.flowId, other.flowId) && Objects.equals(this.version, other.version);
+        return Objects.equals(this.getId(), other.getId());
     }
 
 }
