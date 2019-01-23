@@ -25,7 +25,7 @@ import org.apache.nifi.registry.jdbc.api.EntityValueMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class BucketMapper implements EntityRowMapper<BucketEntity>, EntityValueMapper<BucketEntity> {
+public class BucketMapper implements EntityRowMapper<BucketEntity>, EntityValueMapper<String,BucketEntity> {
 
     @Override
     public BucketEntity mapRow(final ResultSet rs, final int rowNum) throws SQLException {
@@ -41,7 +41,7 @@ public class BucketMapper implements EntityRowMapper<BucketEntity>, EntityValueM
     }
 
     @Override
-    public Object map(final Column column, final BucketEntity entity) {
+    public Object mapValue(final Column column, final BucketEntity entity) {
         if (column == Tables.BUCKET.ID) {
             return entity.getId();
         } else if (column == Tables.BUCKET.NAME) {
@@ -56,4 +56,16 @@ public class BucketMapper implements EntityRowMapper<BucketEntity>, EntityValueM
             throw new IllegalArgumentException("Unexpected colum: " + column.getName());
         }
     }
+
+    @Override
+    public Object mapIdValue(final Column column, final String id) {
+        if (column == null) {
+            throw new IllegalArgumentException("Column cannot be null");
+        }
+        if (column != Tables.BUCKET.ID) {
+            throw new IllegalArgumentException("Unexpected id column: " + column.getName());
+        }
+        return id;
+    }
+
 }

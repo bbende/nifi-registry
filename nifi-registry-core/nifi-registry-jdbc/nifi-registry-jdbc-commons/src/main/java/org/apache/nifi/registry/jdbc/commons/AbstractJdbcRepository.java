@@ -21,7 +21,6 @@ import org.apache.nifi.registry.jdbc.api.Entity;
 import org.apache.nifi.registry.jdbc.api.EntityRowMapper;
 import org.apache.nifi.registry.jdbc.api.EntityValueMapper;
 import org.apache.nifi.registry.jdbc.api.IDGenerator;
-import org.apache.nifi.registry.jdbc.api.IDValueMapper;
 import org.apache.nifi.registry.jdbc.api.JdbcEntityTemplate;
 import org.apache.nifi.registry.jdbc.api.JdbcRepository;
 import org.apache.nifi.registry.jdbc.api.QueryParameters;
@@ -39,20 +38,17 @@ public abstract class AbstractJdbcRepository<I, E extends Entity<I>> implements 
     protected final Table table;
     protected final Class<E> entityClass;
     protected final TableConfiguration tableConfiguration;
-    protected final IDValueMapper<I> idValueMapper;
-    protected final EntityValueMapper<E> entityValueMapper;
+    protected final EntityValueMapper<I,E> entityValueMapper;
     protected final EntityRowMapper<E> entityRowMapper;
     protected final JdbcEntityTemplate jdbcEntityTemplate;
 
     public AbstractJdbcRepository(final Class<E> entityClass,
                                   final TableConfiguration tableConfiguration,
-                                  final IDValueMapper<I> idValueMapper,
-                                  final EntityValueMapper<E> entityValueMapper,
+                                  final EntityValueMapper<I,E> entityValueMapper,
                                   final EntityRowMapper<E> entityRowMapper,
                                   final JdbcEntityTemplate jdbcEntityTemplate) {
         this.entityClass = Objects.requireNonNull(entityClass);
         this.tableConfiguration = Objects.requireNonNull(tableConfiguration);
-        this.idValueMapper = Objects.requireNonNull(idValueMapper);
         this.entityValueMapper = Objects.requireNonNull(entityValueMapper);
         this.entityRowMapper = Objects.requireNonNull(entityRowMapper);
         this.jdbcEntityTemplate = Objects.requireNonNull(jdbcEntityTemplate);
@@ -95,12 +91,12 @@ public abstract class AbstractJdbcRepository<I, E extends Entity<I>> implements 
 
     @Override
     public Optional<E> findById(final I i) {
-        return jdbcEntityTemplate.queryForObject(table, i, idValueMapper, entityRowMapper);
+        return jdbcEntityTemplate.queryForObject(table, i, entityValueMapper, entityRowMapper);
     }
 
     @Override
     public boolean existsById(final I i) {
-        final Optional<E> optional = jdbcEntityTemplate.queryForObject(table, i, idValueMapper, entityRowMapper);
+        final Optional<E> optional = jdbcEntityTemplate.queryForObject(table, i, entityValueMapper, entityRowMapper);
         return optional.isPresent();
     }
 
@@ -111,6 +107,7 @@ public abstract class AbstractJdbcRepository<I, E extends Entity<I>> implements 
 
     @Override
     public List<E> findAllById(final Collection<I> ids) {
+        // TODO this won't work for composite id tables
         final QueryParameters params = StandardQueryParameters.of(
                 StandardQueryParameter.in(table.getIdColumn(), ids));
         return jdbcEntityTemplate.query(table, params, entityRowMapper);
@@ -123,7 +120,7 @@ public abstract class AbstractJdbcRepository<I, E extends Entity<I>> implements 
 
     @Override
     public void deleteById(final I i) {
-        jdbcEntityTemplate.deleteById(table, i, idValueMapper);
+        jdbcEntityTemplate.deleteById(table, i, entityValueMapper);
     }
 
     @Override

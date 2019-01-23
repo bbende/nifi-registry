@@ -17,6 +17,7 @@
 package org.apache.nifi.registry.db.jdbc.mapper;
 
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
+import org.apache.nifi.registry.db.entity.FlowSnapshotId;
 import org.apache.nifi.registry.db.jdbc.configuration.Tables;
 import org.apache.nifi.registry.jdbc.api.Column;
 import org.apache.nifi.registry.jdbc.api.EntityRowMapper;
@@ -25,7 +26,7 @@ import org.apache.nifi.registry.jdbc.api.EntityValueMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class FlowSnapshotMapper implements EntityRowMapper<FlowSnapshotEntity>, EntityValueMapper<FlowSnapshotEntity> {
+public class FlowSnapshotMapper implements EntityRowMapper<FlowSnapshotEntity>, EntityValueMapper<FlowSnapshotId,FlowSnapshotEntity> {
 
     @Override
     public FlowSnapshotEntity mapRow(final ResultSet rs, final int rowNum) throws SQLException {
@@ -39,7 +40,7 @@ public class FlowSnapshotMapper implements EntityRowMapper<FlowSnapshotEntity>, 
     }
 
     @Override
-    public Object map(final Column column, final FlowSnapshotEntity entity) {
+    public Object mapValue(final Column column, final FlowSnapshotEntity entity) {
         if (column == Tables.FLOW_SNAPSHOT.FLOW_ID) {
             return entity.getFlowId();
         } else if (column == Tables.FLOW_SNAPSHOT.VERSION) {
@@ -54,4 +55,20 @@ public class FlowSnapshotMapper implements EntityRowMapper<FlowSnapshotEntity>, 
             throw new IllegalArgumentException("Unexpected column: " + column.getName());
         }
     }
+
+    @Override
+    public Object mapIdValue(final Column column, final FlowSnapshotId flowSnapshotId) {
+        if (column == null) {
+            throw new IllegalArgumentException("Column cannot be null");
+        }
+
+        if (column == Tables.FLOW_SNAPSHOT.FLOW_ID) {
+            return flowSnapshotId.getFlowId();
+        } else if (column == Tables.FLOW_SNAPSHOT.VERSION) {
+            return flowSnapshotId.getVersion();
+        } else {
+            throw new IllegalArgumentException("Unexpected id column: " + column.getName());
+        }
+    }
+
 }

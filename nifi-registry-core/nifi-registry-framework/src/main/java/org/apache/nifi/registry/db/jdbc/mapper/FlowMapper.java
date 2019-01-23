@@ -26,7 +26,7 @@ import org.apache.nifi.registry.jdbc.api.EntityValueMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class FlowMapper implements EntityRowMapper<FlowEntity>, EntityValueMapper<FlowEntity> {
+public class FlowMapper implements EntityRowMapper<FlowEntity>, EntityValueMapper<String,FlowEntity> {
 
     @Override
     public FlowEntity mapRow(final ResultSet rs, final int rowNum) throws SQLException {
@@ -42,7 +42,7 @@ public class FlowMapper implements EntityRowMapper<FlowEntity>, EntityValueMappe
     }
 
     @Override
-    public Object map(final Column column, final FlowEntity entity) {
+    public Object mapValue(final Column column, final FlowEntity entity) {
         if (column == Tables.FLOW.ID) {
             return entity.getId();
         } else {
@@ -50,4 +50,14 @@ public class FlowMapper implements EntityRowMapper<FlowEntity>, EntityValueMappe
         }
     }
 
+    @Override
+    public Object mapIdValue(final Column column, final String id) {
+        if (column == null) {
+            throw new IllegalArgumentException("Column cannot be null");
+        }
+        if (column != Tables.FLOW.ID) {
+            throw new IllegalArgumentException("Unexpected id column: " + column.getName());
+        }
+        return id;
+    }
 }

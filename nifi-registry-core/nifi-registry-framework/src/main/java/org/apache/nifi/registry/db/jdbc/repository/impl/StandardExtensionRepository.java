@@ -23,7 +23,6 @@ import org.apache.nifi.registry.jdbc.api.IDGenerator;
 import org.apache.nifi.registry.jdbc.api.JdbcEntityTemplate;
 import org.apache.nifi.registry.jdbc.api.TableConfiguration;
 import org.apache.nifi.registry.jdbc.commons.AbstractJdbcRepository;
-import org.apache.nifi.registry.jdbc.commons.StringIDValueMapper;
 import org.apache.nifi.registry.jdbc.commons.UUIDStringGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -38,7 +37,7 @@ public class StandardExtensionRepository extends AbstractJdbcRepository<String, 
     @Autowired
     public StandardExtensionRepository(final JdbcEntityTemplate jdbcEntityTemplate,
                                        final TableConfiguration tableConfiguration) {
-        super(ExtensionEntity.class, tableConfiguration, new StringIDValueMapper(), MAPPER, MAPPER, jdbcEntityTemplate);
+        super(ExtensionEntity.class, tableConfiguration, MAPPER, MAPPER, jdbcEntityTemplate);
     }
 
     @Override

@@ -23,14 +23,12 @@ import org.apache.nifi.registry.db.jdbc.mapper.BucketItemMapper;
 import org.apache.nifi.registry.db.jdbc.mapper.FlowMapper;
 import org.apache.nifi.registry.db.jdbc.repository.FlowRepository;
 import org.apache.nifi.registry.jdbc.api.Column;
-import org.apache.nifi.registry.jdbc.api.IDValueMapper;
 import org.apache.nifi.registry.jdbc.api.JdbcEntityTemplate;
 import org.apache.nifi.registry.jdbc.api.QueryBuilder;
 import org.apache.nifi.registry.jdbc.api.QueryParameters;
 import org.apache.nifi.registry.jdbc.api.Table;
 import org.apache.nifi.registry.jdbc.api.TableConfiguration;
 import org.apache.nifi.registry.jdbc.commons.SqlFactory;
-import org.apache.nifi.registry.jdbc.commons.StringIDValueMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -51,7 +49,6 @@ public class StandardFlowRepository implements FlowRepository {
 
     private static final FlowMapper FLOW_MAPPER = new FlowMapper();
     private static final BucketItemMapper BUCKET_ITEM_MAPPER = new BucketItemMapper();
-    private static final IDValueMapper<String> ID_VALUE_MAPPER = new StringIDValueMapper();
 
     private final JdbcEntityTemplate jdbcEntityTemplate;
 
@@ -170,8 +167,8 @@ public class StandardFlowRepository implements FlowRepository {
 
     @Override
     public void deleteById(final String id) {
-        jdbcEntityTemplate.deleteById(flowTable, id, ID_VALUE_MAPPER);
-        jdbcEntityTemplate.deleteById(bucketItemTable, id, ID_VALUE_MAPPER);
+        jdbcEntityTemplate.deleteById(flowTable, id, FLOW_MAPPER);
+        jdbcEntityTemplate.deleteById(bucketItemTable, id, FLOW_MAPPER);
     }
 
     @Override

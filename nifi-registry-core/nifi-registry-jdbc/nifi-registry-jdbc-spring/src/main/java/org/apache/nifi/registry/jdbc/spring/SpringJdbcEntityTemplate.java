@@ -21,7 +21,6 @@ import org.apache.nifi.registry.jdbc.api.CompositeIDTable;
 import org.apache.nifi.registry.jdbc.api.Entity;
 import org.apache.nifi.registry.jdbc.api.EntityRowMapper;
 import org.apache.nifi.registry.jdbc.api.EntityValueMapper;
-import org.apache.nifi.registry.jdbc.api.IDValueMapper;
 import org.apache.nifi.registry.jdbc.api.JdbcEntityTemplate;
 import org.apache.nifi.registry.jdbc.api.QueryBuilder;
 import org.apache.nifi.registry.jdbc.api.QueryParameter;
@@ -56,7 +55,7 @@ public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
     }
 
     @Override
-    public <I, E extends Entity<I>> E insert(final Table table, final E entity, final EntityValueMapper<E> entityValueMapper) {
+    public <I, E extends Entity<I>> E insert(final Table table, final E entity, final EntityValueMapper<I,E> entityValueMapper) {
         final String sql = SqlFactory.insert(table);
         final SortedMap<Column,Object> entityValues = getEntityValues(entity, table.getColumns(), entityValueMapper);
         final List<Object> values = getArgs(entityValues);
@@ -66,7 +65,7 @@ public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
 
     @Override
     public <I, E extends Entity<I>> E update(final Table table, final E entity, final SortedSet<Column> columns,
-                                             final EntityValueMapper<E> entityValueMapper) {
+                                             final EntityValueMapper<I,E> entityValueMapper) {
         final SortedMap<Column,Object> entityValues = getEntityValues(entity, columns, entityValueMapper);
 
         final SortedMap<Column,Object> nonNullEntityValues = new TreeMap<>();
@@ -88,10 +87,10 @@ public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
 
     @Override
     public <I, E extends Entity<I>> Optional<E> queryForObject(final Table table, final I id,
-                                                               final IDValueMapper<I> idValueMapper,
+                                                               final EntityValueMapper<I,E> entityValueMapper,
                                                                final EntityRowMapper<E> entityRowMapper) {
         final String sql = SqlFactory.selectById(table);
-        final List<Object> idArgs = idValueMapper.map(id);
+        final List<Object> idArgs = getIdValues(table, id, entityValueMapper);
         return queryForObject(sql, idArgs, entityRowMapper);
     }
 
@@ -163,9 +162,9 @@ public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
     }
 
     @Override
-    public <I, E extends Entity<I>> void deleteById(final Table table, final I id, IDValueMapper<I> idValueMapper) {
+    public <I, E extends Entity<I>> void deleteById(final Table table, final I id, final EntityValueMapper<I,E> entityValueMapper) {
         final String sql = SqlFactory.delete(table);
-        final List<Object> idValues = idValueMapper.map(id);
+        final List<Object> idValues = getIdValues(table, id, entityValueMapper);
         jdbcTemplate.update(sql, idValues.toArray());
     }
 
@@ -177,9 +176,9 @@ public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
     }
 
     private <I, E extends Entity<I>> SortedMap<Column,Object> getEntityValues(
-            final E entity, final SortedSet<Column> columns, final EntityValueMapper<E> entityValueMapper) {
+            final E entity, final SortedSet<Column> columns, final EntityValueMapper<I,E> entityValueMapper) {
         final SortedMap<Column,Object> values = new TreeMap<>();
-        columns.forEach(c -> values.put(c, entityValueMapper.map(c, entity)));
+        columns.forEach(c -> values.put(c, entityValueMapper.mapValue(c, entity)));
         return values;
     }
 
@@ -195,17 +194,21 @@ public class SpringJdbcEntityTemplate implements JdbcEntityTemplate {
         };
     }
 
-    private <I, E extends Entity<I>> List<Object> getIdValues(final Table table, final E entity, final EntityValueMapper<E> entityValueMapper) {
+    private <I, E extends Entity<I>> List<Object> getIdValues(final Table table, final E entity, final EntityValueMapper<I,E> entityValueMapper) {
+        return getIdValues(table, entity.getId(), entityValueMapper);
+    }
+
+    private <I, E extends Entity<I>> List<Object> getIdValues(final Table table, final I id, final EntityValueMapper<I,E> entityValueMapper) {
         final List<Object> idValues = new ArrayList<>();
         if (table instanceof CompositeIDTable) {
             final CompositeIDTable compositeIDTable = (CompositeIDTable) table;
             for (final Column idColumn : compositeIDTable.getIdColumns()) {
-                final Object idValue = entityValueMapper.map(idColumn, entity);
+                final Object idValue = entityValueMapper.mapIdValue(idColumn, id);
                 idValues.add(idValue);
             }
         } else {
             final Column idColumn = table.getIdColumn();
-            final Object idValue = entityValueMapper.map(idColumn, entity);
+            final Object idValue = entityValueMapper.mapIdValue(idColumn, id);
             idValues.add(idValue);
         }
         return idValues;

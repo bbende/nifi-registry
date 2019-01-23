@@ -28,7 +28,7 @@ import java.sql.SQLException;
 
 import static org.apache.nifi.registry.db.jdbc.configuration.Tables.EXTENSION;
 
-public class ExtensionMapper implements EntityRowMapper<ExtensionEntity>, EntityValueMapper<ExtensionEntity> {
+public class ExtensionMapper implements EntityRowMapper<ExtensionEntity>, EntityValueMapper<String,ExtensionEntity> {
 
     @Override
     public ExtensionEntity mapRow(final ResultSet rs, final int rowNum) throws SQLException {
@@ -46,7 +46,7 @@ public class ExtensionMapper implements EntityRowMapper<ExtensionEntity>, Entity
     }
 
     @Override
-    public Object map(final Column column, final ExtensionEntity entity) {
+    public Object mapValue(final Column column, final ExtensionEntity entity) {
         if (column == Tables.EXTENSION.ID) {
             return entity.getId();
         } else if (column == Tables.EXTENSION.EXTENSION_BUNDLE_VERSION_ID) {
@@ -64,5 +64,16 @@ public class ExtensionMapper implements EntityRowMapper<ExtensionEntity>, Entity
         } else {
             throw new IllegalArgumentException("Unexpected column: " + column.getName());
         }
+    }
+
+    @Override
+    public Object mapIdValue(final Column column, final String id) {
+        if (column == null) {
+            throw new IllegalArgumentException("Column cannot be null");
+        }
+        if (column != EXTENSION.ID) {
+            throw new IllegalArgumentException("Unexpected id column: " + column.getName());
+        }
+        return id;
     }
 }

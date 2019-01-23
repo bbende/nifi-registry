@@ -21,13 +21,24 @@ package org.apache.nifi.registry.jdbc.api;
  *
  * @param <E> the type of Entity
  */
-public interface EntityValueMapper<E extends Entity> {
+public interface EntityValueMapper<ID, E extends Entity<ID>> {
 
     /**
+     * Maps the column to its value from the entity instance.
+     *
      * @param column the Column
      * @param entity the Entity
      * @return the value from the Entity for the given Column
      */
-    Object map(Column column, E entity);
+    Object mapValue(Column column, E entity);
+
+    /**
+     * Maps the column to its value from the id instance.
+     *
+     * @param column the column
+     * @param id the id
+     * @return the value of the column for the id
+     */
+    Object mapIdValue(Column column, ID id);
 
 }

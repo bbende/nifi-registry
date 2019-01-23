@@ -29,7 +29,7 @@ import org.apache.nifi.registry.jdbc.api.EntityValueMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class BucketItemMapper implements EntityRowMapper<BucketItemEntity>, EntityValueMapper<BucketItemEntity> {
+public class BucketItemMapper implements EntityRowMapper<BucketItemEntity>, EntityValueMapper<String,BucketItemEntity> {
 
     @Override
     public BucketItemEntity mapRow(final ResultSet rs, final int rowNum) throws SQLException {
@@ -70,7 +70,7 @@ public class BucketItemMapper implements EntityRowMapper<BucketItemEntity>, Enti
     }
 
     @Override
-    public Object map(final Column column, final BucketItemEntity entity) {
+    public Object mapValue(final Column column, final BucketItemEntity entity) {
         if (column == Tables.BUCKET_ITEM.ID) {
             return entity.getId();
         } else if (column == Tables.BUCKET_ITEM.NAME) {
@@ -88,6 +88,17 @@ public class BucketItemMapper implements EntityRowMapper<BucketItemEntity>, Enti
         } else {
             throw new IllegalArgumentException("Unexpected column: " + column.getName());
         }
+    }
+
+    @Override
+    public Object mapIdValue(final Column column, final String id) {
+        if (column == null) {
+            throw new IllegalArgumentException("Column cannot be null");
+        }
+        if (column != Tables.BUCKET_ITEM.ID) {
+            throw new IllegalArgumentException("Unexpected id column: " + column.getName());
+        }
+        return id;
     }
 
 }

@@ -27,11 +27,11 @@ import java.util.SortedSet;
  */
 public interface JdbcEntityTemplate {
 
-    <I, E extends Entity<I>> E insert(Table table, E entity, EntityValueMapper<E> entityValueMapper);
+    <I, E extends Entity<I>> E insert(Table table, E entity, EntityValueMapper<I,E> entityValueMapper);
 
-    <I, E extends Entity<I>> E update(Table table, E entity, SortedSet<Column> columns, EntityValueMapper<E> entityValueMapper);
+    <I, E extends Entity<I>> E update(Table table, E entity, SortedSet<Column> columns, EntityValueMapper<I,E> entityValueMapper);
 
-    <I, E extends Entity<I>> Optional<E> queryForObject(Table table, I id, IDValueMapper<I> idValueMapper, EntityRowMapper<E> rowMapper);
+    <I, E extends Entity<I>> Optional<E> queryForObject(Table table, I id, EntityValueMapper<I,E> entityValueMapper, EntityRowMapper<E> rowMapper);
 
     <I, E extends Entity<I>> Optional<E> queryForObject(String sql, List<Object> args, EntityRowMapper<E> rowMapper);
 
@@ -41,7 +41,7 @@ public interface JdbcEntityTemplate {
 
     <I, E extends Entity<I>> void deleteByEntity(Table table, E entity);
 
-    <I, E extends Entity<I>> void deleteById(Table table, I id, IDValueMapper<I> idValueMapper);
+    <I, E extends Entity<I>> void deleteById(Table table, I id, EntityValueMapper<I,E> entityValueMapper);
 
     void query(String sql, List<Object> args, ResultSetHandler handler);
 

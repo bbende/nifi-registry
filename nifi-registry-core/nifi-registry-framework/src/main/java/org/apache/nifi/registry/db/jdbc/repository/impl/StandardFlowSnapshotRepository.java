@@ -20,14 +20,11 @@ import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotId;
 import org.apache.nifi.registry.db.jdbc.mapper.FlowSnapshotMapper;
 import org.apache.nifi.registry.db.jdbc.repository.FlowSnapshotRepository;
-import org.apache.nifi.registry.jdbc.api.IDValueMapper;
 import org.apache.nifi.registry.jdbc.api.JdbcEntityTemplate;
 import org.apache.nifi.registry.jdbc.api.TableConfiguration;
 import org.apache.nifi.registry.jdbc.commons.AbstractJdbcRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-
-import java.util.Arrays;
 
 @Repository
 public class StandardFlowSnapshotRepository extends AbstractJdbcRepository<FlowSnapshotId, FlowSnapshotEntity>
@@ -35,14 +32,11 @@ public class StandardFlowSnapshotRepository extends AbstractJdbcRepository<FlowS
 
     public static final FlowSnapshotMapper MAPPER = new FlowSnapshotMapper();
 
-    public static final IDValueMapper<FlowSnapshotId> ID_VALUE_MAPPER = (id) -> {
-        return Arrays.asList(id.getFlowId(), id.getVersion());
-    };
 
     @Autowired
     public StandardFlowSnapshotRepository(TableConfiguration tableConfiguration,
                                           JdbcEntityTemplate jdbcEntityTemplate) {
-        super(FlowSnapshotEntity.class, tableConfiguration, ID_VALUE_MAPPER, MAPPER, MAPPER, jdbcEntityTemplate);
+        super(FlowSnapshotEntity.class, tableConfiguration, MAPPER, MAPPER, jdbcEntityTemplate);
     }
 
 }
