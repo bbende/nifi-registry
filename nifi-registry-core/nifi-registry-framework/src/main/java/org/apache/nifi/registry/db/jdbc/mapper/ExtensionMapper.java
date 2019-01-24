@@ -18,7 +18,6 @@ package org.apache.nifi.registry.db.jdbc.mapper;
 
 import org.apache.nifi.registry.db.entity.ExtensionEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntityCategory;
-import org.apache.nifi.registry.db.jdbc.configuration.Tables;
 import org.apache.nifi.registry.jdbc.api.Column;
 import org.apache.nifi.registry.jdbc.api.EntityRowMapper;
 import org.apache.nifi.registry.jdbc.api.EntityValueMapper;
@@ -34,32 +33,32 @@ public class ExtensionMapper implements EntityRowMapper<ExtensionEntity>, Entity
     public ExtensionEntity mapRow(final ResultSet rs, final int rowNum) throws SQLException {
         final ExtensionEntity entity = new ExtensionEntity();
         entity.setId(rs.getString(EXTENSION.ID.getAlias()));
-        entity.setExtensionBundleVersionId(rs.getString(Tables.EXTENSION.EXTENSION_BUNDLE_VERSION_ID.getAlias()));
-        entity.setType(rs.getString(Tables.EXTENSION.TYPE.getAlias()));
-        entity.setTypeDescription(rs.getString(Tables.EXTENSION.DESCRIPTION.getAlias()));
-        entity.setRestricted(rs.getInt(Tables.EXTENSION.IS_RESTRICTED.getAlias()) == 1);
-        entity.setTags(rs.getString(Tables.EXTENSION.TAGS.getName()));
+        entity.setExtensionBundleVersionId(rs.getString(EXTENSION.EXTENSION_BUNDLE_VERSION_ID.getAlias()));
+        entity.setType(rs.getString(EXTENSION.TYPE.getAlias()));
+        entity.setTypeDescription(rs.getString(EXTENSION.DESCRIPTION.getAlias()));
+        entity.setRestricted(rs.getInt(EXTENSION.IS_RESTRICTED.getAlias()) == 1);
+        entity.setTags(rs.getString(EXTENSION.TAGS.getName()));
 
-        final String categoryString = rs.getString(Tables.EXTENSION.CATEGORY.getAlias());
+        final String categoryString = rs.getString(EXTENSION.CATEGORY.getAlias());
         entity.setCategory(ExtensionEntityCategory.valueOf(categoryString));
         return entity;
     }
 
     @Override
     public Object mapValue(final Column column, final ExtensionEntity entity) {
-        if (column == Tables.EXTENSION.ID) {
+        if (column == EXTENSION.ID) {
             return entity.getId();
-        } else if (column == Tables.EXTENSION.EXTENSION_BUNDLE_VERSION_ID) {
+        } else if (column == EXTENSION.EXTENSION_BUNDLE_VERSION_ID) {
             return entity.getExtensionBundleVersionId();
-        } else if (column == Tables.EXTENSION.TYPE){
+        } else if (column == EXTENSION.TYPE){
             return entity.getType();
-        } else if (column == Tables.EXTENSION.DESCRIPTION) {
+        } else if (column == EXTENSION.DESCRIPTION) {
             return entity.getTypeDescription();
-        } else if (column == Tables.EXTENSION.IS_RESTRICTED) {
+        } else if (column == EXTENSION.IS_RESTRICTED) {
             return entity.isRestricted();
-        } else if (column == Tables.EXTENSION.CATEGORY) {
+        } else if (column == EXTENSION.CATEGORY) {
             return entity.getCategory().name();
-        } else if (column == Tables.EXTENSION.TAGS) {
+        } else if (column == EXTENSION.TAGS) {
             return entity.getTags();
         } else {
             throw new IllegalArgumentException("Unexpected column: " + column.getName());

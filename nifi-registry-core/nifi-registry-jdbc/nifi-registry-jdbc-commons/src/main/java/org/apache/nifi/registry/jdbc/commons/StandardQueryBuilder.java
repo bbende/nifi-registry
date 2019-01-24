@@ -19,6 +19,7 @@ package org.apache.nifi.registry.jdbc.commons;
 import org.apache.nifi.registry.jdbc.api.Column;
 import org.apache.nifi.registry.jdbc.api.QueryBuilder;
 import org.apache.nifi.registry.jdbc.api.QueryOperator;
+import org.apache.nifi.registry.jdbc.api.SortOrder;
 import org.apache.nifi.registry.jdbc.api.Table;
 
 import java.util.ArrayList;
@@ -32,6 +33,8 @@ public class StandardQueryBuilder implements QueryBuilder {
     private List<String> joins = new ArrayList<>();
     private List<String> whereClauses= new ArrayList<>();
     private List<String> groupBy = new ArrayList<>();
+    private List<String> orderBy = new ArrayList<>();
+    private Integer limit = null;
 
     @Override
     public QueryBuilder select(final SortedSet<Column> columns) {
@@ -192,6 +195,18 @@ public class StandardQueryBuilder implements QueryBuilder {
     }
 
     @Override
+    public QueryBuilder orderBy(final Column column, final SortOrder sortOrder) {
+        orderBy.add(getQualifiedColumnName(column) + " " + sortOrder.toString());
+        return this;
+    }
+
+    @Override
+    public QueryBuilder limit(final Integer limit) {
+        this.limit = limit;
+        return this;
+    }
+
+    @Override
     public QueryBuilder copy() {
         final StandardQueryBuilder copy = new StandardQueryBuilder();
         copy.returnFields.addAll(this.returnFields);
@@ -199,6 +214,10 @@ public class StandardQueryBuilder implements QueryBuilder {
         copy.joins.addAll(this.joins);
         copy.whereClauses.addAll(this.whereClauses);
         copy.groupBy.addAll(this.groupBy);
+        copy.orderBy.addAll(this.orderBy);
+        if (this.limit != null) {
+            copy.limit = new Integer(this.limit.intValue());
+        }
         return copy;
     }
 
@@ -231,6 +250,15 @@ public class StandardQueryBuilder implements QueryBuilder {
         if (!groupBy.isEmpty()) {
             builder.append(" GROUP BY ");
             SqlUtils.appendValues(builder, groupBy);
+        }
+
+        if (!orderBy.isEmpty()) {
+            builder.append(" ORDER BY ");
+            SqlUtils.appendValues(builder, orderBy);
+        }
+
+        if (limit != null) {
+            builder.append(" LIMIT ").append(limit);
         }
 
         return builder.toString();

@@ -14,16 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.db.jdbc.repository;
+package org.apache.nifi.registry.jdbc.api;
 
-import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
-import org.apache.nifi.registry.db.entity.FlowSnapshotId;
-import org.apache.nifi.registry.jdbc.api.JdbcRepository;
+/**
+ * Possible sort orders for QueryBuilder.
+ */
+public enum SortOrder {
 
-import java.util.Optional;
+    ASC,
 
-public interface FlowSnapshotRepository extends JdbcRepository<FlowSnapshotId, FlowSnapshotEntity> {
-
-    Optional<FlowSnapshotEntity> findLatestSnapshot(String flowIdentifier);
+    DESC;
 
 }

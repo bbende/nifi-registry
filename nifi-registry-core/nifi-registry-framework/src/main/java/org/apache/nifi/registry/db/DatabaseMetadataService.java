@@ -38,7 +38,6 @@ import org.apache.nifi.registry.db.mapper.ExtensionBundleEntityWithBucketNameRow
 import org.apache.nifi.registry.db.mapper.ExtensionBundleVersionDependencyEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.ExtensionBundleVersionEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.ExtensionEntityRowMapper;
-import org.apache.nifi.registry.db.mapper.FlowSnapshotEntityRowMapper;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
 import org.apache.nifi.registry.jdbc.api.JdbcEntityTemplate;
@@ -209,69 +208,18 @@ public class DatabaseMetadataService implements MetadataService {
         final FlowSnapshotId flowSnapshotId = new FlowSnapshotId(flowIdentifier, version);
         final Optional<FlowSnapshotEntity> result = flowSnapshotRepository.findById(flowSnapshotId);
         return result.isPresent() ? result.get() : null;
-//
-//        final String sql =
-//                "SELECT " +
-//                        "fs.flow_id, " +
-//                        "fs.version, " +
-//                        "fs.created, " +
-//                        "fs.created_by, " +
-//                        "fs.comments " +
-//                "FROM " +
-//                        "flow_snapshot fs, " +
-//                        "flow f, " +
-//                        "bucket_item item " +
-//                "WHERE " +
-//                        "item.id = f.id AND " +
-//                        "f.id = ? AND " +
-//                        "f.id = fs.flow_id AND " +
-//                        "fs.version = ?";
-//
-//        try {
-//            return jdbcTemplate.queryForObject(sql, new FlowSnapshotEntityRowMapper(),
-//                    flowIdentifier, version);
-//        } catch (EmptyResultDataAccessException e) {
-//            return null;
-//        }
     }
 
     @Override
     public FlowSnapshotEntity getLatestSnapshot(final String flowIdentifier) {
-        final String sql = "SELECT * FROM flow_snapshot WHERE flow_id = ? ORDER BY version DESC LIMIT 1";
-
-        try {
-            return jdbcTemplate.queryForObject(sql, new FlowSnapshotEntityRowMapper(), flowIdentifier);
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
+        final Optional<FlowSnapshotEntity> result = flowSnapshotRepository.findLatestSnapshot(flowIdentifier);
+        return result.isPresent() ? result.get() : null;
     }
 
     @Override
     public List<FlowSnapshotEntity> getSnapshots(final String flowIdentifier) {
-        final QueryParameters params = of(
-                eq(Tables.FLOW_SNAPSHOT.FLOW_ID, flowIdentifier)
-        );
-
+        final QueryParameters params = of(eq(Tables.FLOW_SNAPSHOT.FLOW_ID, flowIdentifier));
         return flowSnapshotRepository.findByQueryParams(params);
-
-//        final String sql =
-//                "SELECT " +
-//                        "fs.flow_id, " +
-//                        "fs.version, " +
-//                        "fs.created, " +
-//                        "fs.created_by, " +
-//                        "fs.comments " +
-//                "FROM " +
-//                        "flow_snapshot fs, " +
-//                        "flow f, " +
-//                        "bucket_item item " +
-//                "WHERE " +
-//                        "item.id = f.id AND " +
-//                        "f.id = ? AND " +
-//                        "f.id = fs.flow_id";
-//
-//        final Object[] args = new Object[] { flowIdentifier };
-//        return jdbcTemplate.query(sql, args, new FlowSnapshotEntityRowMapper());
     }
 
     @Override

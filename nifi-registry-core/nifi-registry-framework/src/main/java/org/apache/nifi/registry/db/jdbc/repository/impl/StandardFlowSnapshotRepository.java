@@ -21,10 +21,18 @@ import org.apache.nifi.registry.db.entity.FlowSnapshotId;
 import org.apache.nifi.registry.db.jdbc.mapper.FlowSnapshotMapper;
 import org.apache.nifi.registry.db.jdbc.repository.FlowSnapshotRepository;
 import org.apache.nifi.registry.jdbc.api.JdbcEntityTemplate;
+import org.apache.nifi.registry.jdbc.api.QueryBuilder;
+import org.apache.nifi.registry.jdbc.api.SortOrder;
 import org.apache.nifi.registry.jdbc.api.TableConfiguration;
 import org.apache.nifi.registry.jdbc.commons.AbstractJdbcRepository;
+import org.apache.nifi.registry.jdbc.commons.SqlFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+import java.util.Collections;
+import java.util.Optional;
+
+import static org.apache.nifi.registry.db.jdbc.configuration.Tables.FLOW_SNAPSHOT;
 
 @Repository
 public class StandardFlowSnapshotRepository extends AbstractJdbcRepository<FlowSnapshotId, FlowSnapshotEntity>
@@ -39,4 +47,16 @@ public class StandardFlowSnapshotRepository extends AbstractJdbcRepository<FlowS
         super(FlowSnapshotEntity.class, tableConfiguration, MAPPER, MAPPER, jdbcEntityTemplate);
     }
 
+    @Override
+    public Optional<FlowSnapshotEntity> findLatestSnapshot(final String flowIdentifier) {
+        final QueryBuilder queryBuilder = SqlFactory.query()
+                .select(FLOW_SNAPSHOT.getColumns())
+                .from(FLOW_SNAPSHOT)
+                .whereEqual(FLOW_SNAPSHOT.FLOW_ID)
+                .orderBy(FLOW_SNAPSHOT.VERSION, SortOrder.DESC)
+                .limit(1);
+
+        final String sql = queryBuilder.build();
+        return jdbcEntityTemplate.queryForObject(sql, Collections.singletonList(flowIdentifier), MAPPER);
+    }
 }

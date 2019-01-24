@@ -16,14 +16,9 @@
  */
 package org.apache.nifi.registry.db.jdbc.repository;
 
-import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
-import org.apache.nifi.registry.db.entity.FlowSnapshotId;
+import org.apache.nifi.registry.db.entity.ExtensionBundleEntity;
 import org.apache.nifi.registry.jdbc.api.JdbcRepository;
 
-import java.util.Optional;
-
-public interface FlowSnapshotRepository extends JdbcRepository<FlowSnapshotId, FlowSnapshotEntity> {
-
-    Optional<FlowSnapshotEntity> findLatestSnapshot(String flowIdentifier);
+public interface ExtensionBundleRepository extends JdbcRepository<String, ExtensionBundleEntity> {
 
 }

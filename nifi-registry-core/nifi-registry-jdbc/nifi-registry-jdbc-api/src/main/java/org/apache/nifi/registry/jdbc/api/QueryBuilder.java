@@ -132,10 +132,23 @@ public interface QueryBuilder {
     QueryBuilder where(String clause);
 
     /**
-     * @param columns the coulmns to group by
+     * @param columns the columns to group by
      * @return this builder
      */
     QueryBuilder groupBy(Column ... columns);
+
+    /**
+     * @param column the column to order by
+     * @param sortOrder the order (ASC or DESC)
+     * @return this builder
+     */
+    QueryBuilder orderBy(Column column, SortOrder sortOrder);
+
+    /**
+     * @param limit the number of rows to limit the results to
+     * @return this builder
+     */
+    QueryBuilder limit(Integer limit);
 
     /**
      * @return a copy of this builder
