@@ -418,6 +418,28 @@ NfRegistryService.prototype = {
         }
     },
 
+    deleteDropletVersion: function (droplet, snapshotMeta) {
+        var self = this;
+        this.dialogService.openConfirm({
+            title: 'Delete Version',
+            message: 'Version ' + snapshotMeta.version + ' will be deleted.',
+            cancelButton: 'Cancel',
+            acceptButton: 'Delete',
+            acceptButtonColor: 'fds-warn'
+        }).afterClosed().subscribe(
+            function (accept) {
+                if (accept) {
+                    self.api.deleteDropletVersion(snapshotMeta.link.href, true).subscribe(function () {
+                        self.api.getDropletSnapshotMetadata(droplet.link.href, true).subscribe(function (snapshotMetadata) {
+                            droplet.snapshotMetadata = snapshotMetadata;
+                        })
+                    })
+                }
+            });
+
+
+    },
+
     /**
      * Retrieves the snapshot metadata for the given droplet.
      *

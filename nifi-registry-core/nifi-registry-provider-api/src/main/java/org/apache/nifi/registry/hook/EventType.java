@@ -67,6 +67,11 @@ public enum EventType {
             EventFieldName.BUCKET_ID,
             EventFieldName.FLOW_ID,
             EventFieldName.USER),
+    DELETE_FLOW_VERSION(
+            EventFieldName.BUCKET_ID,
+            EventFieldName.FLOW_ID,
+            EventFieldName.VERSION,
+            EventFieldName.USER),
     DELETE_EXTENSION_BUNDLE(
             EventFieldName.BUCKET_ID,
             EventFieldName.EXTENSION_BUNDLE_ID,

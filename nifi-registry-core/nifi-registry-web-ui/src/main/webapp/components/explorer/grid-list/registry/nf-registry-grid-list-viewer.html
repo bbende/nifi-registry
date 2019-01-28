@@ -106,6 +106,13 @@ limitations under the License.
                                             <div fxLayout="row" class="mat-caption">
                                                 {{(snapshotMeta.timestamp/1000 | amFromUnix) | amDateFormat:'MMM-DD-YYYY'}} at {{(snapshotMeta.timestamp/1000 | amFromUnix) | amDateFormat:'h:mm A'}}
                                             </div>
+                                            <div fxLayout="row" class="md-body-2 pad-top-md">
+                                                <button mat-raised-button color="fds-primary"
+                                                        [disabled]="!droplet.permissions.canDelete"
+                                                        (click)="nfRegistryService.deleteDropletVersion(droplet, snapshotMeta)" matTooltip="Delete">
+                                                    <span>Delete</span>
+                                                </button>
+                                            </div>
                                         </div>
                                     </td-step>
                                 </td-steps>

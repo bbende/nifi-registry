@@ -150,6 +150,34 @@ NfRegistryApi.prototype = {
     },
 
     /**
+     * Delete an existing droplet version.
+     *
+     * @param {string} dropletUri    The portion of the URI describing the type of the droplet version and its identifier
+     *
+     *  Ex:
+     *      'flows/1234/versions/1'
+     *      'extension/5678/versions/1'
+     *
+     * @returns {*}
+     */
+    deleteDropletVersion: function (dropletVersionUri) {
+        var self = this;
+        return this.http.delete('/nifi-registry-api/' + dropletVersionUri, headers)
+            .map(function (response) {
+                return response;
+            })
+            .catch(function (error) {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: error.error,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
+                return rxjs.Observable.of(error);
+            });
+    },
+
+    /**
      * Create a named bucket capable of storing NiFi bucket objects (aka droplets) such as flows and extension bundles.
      *
      * @param {string} name  The name of the bucket.

@@ -21,6 +21,7 @@ import org.apache.nifi.registry.extension.ExtensionBundle;
 import org.apache.nifi.registry.extension.ExtensionBundleVersion;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
+import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.hook.Event;
 import org.apache.nifi.registry.hook.EventFieldName;
 import org.apache.nifi.registry.hook.EventType;
@@ -93,6 +94,16 @@ public class EventFactory {
                 .addField(EventFieldName.VERSION, String.valueOf(versionedFlowSnapshot.getSnapshotMetadata().getVersion()))
                 .addField(EventFieldName.USER, versionedFlowSnapshot.getSnapshotMetadata().getAuthor())
                 .addField(EventFieldName.COMMENT, versionComments)
+                .build();
+    }
+
+    public static Event flowVersionDeleted(final VersionedFlowSnapshotMetadata versionedFlowSnapshotMetadata) {
+        return new StandardEvent.Builder()
+                .eventType(EventType.DELETE_FLOW_VERSION)
+                .addField(EventFieldName.BUCKET_ID, versionedFlowSnapshotMetadata.getBucketIdentifier())
+                .addField(EventFieldName.FLOW_ID, versionedFlowSnapshotMetadata.getFlowIdentifier())
+                .addField(EventFieldName.VERSION, String.valueOf(versionedFlowSnapshotMetadata.getVersion()))
+                .addField(EventFieldName.USER, NiFiUserUtils.getNiFiUserIdentity())
                 .build();
     }
 

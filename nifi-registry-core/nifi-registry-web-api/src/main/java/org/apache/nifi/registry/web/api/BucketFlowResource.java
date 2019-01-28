@@ -500,6 +500,44 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         return Response.status(Response.Status.OK).entity(result).build();
     }
 
+    @DELETE
+    @Path("{flowId}/versions/{versionNumber: \\d+}")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = "Deletes a flow version.",
+            response = VersionedFlow.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "delete"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
+            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
+    public Response deleteFlowVersion(
+            @PathParam("bucketId")
+            @ApiParam("The bucket identifier")
+                final String bucketId,
+            @PathParam("flowId")
+            @ApiParam("The flow identifier")
+                final String flowId,
+            @PathParam("versionNumber")
+            @ApiParam("The version number")
+                final Integer versionNumber) {
+
+        authorizeBucketAccess(RequestAction.DELETE, bucketId);
+
+        // TODO prevent deleting if only one version?
+
+        final VersionedFlowSnapshotMetadata deletedSnapshotMetadata = registryService.deleteFlowSnapshot(bucketId, flowId, versionNumber);
+        publish(EventFactory.flowVersionDeleted(deletedSnapshotMetadata));
+        return Response.status(Response.Status.OK).entity(deletedSnapshotMetadata).build();
+    }
+
     private void populateLinksAndPermissions(VersionedFlowSnapshot snapshot) {
         if (snapshot.getSnapshotMetadata() != null) {
             linkService.populateLinks(snapshot.getSnapshotMetadata());
