@@ -55,6 +55,7 @@ import org.apache.nifi.registry.provider.extension.StandardBundleContext;
 import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
 import org.apache.nifi.registry.serialization.Serializer;
 import org.apache.nifi.registry.service.MetadataService;
+import org.apache.nifi.registry.service.extension.docs.ExtensionDocWriter;
 import org.apache.nifi.registry.service.mapper.BucketMappings;
 import org.apache.nifi.registry.service.mapper.ExtensionMappings;
 import org.apache.nifi.registry.util.FileUtils;
@@ -94,6 +95,7 @@ public class StandardExtensionService implements ExtensionService {
     static final String SNAPSHOT_VERSION_SUFFIX = "SNAPSHOT";
 
     private final Serializer<Extension> extensionSerializer;
+    private final ExtensionDocWriter extensionDocWriter;
     private final MetadataService metadataService;
     private final Map<BundleType, BundleExtractor> extractors;
     private final BundlePersistenceProvider bundlePersistenceProvider;
@@ -102,12 +104,14 @@ public class StandardExtensionService implements ExtensionService {
 
     @Autowired
     public StandardExtensionService(final Serializer<Extension> extensionSerializer,
+                                    final ExtensionDocWriter extensionDocWriter,
                                     final MetadataService metadataService,
                                     final Map<BundleType, BundleExtractor> extractors,
                                     final BundlePersistenceProvider bundlePersistenceProvider,
                                     final Validator validator,
                                     final NiFiRegistryProperties properties) {
         this.extensionSerializer = extensionSerializer;
+        this.extensionDocWriter = extensionDocWriter;
         this.metadataService = metadataService;
         this.extractors = extractors;
         this.bundlePersistenceProvider = bundlePersistenceProvider;
@@ -724,6 +728,37 @@ public class StandardExtensionService implements ExtensionService {
         }
 
         return ExtensionMappings.map(entity, extensionSerializer);
+    }
+
+    @Override
+    public void writeExtensionDocs(final BundleVersion bundleVersion, final String name, final OutputStream outputStream)
+            throws IOException {
+        if (bundleVersion == null) {
+            throw new IllegalArgumentException("Bundle version cannot be null");
+        }
+
+        if (bundleVersion.getVersionMetadata() == null || StringUtils.isBlank(bundleVersion.getVersionMetadata().getId())) {
+            throw new IllegalArgumentException("Bundle version must contain a version metadata with a bundle version id");
+        }
+
+        if (StringUtils.isBlank(name)) {
+            throw new IllegalArgumentException("Extension name cannot be null or blank");
+        }
+
+        if (outputStream == null) {
+            throw new IllegalArgumentException("Output stream cannot be null");
+        }
+
+        final ExtensionEntity entity = metadataService.getExtensionByName(bundleVersion.getVersionMetadata().getId(), name);
+        if (entity == null) {
+            LOGGER.warn("The specified extension [{}] does not exist in the specified bundle version [{}].",
+                    new Object[]{name, bundleVersion.getVersionMetadata().getId()});
+            throw new ResourceNotFoundException("The specified extension does not exist in this registry.");
+        }
+
+        final ExtensionMetadata extensionMetadata = ExtensionMappings.mapToMetadata(entity, extensionSerializer);
+        final Extension extension = ExtensionMappings.map(entity, extensionSerializer);
+        extensionDocWriter.write(extensionMetadata, extension, outputStream);
     }
 
     @Override
