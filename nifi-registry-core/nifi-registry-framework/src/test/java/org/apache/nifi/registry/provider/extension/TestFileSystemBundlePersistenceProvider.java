@@ -119,21 +119,21 @@ public class TestFileSystemBundlePersistenceProvider {
 
     @Test
     public void testSaveAndGet() throws IOException {
-        final String bucketName = "b1";
+        final String bucketId = "b1";
         final String groupId = "g1";
         final String artifactId = "a1";
 
         final String content1 = groupId + "-" + artifactId + "-" + "1.0.0";
-        createAndSaveBundleVersion(fileSystemBundleProvider, bucketName, groupId, artifactId, "1.0.0",
+        createAndSaveBundleVersion(fileSystemBundleProvider, bucketId, groupId, artifactId, "1.0.0",
                 BundleContext.BundleType.NIFI_NAR, content1);
 
         final String content2 = groupId + "-" + artifactId + "-" + "1.1.0";
-        createAndSaveBundleVersion(fileSystemBundleProvider, bucketName, groupId, artifactId, "1.1.0",
+        createAndSaveBundleVersion(fileSystemBundleProvider, bucketId, groupId, artifactId, "1.1.0",
                 BundleContext.BundleType.NIFI_NAR, content2);
 
         try (final OutputStream out = new ByteArrayOutputStream()) {
             final BundleContext context = getExtensionBundleContext(
-                    bucketName, groupId, artifactId, "1.0.0", BundleContext.BundleType.NIFI_NAR);
+                    bucketId, groupId, artifactId, "1.0.0", BundleContext.BundleType.NIFI_NAR);
             fileSystemBundleProvider.getBundleVersion(context, out);
 
             final String retrievedContent1 = new String(((ByteArrayOutputStream) out).toByteArray(), StandardCharsets.UTF_8);
@@ -142,7 +142,7 @@ public class TestFileSystemBundlePersistenceProvider {
 
         try (final OutputStream out = new ByteArrayOutputStream()) {
             final BundleContext context = getExtensionBundleContext(
-                    bucketName, groupId, artifactId, "1.1.0", BundleContext.BundleType.NIFI_NAR);
+                    bucketId, groupId, artifactId, "1.1.0", BundleContext.BundleType.NIFI_NAR);
             fileSystemBundleProvider.getBundleVersion(context, out);
 
             final String retrievedContent2 = new String(((ByteArrayOutputStream) out).toByteArray(), StandardCharsets.UTF_8);
@@ -152,13 +152,13 @@ public class TestFileSystemBundlePersistenceProvider {
 
     @Test(expected = BundlePersistenceException.class)
     public void testGetWhenDoesNotExist() throws IOException {
-        final String bucketName = "b1";
+        final String bucketId = "b1";
         final String groupId = "g1";
         final String artifactId = "a1";
 
         try (final OutputStream out = new ByteArrayOutputStream()) {
             final BundleContext context = getExtensionBundleContext(
-                    bucketName, groupId, artifactId, "1.0.0", BundleContext.BundleType.NIFI_NAR);
+                    bucketId, groupId, artifactId, "1.0.0", BundleContext.BundleType.NIFI_NAR);
             fileSystemBundleProvider.getBundleVersion(context, out);
             Assert.fail("Should have thrown exception");
         }
@@ -166,7 +166,7 @@ public class TestFileSystemBundlePersistenceProvider {
 
     @Test
     public void testDeleteExtensionBundleVersion() throws IOException {
-        final String bucketName = "b1";
+        final String bucketId = "b1";
         final String groupId = "g1";
         final String artifactId = "a1";
         final String version = "1.0.0";
@@ -174,15 +174,15 @@ public class TestFileSystemBundlePersistenceProvider {
 
         // create and verify the bundle version
         final String content1 = groupId + "-" + artifactId + "-" + "1.0.0";
-        createAndSaveBundleVersion(fileSystemBundleProvider, bucketName, groupId, artifactId, version, bundleType, content1);
-        verifyBundleVersion(bundleStorageDir, bucketName, groupId, artifactId, version, bundleType, content1);
+        createAndSaveBundleVersion(fileSystemBundleProvider, bucketId, groupId, artifactId, version, bundleType, content1);
+        verifyBundleVersion(bundleStorageDir, bucketId, groupId, artifactId, version, bundleType, content1);
 
         // delete the bundle version
-        fileSystemBundleProvider.deleteBundleVersion(getExtensionBundleContext(bucketName, groupId, artifactId, version, bundleType));
+        fileSystemBundleProvider.deleteBundleVersion(getExtensionBundleContext(bucketId, groupId, artifactId, version, bundleType));
 
         // verify it was deleted
         final File bundleVersionDir = FileSystemBundlePersistenceProvider.getBundleVersionDirectory(
-                bundleStorageDir, bucketName, groupId, artifactId, version);
+                bundleStorageDir, bucketId, groupId, artifactId, version);
 
         final File bundleFile = FileSystemBundlePersistenceProvider.getBundleFile(
                 bundleVersionDir, artifactId, version, bundleType);
@@ -191,7 +191,7 @@ public class TestFileSystemBundlePersistenceProvider {
 
     @Test
     public void testDeleteExtensionBundleVersionWhenDoesNotExist() throws IOException {
-        final String bucketName = "b1";
+        final String bucketId = "b1";
         final String groupId = "g1";
         final String artifactId = "a1";
         final String version = "1.0.0";
@@ -199,19 +199,19 @@ public class TestFileSystemBundlePersistenceProvider {
 
         // verify the bundle version does not already exist
         final File bundleVersionDir = FileSystemBundlePersistenceProvider.getBundleVersionDirectory(
-                bundleStorageDir, bucketName, groupId, artifactId, version);
+                bundleStorageDir, bucketId, groupId, artifactId, version);
 
         final File bundleFile = FileSystemBundlePersistenceProvider.getBundleFile(
                 bundleVersionDir, artifactId, version, bundleType);
         Assert.assertFalse(bundleFile.exists());
 
         // delete the bundle version
-        fileSystemBundleProvider.deleteBundleVersion(getExtensionBundleContext(bucketName, groupId, artifactId, version, bundleType));
+        fileSystemBundleProvider.deleteBundleVersion(getExtensionBundleContext(bucketId, groupId, artifactId, version, bundleType));
     }
 
     @Test
     public void testDeleteAllBundleVersions() throws IOException {
-        final String bucketName = "b1";
+        final String bucketId = "b1";
         final String groupId = "g1";
         final String artifactId = "a1";
         final String version1 = "1.0.0";
@@ -220,15 +220,15 @@ public class TestFileSystemBundlePersistenceProvider {
 
         // create and verify the bundle version 1
         final String content1 = groupId + "-" + artifactId + "-" + version1;
-        createAndSaveBundleVersion(fileSystemBundleProvider, bucketName, groupId, artifactId, version1, bundleType, content1);
-        verifyBundleVersion(bundleStorageDir, bucketName, groupId, artifactId, version1, bundleType, content1);
+        createAndSaveBundleVersion(fileSystemBundleProvider, bucketId, groupId, artifactId, version1, bundleType, content1);
+        verifyBundleVersion(bundleStorageDir, bucketId, groupId, artifactId, version1, bundleType, content1);
 
         // create and verify the bundle version 2
         final String content2 = groupId + "-" + artifactId + "-" + version2;
-        createAndSaveBundleVersion(fileSystemBundleProvider, bucketName, groupId, artifactId, version2, bundleType, content2);
-        verifyBundleVersion(bundleStorageDir, bucketName, groupId, artifactId, version2, bundleType, content2);
+        createAndSaveBundleVersion(fileSystemBundleProvider, bucketId, groupId, artifactId, version2, bundleType, content2);
+        verifyBundleVersion(bundleStorageDir, bucketId, groupId, artifactId, version2, bundleType, content2);
 
-        fileSystemBundleProvider.deleteAllBundleVersions(bucketName, bucketName, groupId, artifactId);
+        fileSystemBundleProvider.deleteAllBundleVersions(bucketId, bucketId, groupId, artifactId);
         Assert.assertEquals(0, bundleStorageDir.listFiles().length);
     }
 
@@ -244,27 +244,27 @@ public class TestFileSystemBundlePersistenceProvider {
     }
 
     private void createAndSaveBundleVersion(final BundlePersistenceProvider persistenceProvider,
-                                            final String bucketName,
+                                            final String bucketId,
                                             final String groupId,
                                             final String artifactId,
                                             final String version,
                                             final BundleContext.BundleType bundleType,
                                             final String content) throws IOException {
 
-        final BundleContext context = getExtensionBundleContext(bucketName, groupId, artifactId, version, bundleType);
+        final BundleContext context = getExtensionBundleContext(bucketId, groupId, artifactId, version, bundleType);
 
         try (final InputStream in = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8))) {
             persistenceProvider.saveBundleVersion(context, in, false);
         }
     }
 
-    private static BundleContext getExtensionBundleContext(final String bucketName,
+    private static BundleContext getExtensionBundleContext(final String bucketId,
                                                            final String groupId,
                                                            final String artifactId,
                                                            final String version,
                                                            final BundleContext.BundleType bundleType) {
         final BundleContext context = Mockito.mock(BundleContext.class);
-        when(context.getBucketName()).thenReturn(bucketName);
+        when(context.getBucketId()).thenReturn(bucketId);
         when(context.getBundleGroupId()).thenReturn(groupId);
         when(context.getBundleArtifactId()).thenReturn(artifactId);
         when(context.getBundleVersion()).thenReturn(version);

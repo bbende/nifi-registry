@@ -79,7 +79,7 @@ public class FileSystemBundlePersistenceProvider implements BundlePersistencePro
     public synchronized void saveBundleVersion(final BundleContext context, final InputStream contentStream, boolean overwrite)
             throws BundlePersistenceException {
 
-        final File bundleVersionDir = getBundleVersionDirectory(bundleStorageDir, context.getBucketName(),
+        final File bundleVersionDir = getBundleVersionDirectory(bundleStorageDir, context.getBucketId(),
                 context.getBundleGroupId(), context.getBundleArtifactId(), context.getBundleVersion());
         try {
             FileUtils.ensureDirectoryExistAndCanReadAndWrite(bundleVersionDir);
@@ -112,7 +112,7 @@ public class FileSystemBundlePersistenceProvider implements BundlePersistencePro
     public synchronized void getBundleVersion(final BundleContext context, final OutputStream outputStream)
             throws BundlePersistenceException {
 
-        final File bundleVersionDir = getBundleVersionDirectory(bundleStorageDir, context.getBucketName(),
+        final File bundleVersionDir = getBundleVersionDirectory(bundleStorageDir, context.getBucketId(),
                 context.getBundleGroupId(), context.getBundleArtifactId(), context.getBundleVersion());
 
         final File bundleFile = getBundleFile(bundleVersionDir, context.getBundleArtifactId(),
@@ -135,7 +135,7 @@ public class FileSystemBundlePersistenceProvider implements BundlePersistencePro
 
     @Override
     public synchronized void deleteBundleVersion(final BundleContext context) throws BundlePersistenceException {
-        final File bundleVersionDir = getBundleVersionDirectory(bundleStorageDir, context.getBucketName(),
+        final File bundleVersionDir = getBundleVersionDirectory(bundleStorageDir, context.getBucketId(),
                 context.getBundleGroupId(), context.getBundleArtifactId(), context.getBundleVersion());
 
         final File bundleFile = getBundleFile(bundleVersionDir, context.getBundleArtifactId(),
@@ -160,7 +160,7 @@ public class FileSystemBundlePersistenceProvider implements BundlePersistencePro
     public synchronized void deleteAllBundleVersions(final String bucketId, final String bucketName, final String groupId, final String artifactId)
             throws BundlePersistenceException {
 
-        final File bundleDir = getBundleDirectory(bundleStorageDir, bucketName, groupId, artifactId);
+        final File bundleDir = getBundleDirectory(bundleStorageDir, bucketId, groupId, artifactId);
         if (!bundleDir.exists()) {
             LOGGER.warn("Extension bundle directory does not exist at {}", new Object[] {bundleDir.getAbsolutePath()});
             return;
@@ -199,12 +199,12 @@ public class FileSystemBundlePersistenceProvider implements BundlePersistencePro
         }
     }
 
-    static File getBundleDirectory(final File bundleStorageDir, final String bucketName, final String groupId, final String artifactId) {
-        return new File(bundleStorageDir, sanitize(bucketName) + "/" + sanitize(groupId) + "/" + sanitize(artifactId));
+    static File getBundleDirectory(final File bundleStorageDir, final String bucketId, final String groupId, final String artifactId) {
+        return new File(bundleStorageDir, sanitize(bucketId) + "/" + sanitize(groupId) + "/" + sanitize(artifactId));
     }
 
-    static File getBundleVersionDirectory(final File bundleStorageDir, final String bucketName, final String groupId, final String artifactId, final String version) {
-        return new File(bundleStorageDir, sanitize(bucketName) + "/" + sanitize(groupId) + "/" + sanitize(artifactId) + "/" + sanitize(version));
+    static File getBundleVersionDirectory(final File bundleStorageDir, final String bucketId, final String groupId, final String artifactId, final String version) {
+        return new File(bundleStorageDir, sanitize(bucketId) + "/" + sanitize(groupId) + "/" + sanitize(artifactId) + "/" + sanitize(version));
     }
 
     static File getBundleFile(final File parentDir, final String artifactId, final String version, final BundleContext.BundleType bundleType) {
