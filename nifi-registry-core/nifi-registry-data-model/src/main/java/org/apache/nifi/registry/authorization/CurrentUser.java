@@ -24,7 +24,7 @@ public class CurrentUser {
 
     private String identity;
     private boolean anonymous;
-    private boolean hasUiAccess;
+    private boolean canLogin;
     private ResourcePermissions resourcePermissions;
 
     @ApiModelProperty(value = "The identity of the current user", readOnly = true)
@@ -45,13 +45,14 @@ public class CurrentUser {
         this.anonymous = anonymous;
     }
 
-    @ApiModelProperty(value = "Indicates if the user has access to the UI.", readOnly = true)
-    public boolean isHasUiAccess() {
-        return hasUiAccess;
+    @ApiModelProperty(value = "Indicates if the current user can login, will only be true if the user is anonymous, " +
+            "the application is running securely, and an identity provider is configured", readOnly = true)
+    public boolean getCanLogin() {
+        return canLogin;
     }
 
-    public void setHasUiAccess(boolean hasUiAccess) {
-        this.hasUiAccess = hasUiAccess;
+    public void setCanLogin(boolean canLogin) {
+        this.canLogin = canLogin;
     }
 
     @ApiModelProperty(value = "The access that the current user has to top level resources", readOnly = true)

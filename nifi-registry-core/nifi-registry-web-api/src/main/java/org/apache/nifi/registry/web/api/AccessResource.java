@@ -125,6 +125,9 @@ public class AccessResource extends ApplicationResource {
 
         final CurrentUser currentUser = authorizationService.getCurrentUser();
 
+        final boolean canLogin = currentUser.isAnonymous() && httpServletRequest.isSecure() && identityProvider != null;
+        currentUser.setCanLogin(canLogin);
+
         return generateOkResponse(currentUser).build();
     }
 

@@ -202,8 +202,14 @@ NfRegistryWorkflowsAdministrationAuthGuard.prototype = {
                             }
                         }
                     } else {
-                        // registry security not configured, allow access to workflow perspective
-                        self.router.navigateByUrl(url);
+                        // user is anonymous and can login, so redirect to login page
+                        if (currentUser.canLogin) {
+                            self.nfStorage.removeItem('jwt');
+                            self.router.navigateByUrl('/nifi-registry/login');
+                        } else {
+                            // user is anonymous and can't login, so redirect to explorer perspective
+                            self.router.navigateByUrl(url);
+                        }
                     }
                 }
             });
@@ -265,11 +271,10 @@ NfRegistryLoginAuthGuard.prototype = {
                     self.nfRegistryService.currentUser.canActivateResourcesAuthGuard = true;
                     self.router.navigateByUrl(self.nfRegistryService.redirectUrl);
                 } else {
-                    if(self.nfRegistryService.currentUser.anonymous){
-                        self.router.navigateByUrl('/nifi-registry');
-                    } else {
-                        self.nfRegistryService.currentUser.anonymous = true;
+                    if(self.nfRegistryService.currentUser.canLogin){
                         self.router.navigateByUrl(url);
+                    } else {
+                        self.router.navigateByUrl('/nifi-registry');
                     }
                 }
             });
