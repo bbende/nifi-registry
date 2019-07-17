@@ -34,10 +34,13 @@ public class Group {
 
     private final Set<String> users;
 
+    private final Long revision;
+
     private Group(final Builder builder) {
         this.identifier = builder.identifier;
         this.name = builder.name;
         this.users = Collections.unmodifiableSet(new HashSet<>(builder.users));
+        this.revision = builder.revision == null ? 0L : builder.revision;
 
         if (this.identifier == null || this.identifier.trim().isEmpty()) {
             throw new IllegalArgumentException("Identifier can not be null or empty");
@@ -60,6 +63,13 @@ public class Group {
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * @return the revision number for the group
+     */
+    public Long getRevision() {
+        return revision;
     }
 
     /**
@@ -101,6 +111,7 @@ public class Group {
         private String identifier;
         private String name;
         private Set<String> users = new HashSet<>();
+        private Long revision;
         private final boolean fromGroup;
 
         public Builder() {
@@ -123,6 +134,7 @@ public class Group {
             this.name = other.getName();
             this.users.clear();
             this.users.addAll(other.getUsers());
+            this.revision = other.revision;
             this.fromGroup = true;
         }
 
@@ -248,6 +260,11 @@ public class Group {
          */
         public Builder clearUsers() {
             this.users.clear();
+            return this;
+        }
+
+        public Builder revision(final Long revision) {
+            this.revision = revision;
             return this;
         }
 

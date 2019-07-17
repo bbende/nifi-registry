@@ -34,6 +34,7 @@ import org.apache.nifi.registry.security.authorization.AuthorizerCapabilityDetec
 import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.security.authorization.resource.Authorizable;
 import org.apache.nifi.registry.service.AuthorizationService;
+import org.apache.nifi.registry.web.request.LongParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +49,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -336,17 +338,28 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409 + " The NiFi Registry might not be configured to use a ConfigurableAccessPolicyProvider.") })
     public Response removeAccessPolicy(
-            @Context final HttpServletRequest httpServletRequest,
+            @Context
+                final HttpServletRequest httpServletRequest,
+            @ApiParam(
+                    value = "The version is used to verify the client is working with the latest version of the entity.",
+                    required = true
+            )
+            @QueryParam(VERSION)
+                final LongParameter version,
             @ApiParam(value = "The access policy id.", required = true)
             @PathParam("id")
-            final String identifier) {
+                final String identifier) {
 
         verifyAuthorizerSupportsConfigurablePolicies();
         authorizeAccess(RequestAction.DELETE);
-        AccessPolicy deletedPolicy = authorizationService.deleteAccessPolicy(identifier);
+
+        if (version == null || version.getLong() == null) {
+            throw new IllegalArgumentException("Version is required");
+        }
+
+        final AccessPolicy deletedPolicy = authorizationService.deleteAccessPolicy(identifier, version.getLong());
         if (deletedPolicy == null) {
             logger.warn("The specified access policy id [{}] does not exist.", identifier);
-
             throw new ResourceNotFoundException("The specified policy does not exist in this registry.");
         }
         return generateOkResponse(deletedPolicy).build();

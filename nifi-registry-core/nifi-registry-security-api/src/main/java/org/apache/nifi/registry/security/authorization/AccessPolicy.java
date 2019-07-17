@@ -38,12 +38,15 @@ public class AccessPolicy {
 
     private final RequestAction action;
 
+    private final Long revision;
+
     private AccessPolicy(final Builder builder) {
         this.identifier = builder.identifier;
         this.resource = builder.resource;
         this.action = builder.action;
         this.users = Collections.unmodifiableSet(new HashSet<>(builder.users));
         this.groups = Collections.unmodifiableSet(new HashSet<>(builder.groups));
+        this.revision = builder.revision == null ? 0L : builder.revision;
 
         if (this.identifier == null || this.identifier.trim().isEmpty()) {
             throw new IllegalArgumentException("Identifier can not be null or empty");
@@ -93,6 +96,13 @@ public class AccessPolicy {
         return action;
     }
 
+    /**
+     * @return the revision for this policy
+     */
+    public Long getRevision() {
+        return revision;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -127,6 +137,7 @@ public class AccessPolicy {
         private RequestAction action;
         private Set<String> users = new HashSet<>();
         private Set<String> groups = new HashSet<>();
+        private Long revision;
         private final boolean fromPolicy;
 
         /**
@@ -155,6 +166,7 @@ public class AccessPolicy {
             this.users.addAll(other.getUsers());
             this.groups.clear();
             this.groups.addAll(other.getGroups());
+            this.revision = other.revision;
             this.fromPolicy = true;
         }
 
@@ -353,6 +365,17 @@ public class AccessPolicy {
          */
         public Builder action(final RequestAction action) {
             this.action = action;
+            return this;
+        }
+
+        /**
+         * Sets the revision for this builder.
+         *
+         * @param revision the revision to set
+         * @return the builder
+         */
+        public Builder revision(final Long revision) {
+            this.revision = revision;
             return this;
         }
 

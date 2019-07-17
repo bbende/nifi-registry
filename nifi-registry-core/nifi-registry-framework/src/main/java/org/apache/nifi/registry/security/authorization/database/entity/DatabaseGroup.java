@@ -14,22 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.security.authorization.file;
+package org.apache.nifi.registry.security.authorization.database.entity;
 
-import org.apache.commons.lang3.StringUtils;
+public class DatabaseGroup {
 
-import java.nio.charset.StandardCharsets;
-import java.util.UUID;
+    private String identifier;
 
-public final class IdentifierUtil {
+    private String identity;
 
-    static String getIdentifier(final String seed) {
-        if (StringUtils.isBlank(seed)) {
-            return null;
-        }
+    private Long version;
 
-        return UUID.nameUUIDFromBytes(seed.getBytes(StandardCharsets.UTF_8)).toString();
+    public String getIdentifier() {
+        return identifier;
     }
 
-    private IdentifierUtil() {}
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public String getIdentity() {
+        return identity;
+    }
+
+    public void setIdentity(String identity) {
+        this.identity = identity;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
+    }
 }

@@ -23,6 +23,7 @@ import org.apache.nifi.registry.properties.util.IdentityMappingUtil;
 import org.apache.nifi.registry.security.authorization.AuthorizerConfigurationContext;
 import org.apache.nifi.registry.security.authorization.ConfigurableUserGroupProvider;
 import org.apache.nifi.registry.security.authorization.Group;
+import org.apache.nifi.registry.security.authorization.IdentifierUtil;
 import org.apache.nifi.registry.security.authorization.User;
 import org.apache.nifi.registry.security.authorization.UserAndGroups;
 import org.apache.nifi.registry.security.authorization.UserGroupProviderInitializationContext;

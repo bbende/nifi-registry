@@ -35,6 +35,8 @@ import java.net.URISyntaxException;
 
 public class ApplicationResource {
 
+    public static final String VERSION = "version";
+
     public static final String PROXY_SCHEME_HTTP_HEADER = "X-ProxyScheme";
     public static final String PROXY_HOST_HTTP_HEADER = "X-ProxyHost";
     public static final String PROXY_PORT_HTTP_HEADER = "X-ProxyPort";

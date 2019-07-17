@@ -208,7 +208,7 @@ NfRegistryAddUsersToGroup.prototype = {
         }).forEach(function (filteredUser) {
             self.data.group.users.push(filteredUser);
         });
-        this.nfRegistryApi.updateUserGroup(self.data.group.identifier, self.data.group.identity, self.data.group.users).subscribe(function (group) {
+        this.nfRegistryApi.updateUserGroup(self.data.group.identifier, self.data.group.identity, self.data.group.users, self.data.group.revision).subscribe(function (group) {
             self.dialogRef.close();
             self.snackBarService.openCoaster({
                 title: 'Success',

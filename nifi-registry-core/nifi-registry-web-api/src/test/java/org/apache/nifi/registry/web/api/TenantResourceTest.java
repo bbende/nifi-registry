@@ -26,6 +26,7 @@ import org.apache.nifi.registry.security.authorization.ConfigurableAccessPolicyP
 import org.apache.nifi.registry.security.authorization.ConfigurableUserGroupProvider;
 import org.apache.nifi.registry.security.authorization.ManagedAuthorizer;
 import org.apache.nifi.registry.service.AuthorizationService;
+import org.apache.nifi.registry.web.request.LongParameter;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -107,12 +108,13 @@ public class TenantResourceTest {
     public void testDeleteUser() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         User user = new User("identifier", "identity");
+        Long version = new Long(0);
 
-        when(authorizationService.deleteUser(user.getIdentifier())).thenReturn(user);
+        when(authorizationService.deleteUser(user.getIdentifier(), version)).thenReturn(user);
 
-        tenantResource.removeUser(request, user.getIdentifier());
+        tenantResource.removeUser(request, new LongParameter(version.toString()), user.getIdentifier());
 
-        verify(authorizationService).deleteUser(user.getIdentifier());
+        verify(authorizationService).deleteUser(user.getIdentifier(), version);
         verify(eventService).publish(eq(EventFactory.userDeleted(user)));
     }
 
@@ -147,12 +149,13 @@ public class TenantResourceTest {
     public void testDeleteUserGroup() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         UserGroup userGroup = new UserGroup("identifier", "identity");
+        Long version = new Long(0);
 
-        when(authorizationService.deleteUserGroup(userGroup.getIdentifier())).thenReturn(userGroup);
+        when(authorizationService.deleteUserGroup(userGroup.getIdentifier(), version)).thenReturn(userGroup);
 
-        tenantResource.removeUserGroup(request, userGroup.getIdentifier());
+        tenantResource.removeUserGroup(request, new LongParameter(version.toString()), userGroup.getIdentifier());
 
-        verify(authorizationService).deleteUserGroup(userGroup.getIdentifier());
+        verify(authorizationService).deleteUserGroup(userGroup.getIdentifier(), version);
         verify(eventService).publish(eq(EventFactory.userGroupDeleted(userGroup)));
     }
 }

@@ -34,6 +34,7 @@ public class Tenant {
     private Boolean configurable;
     private ResourcePermissions resourcePermissions;
     private Set<AccessPolicySummary> accessPolicies;
+    private Long revision;
 
     public Tenant() {}
 
@@ -114,4 +115,15 @@ public class Tenant {
         }
     }
 
+    @ApiModelProperty(
+            value = "The revision of this entity used for optimistic locking during updates.",
+            readOnly = true
+    )
+    public Long getRevision() {
+        return revision;
+    }
+
+    public void setRevision(Long revision) {
+        this.revision = revision;
+    }
 }

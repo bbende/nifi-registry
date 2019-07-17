@@ -29,9 +29,12 @@ public class User {
 
     private final String identity;
 
+    private final Long revision;
+
     private User(final Builder builder) {
         this.identifier = builder.identifier;
         this.identity = builder.identity;
+        this.revision = builder.revision == null ? 0L : builder.revision;
 
         if (identifier == null || identifier.trim().isEmpty()) {
             throw new IllegalArgumentException("Identifier can not be null or empty");
@@ -40,7 +43,6 @@ public class User {
         if (identity == null || identity.trim().isEmpty()) {
             throw new IllegalArgumentException("Identity can not be null or empty");
         }
-
     }
 
     /**
@@ -55,6 +57,13 @@ public class User {
      */
     public String getIdentity() {
         return identity;
+    }
+
+    /**
+     * @return the revision of the user
+     */
+    public Long getRevision() {
+        return revision;
     }
 
     @Override
@@ -87,6 +96,7 @@ public class User {
 
         private String identifier;
         private String identity;
+        private Long revision;
         private final boolean fromUser;
 
         /**
@@ -110,6 +120,7 @@ public class User {
 
             this.identifier = other.getIdentifier();
             this.identity = other.getIdentity();
+            this.revision = other.revision;
             this.fromUser = true;
         }
 
@@ -173,6 +184,17 @@ public class User {
          */
         public Builder identity(final String identity) {
             this.identity = identity;
+            return this;
+        }
+
+        /**
+         * Sets the revision of the builder.
+         *
+         * @param revision the revision to be set
+         * @return the builder
+         */
+        public Builder revision(final Long revision) {
+            this.revision = revision;
             return this;
         }
 

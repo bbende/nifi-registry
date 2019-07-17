@@ -30,6 +30,7 @@ public class AccessPolicySummary {
     private String resource;
     private String action;
     private Boolean configurable;
+    private Long revision;
 
     @ApiModelProperty(value = "The id of the policy. Set by server at creation time.", readOnly = true)
     public String getIdentifier() {
@@ -71,4 +72,17 @@ public class AccessPolicySummary {
     public void setConfigurable(Boolean configurable) {
         this.configurable = configurable;
     }
+
+    @ApiModelProperty(
+            value = "The revision of this entity used for optimistic locking during updates.",
+            readOnly = true
+    )
+    public Long getRevision() {
+        return revision;
+    }
+
+    public void setRevision(Long revision) {
+        this.revision = revision;
+    }
+
 }

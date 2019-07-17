@@ -230,15 +230,20 @@ public class AuthorizationService {
         }
     }
 
-    public User deleteUser(String identifier) {
+    public User deleteUser(String identifier, Long revision) {
         verifyUserGroupProviderIsConfigurable();
         this.writeLock.lock();
         try {
-            User deletedUserDTO = getUser(identifier);
-            if (deletedUserDTO != null) {
-                ((ConfigurableUserGroupProvider) userGroupProvider).deleteUser(identifier);
+            final org.apache.nifi.registry.security.authorization.User user = userGroupProvider.getUser(identifier);
+            if (user != null) {
+                // Set the revision from the client in the retrieved user to ensure we only delete if revisions match
+                final org.apache.nifi.registry.security.authorization.User userWithRevision =
+                        new org.apache.nifi.registry.security.authorization.User.Builder(user)
+                                .revision(revision)
+                                .build();
+                ((ConfigurableUserGroupProvider) userGroupProvider).deleteUser(userWithRevision);
             }
-            return deletedUserDTO;
+            return userToDTO(user);
         } finally {
             this.writeLock.unlock();
         }
@@ -292,15 +297,19 @@ public class AuthorizationService {
         }
     }
 
-    public UserGroup deleteUserGroup(String identifier) {
+    public UserGroup deleteUserGroup(String identifier, Long revision) {
         verifyUserGroupProviderIsConfigurable();
         writeLock.lock();
         try {
-            final UserGroup userGroupDTO = getUserGroup(identifier);
-            if (userGroupDTO != null) {
-                ((ConfigurableUserGroupProvider) userGroupProvider).deleteGroup(identifier);
+            final Group group = userGroupProvider.getGroup(identifier);
+            if (group != null) {
+                // Set the revision from the client in the retrieved group to ensure we only delete if revisions match
+                final Group groupWithRevision = new Group.Builder(group)
+                        .revision(revision)
+                        .build();
+                ((ConfigurableUserGroupProvider) userGroupProvider).deleteGroup(groupWithRevision);
             }
-            return userGroupDTO;
+            return userGroupToDTO(group);
         } finally {
             writeLock.unlock();
         }
@@ -413,15 +422,20 @@ public class AuthorizationService {
         }
     }
 
-    public AccessPolicy deleteAccessPolicy(String identifier) {
+    public AccessPolicy deleteAccessPolicy(String identifier, Long revision) {
         verifyAccessPolicyProviderIsConfigurable();
         writeLock.lock();
         try {
-            AccessPolicy deletedAccessPolicyDTO = getAccessPolicy(identifier);
-            if (deletedAccessPolicyDTO != null) {
-                ((ConfigurableAccessPolicyProvider) accessPolicyProvider).deleteAccessPolicy(identifier);
+            final org.apache.nifi.registry.security.authorization.AccessPolicy deletedAccessPolicy = accessPolicyProvider.getAccessPolicy(identifier);
+            if (deletedAccessPolicy != null) {
+                // Set the revision from the client in the retrieved access policy to ensure we only delete when revisions match
+                final org.apache.nifi.registry.security.authorization.AccessPolicy accessPolicyWithRevision =
+                        new org.apache.nifi.registry.security.authorization.AccessPolicy.Builder(deletedAccessPolicy)
+                                .revision(revision)
+                                .build();
+                ((ConfigurableAccessPolicyProvider) accessPolicyProvider).deleteAccessPolicy(accessPolicyWithRevision);
             }
-            return deletedAccessPolicyDTO;
+            return accessPolicyToDTO(deletedAccessPolicy);
         } finally {
             writeLock.unlock();
         }
@@ -570,6 +584,7 @@ public class AuthorizationService {
         userDTO.setResourcePermissions(getTopLevelPermissions(userDTO.getIdentifier()));
         userDTO.addUserGroups(groupsContainingUser);
         userDTO.addAccessPolicies(accessPolicySummaries);
+        userDTO.setRevision(user.getRevision());
         return userDTO;
     }
 
@@ -588,6 +603,7 @@ public class AuthorizationService {
         userGroupDTO.setResourcePermissions(getTopLevelPermissions(userGroupDTO.getIdentifier()));
         userGroupDTO.addUsers(userTenants);
         userGroupDTO.addAccessPolicies(accessPolicySummaries);
+        userGroupDTO.setRevision(userGroup.getRevision());
         return userGroupDTO;
     }
 
@@ -604,7 +620,7 @@ public class AuthorizationService {
 
         Boolean isConfigurable = AuthorizerCapabilityDetection.isAccessPolicyConfigurable(authorizer, accessPolicy);
 
-        return accessPolicyToDTO(accessPolicy, userGroups, users, isConfigurable);
+        return accessPolicyToDTO(accessPolicy, userGroups, users, isConfigurable, accessPolicy.getRevision());
     }
 
     private Tenant tenantIdToDTO(String identifier) {
@@ -635,6 +651,7 @@ public class AuthorizationService {
         accessPolicySummaryDTO.setAction(accessPolicy.getAction().toString());
         accessPolicySummaryDTO.setResource(accessPolicy.getResource());
         accessPolicySummaryDTO.setConfigurable(isConfigurable);
+        accessPolicySummaryDTO.setRevision(accessPolicy.getRevision());
         return accessPolicySummaryDTO;
     }
 
@@ -644,6 +661,7 @@ public class AuthorizationService {
         }
         Tenant tenantDTO = new Tenant(user.getIdentifier(), user.getIdentity());
         tenantDTO.setConfigurable(AuthorizerCapabilityDetection.isUserConfigurable(authorizer, user));
+        tenantDTO.setRevision(user.getRevision());
         return tenantDTO;
     }
 
@@ -653,6 +671,7 @@ public class AuthorizationService {
         }
         Tenant tenantDTO = new Tenant(group.getIdentifier(), group.getName());
         tenantDTO.setConfigurable(AuthorizerCapabilityDetection.isGroupConfigurable(authorizer, group));
+        tenantDTO.setRevision(group.getRevision());
         return tenantDTO;
     }
 
@@ -674,6 +693,7 @@ public class AuthorizationService {
         return new org.apache.nifi.registry.security.authorization.User.Builder()
                 .identifier(userDTO.getIdentifier() != null ? userDTO.getIdentifier() : UUID.randomUUID().toString())
                 .identity(userDTO.getIdentity())
+                .revision(userDTO.getRevision())
                 .build();
     }
 
@@ -684,7 +704,8 @@ public class AuthorizationService {
         }
         org.apache.nifi.registry.security.authorization.Group.Builder groupBuilder = new org.apache.nifi.registry.security.authorization.Group.Builder()
                 .identifier(userGroupDTO.getIdentifier() != null ? userGroupDTO.getIdentifier() : UUID.randomUUID().toString())
-                .name(userGroupDTO.getIdentity());
+                .name(userGroupDTO.getIdentity())
+                .revision(userGroupDTO.getRevision());
         Set<Tenant> users = userGroupDTO.getUsers();
         if (users != null) {
             groupBuilder.addUsers(users.stream().map(Tenant::getIdentifier).collect(Collectors.toSet()));
@@ -698,7 +719,8 @@ public class AuthorizationService {
                 new org.apache.nifi.registry.security.authorization.AccessPolicy.Builder()
                         .identifier(accessPolicyDTO.getIdentifier() != null ? accessPolicyDTO.getIdentifier() : UUID.randomUUID().toString())
                         .resource(accessPolicyDTO.getResource())
-                        .action(RequestAction.valueOfValue(accessPolicyDTO.getAction()));
+                        .action(RequestAction.valueOfValue(accessPolicyDTO.getAction()))
+                        .revision(accessPolicyDTO.getRevision());
 
         Set<Tenant> dtoUsers = accessPolicyDTO.getUsers();
         if (accessPolicyDTO.getUsers() != null) {
@@ -717,7 +739,8 @@ public class AuthorizationService {
             final org.apache.nifi.registry.security.authorization.AccessPolicy accessPolicy,
             final Collection<? extends Tenant> userGroups,
             final Collection<? extends Tenant> users,
-            final Boolean isConfigurable) {
+            final Boolean isConfigurable,
+            final Long revision) {
 
         if (accessPolicy == null) {
             return null;
@@ -730,6 +753,7 @@ public class AuthorizationService {
         accessPolicyDTO.setConfigurable(isConfigurable);
         accessPolicyDTO.addUsers(users);
         accessPolicyDTO.addUserGroups(userGroups);
+        accessPolicyDTO.setRevision(revision);
         return accessPolicyDTO;
     }
 

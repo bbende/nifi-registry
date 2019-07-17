@@ -197,7 +197,7 @@ NfRegistryAddPolicyToBucket.prototype = {
                         policy.userGroups.push(self.userOrGroup);
                     }
                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                        policy.resource, policy.users, policy.userGroups).subscribe(
+                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                         function (response) {
                             // policy updated!!!...now update the view
                             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier).subscribe(function (response) {
@@ -258,7 +258,7 @@ NfRegistryAddPolicyToBucket.prototype = {
                         policy.userGroups.push(self.userOrGroup);
                     }
                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                        policy.resource, policy.users, policy.userGroups).subscribe(
+                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                         function (response) {
                             // policy updated!!!...now update the view
                             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier).subscribe(function (response) {
@@ -319,7 +319,7 @@ NfRegistryAddPolicyToBucket.prototype = {
                         policy.userGroups.push(self.userOrGroup);
                     }
                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                        policy.resource, policy.users, policy.userGroups).subscribe(
+                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                         function (response) {
                             // policy updated!!!...now update the view
                             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier).subscribe(function (response) {

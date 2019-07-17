@@ -38,6 +38,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -49,6 +51,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.sql.DataSource;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
@@ -83,6 +86,8 @@ import static org.junit.Assert.assertTrue;
 @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:db/clearDB.sql")
 public class SecureLdapIT extends IntegrationTestBase {
 
+    private static Logger LOGGER = LoggerFactory.getLogger(SecureLdapIT.class);
+
     private static final String tokenLoginPath = "access/token/login";
     private static final String tokenIdentityProviderPath = "access/token/identity-provider";
 
@@ -95,9 +100,13 @@ public class SecureLdapIT extends IntegrationTestBase {
         @Primary
         @Bean
         @DependsOn({"directoryServer"}) // Can't load LdapUserGroupProvider until the embedded LDAP server, which creates the "directoryServer" bean, is running
-        public static Authorizer getAuthorizer(@Autowired NiFiRegistryProperties properties, ExtensionManager extensionManager, RegistryService registryService) throws Exception {
+        public static Authorizer getAuthorizer(
+                @Autowired NiFiRegistryProperties properties,
+                ExtensionManager extensionManager,
+                RegistryService registryService,
+                DataSource dataSource) throws Exception {
             if (authorizerFactory == null) {
-                authorizerFactory = new AuthorizerFactory(properties, extensionManager, sensitivePropertyProvider(), registryService);
+                authorizerFactory = new AuthorizerFactory(properties, extensionManager, sensitivePropertyProvider(), registryService, dataSource);
             }
             return authorizerFactory.getAuthorizer();
         }
@@ -609,9 +618,8 @@ public class SecureLdapIT extends IntegrationTestBase {
                 .map(AccessPolicy::getIdentifier)
                 .collect(Collectors.toSet());
 
-        Set<String> policiesToDelete = currentAccessPolicies.stream()
+        Set<AccessPolicy> policiesToDelete = currentAccessPolicies.stream()
                 .filter(p -> !policiesToRestore.contains(p.getIdentifier()))
-                .map(AccessPolicy::getIdentifier)
                 .collect(Collectors.toSet());
 
         for (AccessPolicy originalPolicy : accessPoliciesSnapshot) {
@@ -638,14 +646,15 @@ public class SecureLdapIT extends IntegrationTestBase {
 
         }
 
-        for (String id : policiesToDelete) {
+        for (AccessPolicy policyToDelete : policiesToDelete) {
             try {
-                client.target(createURL("policies/" + id))
+                client.target(createURL("policies/" + policyToDelete.getIdentifier()))
+                        .queryParam("version", policyToDelete.getRevision().longValue())
                         .request()
                         .header("Authorization", "Bearer " + adminAuthToken)
                         .delete();
             } catch (Exception e) {
-                // do nothing
+                LOGGER.error("Error cleaning up policies after test due to: " + e.getMessage(), e);
             }
         }
 

@@ -142,7 +142,7 @@ NfRegistryManageGroup.prototype = {
                                     // resource exists, let's update it
                                     policy.userGroups.push(self.nfRegistryService.group);
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                        policy.resource, policy.users, policy.userGroups).subscribe(
+                                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                         function (response) {
                                             // can manage buckets privileges updated!!!...now update the view
                                             response.userGroups.forEach(function (group) {
@@ -176,7 +176,7 @@ NfRegistryManageGroup.prototype = {
                                         return (group.identifier !== self.nfRegistryService.group.identifier);
                                     });
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                        policy.resource, policy.users, policy.userGroups).subscribe(
+                                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                         function (response) {
                                             // can manage buckets privileges updated!!!...now update the view
                                             self.nfRegistryApi.getUserGroup(self.nfRegistryService.group.identifier).subscribe(function (response) {
@@ -226,7 +226,7 @@ NfRegistryManageGroup.prototype = {
                                     // resource exists, let's update it
                                     policy.userGroups.push(self.nfRegistryService.group);
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                        policy.resource, policy.users, policy.userGroups).subscribe(
+                                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                         function (response) {
                                             // can manage tenants privileges updated!!!...now update the view
                                             response.userGroups.forEach(function (group) {
@@ -260,7 +260,7 @@ NfRegistryManageGroup.prototype = {
                                         return (group.identifier !== self.nfRegistryService.group.identifier);
                                     });
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                        policy.resource, policy.users, policy.userGroups).subscribe(
+                                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                         function (response) {
                                             // can manage tenants privileges updated!!!...now update the view
                                             self.nfRegistryApi.getUserGroup(self.nfRegistryService.group.identifier).subscribe(function (response) {
@@ -310,7 +310,7 @@ NfRegistryManageGroup.prototype = {
                                     // resource exists, let's update it
                                     policy.userGroups.push(self.nfRegistryService.group);
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                        policy.resource, policy.users, policy.userGroups).subscribe(
+                                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                         function (response) {
                                             // can manage policies privileges updated!!!...now update the view
                                             response.userGroups.forEach(function (group) {
@@ -344,7 +344,7 @@ NfRegistryManageGroup.prototype = {
                                         return (group.identifier !== self.nfRegistryService.group.identifier);
                                     });
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                        policy.resource, policy.users, policy.userGroups).subscribe(
+                                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                         function (response) {
                                             // can manage policies privileges updated!!!...now update the view
                                             self.nfRegistryApi.getUserGroup(self.nfRegistryService.group.identifier).subscribe(function (response) {
@@ -394,7 +394,7 @@ NfRegistryManageGroup.prototype = {
                                     // resource exists, let's update it
                                     policy.userGroups.push(self.nfRegistryService.group);
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                        policy.resource, policy.users, policy.userGroups).subscribe(
+                                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                         function (response) {
                                             // can manage proxy privileges updated!!!...now update the view
                                             response.userGroups.forEach(function (group) {
@@ -428,7 +428,7 @@ NfRegistryManageGroup.prototype = {
                                         return (group.identifier !== self.nfRegistryService.group.identifier);
                                     });
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                        policy.resource, policy.users, policy.userGroups).subscribe(
+                                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                         function (response) {
                                             // can manage proxy privileges updated!!!...now update the view
                                             self.nfRegistryApi.getUserGroup(self.nfRegistryService.group.identifier).subscribe(function (response) {

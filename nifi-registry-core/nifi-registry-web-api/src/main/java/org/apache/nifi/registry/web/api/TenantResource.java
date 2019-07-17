@@ -35,6 +35,7 @@ import org.apache.nifi.registry.security.authorization.AuthorizerCapabilityDetec
 import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.security.authorization.resource.Authorizable;
 import org.apache.nifi.registry.service.AuthorizationService;
+import org.apache.nifi.registry.web.request.LongParameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +50,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -300,15 +302,25 @@ public class TenantResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response removeUser(
             @Context
-            final HttpServletRequest httpServletRequest,
+                final HttpServletRequest httpServletRequest,
+            @ApiParam(
+                    value = "The version is used to verify the client is working with the latest version of the entity.",
+                    required = true
+            )
+            @QueryParam(VERSION)
+                final LongParameter version,
             @ApiParam(value = "The user id.", required = true)
             @PathParam("id")
-            final String identifier) {
+                final String identifier) {
 
         verifyAuthorizerSupportsConfigurableUserGroups();
         authorizeAccess(RequestAction.DELETE);
 
-        final User user = authorizationService.deleteUser(identifier);
+        if (version == null || version.getLong() == null) {
+            throw new IllegalArgumentException("Version is required");
+        }
+
+        final User user = authorizationService.deleteUser(identifier, version.getLong());
         if (user == null) {
             logger.warn("The specified user id [{}] does not exist.", identifier);
 
@@ -540,17 +552,26 @@ public class TenantResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response removeUserGroup(
             @Context
-            final HttpServletRequest httpServletRequest,
+                final HttpServletRequest httpServletRequest,
+            @ApiParam(
+                    value = "The version is used to verify the client is working with the latest version of the entity.",
+                    required = true
+            )
+            @QueryParam(VERSION)
+                final LongParameter version,
             @ApiParam(value = "The user group id.", required = true)
             @PathParam("id")
-            final String identifier) {
+                final String identifier) {
         verifyAuthorizerSupportsConfigurableUserGroups();
         authorizeAccess(RequestAction.DELETE);
 
-        final UserGroup userGroup = authorizationService.deleteUserGroup(identifier);
+        if (version == null || version.getLong() == null) {
+            throw new IllegalArgumentException("Version is required");
+        }
+
+        final UserGroup userGroup = authorizationService.deleteUserGroup(identifier, version.getLong());
         if (userGroup == null) {
             logger.warn("The specified user group id [{}] does not exist.", identifier);
-
             throw new ResourceNotFoundException("The specified user group ID does not exist in this registry.");
         }
         publish(EventFactory.userGroupDeleted(userGroup));
