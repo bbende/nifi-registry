@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.security.authorization.file;
+package org.apache.nifi.registry.security.authorization;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -23,7 +23,7 @@ import java.util.UUID;
 
 public final class IdentifierUtil {
 
-    static String getIdentifier(final String seed) {
+    public static String getIdentifier(final String seed) {
         if (StringUtils.isBlank(seed)) {
             return null;
         }

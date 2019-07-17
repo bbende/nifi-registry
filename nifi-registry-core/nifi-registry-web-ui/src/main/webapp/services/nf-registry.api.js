@@ -162,7 +162,13 @@ NfRegistryApi.prototype = {
      */
     createBucket: function (name, allowPublicRead) {
         var self = this;
-        return this.http.post('../nifi-registry-api/buckets', {'name': name, 'allowPublicRead': allowPublicRead}, headers).pipe(
+        return this.http.post('../nifi-registry-api/buckets', {
+            'name': name,
+            'allowPublicRead': allowPublicRead,
+            'revision': {
+                'version': 0
+            }
+        }, headers).pipe(
             map(function (response) {
                 return response;
             }),
@@ -331,6 +337,9 @@ NfRegistryApi.prototype = {
                     canWrite: false,
                     canDelete: false
                 }
+            },
+            revision: {
+                version: 0
             }
         }, headers).pipe(
             map(function (response) {
@@ -353,12 +362,14 @@ NfRegistryApi.prototype = {
      *
      * @param {string} identifier   The identifier of the user.
      * @param {string} identity     The identity of the user.
+     * @param {string} revision     The revision of the user.
      * @returns {*}
      */
-    updateUser: function (identifier, identity) {
+    updateUser: function (identifier, identity, revision) {
         return this.http.put('../nifi-registry-api/tenants/users/' + identifier, {
             'identifier': identifier,
-            'identity': identity
+            'identity': identity,
+            'revision': revision
         }, headers).pipe(
             map(function (response) {
                 return response;
@@ -500,7 +511,10 @@ NfRegistryApi.prototype = {
         return this.http.post('../nifi-registry-api/tenants/user-groups', {
             'identifier': identifier,
             'identity': identity,
-            'users': users
+            'users': users,
+            'revision': {
+                'version': 0
+            }
         }, headers).pipe(
             map(function (response) {
                 return response;
@@ -522,14 +536,16 @@ NfRegistryApi.prototype = {
      *
      * @param {string}  identifier   The identifier of the group.
      * @param {string}  identity     The identity of the group.
-     * @param {array}   users         The array of users in the new group.
+     * @param {array}   users        The array of users in the new group.
+     * @param {string}  revision     The revision of the group.
      * @returns {*}
      */
-    updateUserGroup: function (identifier, identity, users) {
+    updateUserGroup: function (identifier, identity, users, revision) {
         return this.http.put('../nifi-registry-api/tenants/user-groups/' + identifier, {
             'identifier': identifier,
             'identity': identity,
-            'users': users
+            'users': users,
+            'revision': revision
         }, headers).pipe(
             map(function (response) {
                 return response;
@@ -604,14 +620,15 @@ NfRegistryApi.prototype = {
      * @param {string} userGroups   The user groups with resource privileges.
      * @returns {*}
      */
-    putPolicyActionResource: function (identifier, action, resource, users, userGroups) {
+    putPolicyActionResource: function (identifier, action, resource, users, userGroups, revision) {
         var self = this;
         return this.http.put('../nifi-registry-api/policies/' + identifier, {
             'identifier': identifier,
             'resource': resource,
             'action': action,
             'users': users,
-            'userGroups': userGroups
+            'userGroups': userGroups,
+            'revision': revision
         }, headers).pipe(
             map(function (response) {
                 return response;

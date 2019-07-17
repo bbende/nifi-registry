@@ -26,6 +26,7 @@ import org.apache.nifi.registry.revision.standard.StandardRevisionUpdate;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 /**
@@ -72,7 +73,7 @@ public class StandardRevisableEntityService implements RevisableEntityService {
     @Override
     public <T extends RevisableEntity> List<T> getEntities(final Supplier<List<T>> getEntities) {
         final List<T> entities = getEntities.get();
-        populateRevisions(entities);
+        populateRevisableEntityRevisions(entities);
         return entities;
     }
 
@@ -108,6 +109,32 @@ public class StandardRevisableEntityService implements RevisableEntityService {
         return revisionManager.deleteRevision(claim, () -> deleteEntity.get());
     }
 
+    @Override
+    public void populateRevisions(final Collection<?> entities) {
+        if (entities == null || entities.isEmpty()) {
+            return;
+        }
+
+        // Note: This might be inefficient to retrieve all the revisions when there are lots of revisions
+        // and only a few entities that we might need revisions for, we could consider allowing a set of
+        // entity ids to be passed in, but then we also might end up with a massive OR statement when selecting
+        final Map<String,Revision> revisionMap = revisionManager.getRevisionMap();
+
+        for (final Object obj : entities) {
+            if (obj instanceof RevisableEntity) {
+                final RevisableEntity revisableEntity = (RevisableEntity) obj;
+                final Revision revision = revisionMap.get(revisableEntity.getIdentifier());
+                if (revision != null) {
+                    final RevisionInfo revisionInfo = createRevisionInfo(revision);
+                    revisableEntity.setRevision(revisionInfo);
+                } else {
+                    final RevisionInfo revisionInfo = new RevisionInfo(null, 0L);
+                    revisableEntity.setRevision(revisionInfo);
+                }
+            }
+        }
+    }
+
     private <T extends RevisableEntity> T createOrUpdate(final T requestEntity, final String userIdentity, final Supplier<T> updateOrCreateEntity) {
         final Revision revision = createRevision(requestEntity.getIdentifier(), requestEntity.getRevision());
         final RevisionClaim claim = new StandardRevisionClaim(revision);
@@ -127,13 +154,22 @@ public class StandardRevisableEntityService implements RevisableEntityService {
         return revisionUpdate.getEntity();
     }
 
-    private <T extends RevisableEntity> void populateRevisions(final Collection<T> revisableEntities) {
+    private <T extends RevisableEntity> void populateRevisableEntityRevisions(final Collection<T> revisableEntities) {
         if (revisableEntities == null) {
             return;
         }
 
+        final Map<String,Revision> revisionMap = revisionManager.getRevisionMap();
+
         revisableEntities.forEach(e -> {
-            populateRevision(e);
+            final Revision revision = revisionMap.get(e.getIdentifier());
+            if (revision != null) {
+                final RevisionInfo revisionInfo = createRevisionInfo(revision);
+                e.setRevision(revisionInfo);
+            } else {
+                final RevisionInfo revisionInfo = new RevisionInfo(null, 0L);
+                e.setRevision(revisionInfo);
+            }
         });
     }
 
