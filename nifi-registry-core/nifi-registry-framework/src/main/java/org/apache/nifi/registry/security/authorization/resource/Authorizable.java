@@ -95,14 +95,21 @@ public interface Authorizable {
             userContext = null;
         }
 
-        // Note: We don't include the proxy identities here since this is not a direct attempt to access the resource and
-        // we just want to determine if the end user is authorized. The proxy identities will be authorized when calling
-        // Authorizable.authorize() during a direct access attempt for a resource.
+        final List<String> proxyChain = new ArrayList<>();
+        final List<NiFiUser> proxyNiFiUsers = new ArrayList<>();
+        NiFiUser proxyUser = user.getChain();
+        while (proxyUser  != null) {
+            proxyChain.add(proxyUser.getIdentity());
+            proxyNiFiUsers.add(proxyUser);
+            proxyUser = proxyUser.getChain();
+        }
 
         final Resource resource = getResource();
         final Resource requestedResource = getRequestedResource();
         final AuthorizationRequest request = new AuthorizationRequest.Builder()
                 .identity(user.getIdentity())
+                .proxyIdentities(proxyChain)
+                .proxyNiFiUsers(proxyNiFiUsers)
                 .groups(user.getGroups())
                 .anonymous(user.isAnonymous())
                 .accessAttempt(false)
@@ -212,9 +219,11 @@ public interface Authorizable {
         }
 
         final List<String> proxyChain = new ArrayList<>();
+        final List<NiFiUser> proxyNiFiUsers = new ArrayList<>();
         NiFiUser proxyUser = user.getChain();
         while (proxyUser  != null) {
             proxyChain.add(proxyUser.getIdentity());
+            proxyNiFiUsers.add(proxyUser);
             proxyUser = proxyUser.getChain();
         }
 
@@ -223,6 +232,7 @@ public interface Authorizable {
         final AuthorizationRequest request = new AuthorizationRequest.Builder()
                 .identity(user.getIdentity())
                 .proxyIdentities(proxyChain)
+                .proxyNiFiUsers(proxyNiFiUsers)
                 .groups(user.getGroups())
                 .anonymous(user.isAnonymous())
                 .accessAttempt(true)
