@@ -70,6 +70,8 @@ public interface ServiceFacade {
 
     Bucket deleteBucket(String bucketIdentifier, RevisionInfo revisionInfo);
 
+    boolean isPublicReadAllowed(String bucketIdentifier);
+
     // ---------------------- BucketItem methods ----------------------------------------------
 
     List<BucketItem> getBucketItems(String bucketIdentifier);

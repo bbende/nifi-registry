@@ -114,7 +114,10 @@ public class X509IdentityProvider implements IdentityProvider {
 
         // extract the proxiedEntitiesChain header value from the servletRequest
         final String proxiedEntitiesChainHeader = servletRequest.getHeader(ProxiedEntitiesUtils.PROXY_ENTITIES_CHAIN);
-        final X509AuthenticationRequestDetails details = new X509AuthenticationRequestDetails(proxiedEntitiesChainHeader, servletRequest.getMethod());
+        final X509AuthenticationRequestDetails details = new X509AuthenticationRequestDetails(
+                proxiedEntitiesChainHeader,
+                servletRequest.getMethod(),
+                servletRequest.getContextPath());
 
         return new AuthenticationRequest(principal, certificates[0], details);
 

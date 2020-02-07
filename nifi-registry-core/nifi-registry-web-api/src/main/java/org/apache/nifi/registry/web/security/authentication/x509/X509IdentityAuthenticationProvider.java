@@ -22,6 +22,12 @@ import org.apache.nifi.registry.security.authentication.AuthenticationRequest;
 import org.apache.nifi.registry.security.authentication.AuthenticationResponse;
 import org.apache.nifi.registry.security.authentication.IdentityProvider;
 import org.apache.nifi.registry.security.authorization.Authorizer;
+import org.apache.nifi.registry.security.authorization.RequestAction;
+import org.apache.nifi.registry.security.authorization.Resource;
+import org.apache.nifi.registry.security.authorization.exception.AccessDeniedException;
+import org.apache.nifi.registry.security.authorization.resource.Authorizable;
+import org.apache.nifi.registry.security.authorization.resource.ResourceFactory;
+import org.apache.nifi.registry.security.authorization.resource.ResourceType;
 import org.apache.nifi.registry.security.authorization.user.NiFiUser;
 import org.apache.nifi.registry.security.authorization.user.NiFiUserDetails;
 import org.apache.nifi.registry.security.authorization.user.StandardNiFiUser;
@@ -29,6 +35,11 @@ import org.apache.nifi.registry.security.util.ProxiedEntitiesUtils;
 import org.apache.nifi.registry.web.security.authentication.AuthenticationRequestToken;
 import org.apache.nifi.registry.web.security.authentication.AuthenticationSuccessToken;
 import org.apache.nifi.registry.web.security.authentication.IdentityAuthenticationProvider;
+import org.apache.nifi.registry.web.security.authentication.exception.UntrustedProxyException;
+import org.apache.nifi.registry.web.service.ServiceFacade;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpMethod;
 
 import java.util.List;
 import java.util.ListIterator;
@@ -36,8 +47,26 @@ import java.util.Set;
 
 public class X509IdentityAuthenticationProvider extends IdentityAuthenticationProvider {
 
-    public X509IdentityAuthenticationProvider(NiFiRegistryProperties properties, Authorizer authorizer, IdentityProvider identityProvider) {
+    private static final Logger LOGGER = LoggerFactory.getLogger(X509IdentityAuthenticationProvider.class);
+
+    private static final Authorizable PROXY_AUTHORIZABLE = new Authorizable() {
+        @Override
+        public Authorizable getParentAuthorizable() {
+            return null;
+        }
+
+        @Override
+        public Resource getResource() {
+            return ResourceFactory.getProxyResource();
+        }
+    };
+
+    private ServiceFacade serviceFacade;
+
+    public X509IdentityAuthenticationProvider(NiFiRegistryProperties properties, Authorizer authorizer,
+                                              IdentityProvider identityProvider, ServiceFacade serviceFacade) {
         super(properties, authorizer, identityProvider);
+        this.serviceFacade = serviceFacade;
     }
 
     @Override
@@ -63,6 +92,33 @@ public class X509IdentityAuthenticationProvider extends IdentityAuthenticationPr
         final List<String> proxyChain = ProxiedEntitiesUtils.tokenizeProxiedEntitiesChain(proxiedEntitiesChain);
         proxyChain.add(response.getIdentity());
 
+        final String httpMethodStr = x509RequestDetails.getHttpMethod().toUpperCase();
+        final HttpMethod httpMethod = HttpMethod.resolve(httpMethodStr);
+        LOGGER.debug("HTTP method is {}", new Object[]{httpMethod});
+
+        // Map the http method to the appropriate request action
+        RequestAction requestAction;
+        switch (httpMethod) {
+            case POST:
+            case PUT:
+            case PATCH:
+                requestAction = RequestAction.WRITE;
+                break;
+            case DELETE:
+                requestAction = RequestAction.DELETE;
+                break;
+            default:
+                requestAction = RequestAction.READ;
+                break;
+        }
+        LOGGER.debug("RequestAction is {}", new Object[]{requestAction});
+
+        final String contextPath = x509RequestDetails.getContextPath();
+        LOGGER.debug("Context path is {}", new Object[]{contextPath});
+
+        final boolean readRequestForPublicBucket = isPublicReadAllowed(contextPath, requestAction);
+        LOGGER.debug("Read request for public bucket = {}", new Object[]{readRequestForPublicBucket});
+
         // add the chain as appropriate to each proxy
         NiFiUser proxy = null;
         for (final ListIterator<String> chainIter = proxyChain.listIterator(proxyChain.size()); chainIter.hasPrevious(); ) {
@@ -81,9 +137,18 @@ public class X509IdentityAuthenticationProvider extends IdentityAuthenticationPr
             // Only set the client address for client making the request because we don't know the clientAddress of the proxied entities
             String clientAddress = (proxy == null) ? requestToken.getClientAddress() : null;
             proxy = createUser(identity, groups, proxy, clientAddress, isAnonymous);
-        }
 
-        // Defer authorization of proxy until later in FrameworkAuthorizer
+            if (chainIter.hasPrevious()) {
+                // Authorize the proxy for the given action only if the request is NOT a READ on a public bucket
+                if (!readRequestForPublicBucket) {
+                    try {
+                        PROXY_AUTHORIZABLE.authorize(authorizer, requestAction, proxy);
+                    } catch (final AccessDeniedException e) {
+                        throw new UntrustedProxyException(String.format("Untrusted proxy for %s operation [%s].", requestAction.toString(), proxy.getIdentity()));
+                    }
+                }
+            }
+        }
 
         return new AuthenticationSuccessToken(new NiFiUserDetails(proxy));
     }
@@ -104,5 +169,29 @@ public class X509IdentityAuthenticationProvider extends IdentityAuthenticationPr
             return new StandardNiFiUser.Builder().identity(identity).groups(groups).chain(chain).clientAddress(clientAddress).build();
         }
     }
+
+    private boolean isPublicReadAllowed(final String contextPath, final RequestAction action) {
+        if (contextPath == null || action == null) {
+            return false;
+        }
+
+        if (!contextPath.startsWith(ResourceType.Bucket.getValue() + "/")
+                && !contextPath.startsWith("/" + ResourceType.Bucket.getValue() + "/")) {
+            return false;
+        }
+
+        if (action != RequestAction.READ) {
+            return false;
+        }
+
+        final int lastSlashIndex = contextPath.lastIndexOf("/");
+        if (lastSlashIndex < 0 || lastSlashIndex >= contextPath.length() - 1) {
+            return false;
+        }
+
+        final String bucketId = contextPath.substring(lastSlashIndex + 1);
+        return serviceFacade.isPublicReadAllowed(bucketId);
+    }
+
 
 }

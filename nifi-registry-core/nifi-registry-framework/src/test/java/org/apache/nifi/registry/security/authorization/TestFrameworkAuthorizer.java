@@ -23,7 +23,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
 
-import java.util.Arrays;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
@@ -76,6 +75,8 @@ public class TestFrameworkAuthorizer {
                 .identity("anonymous")
                 .anonymous(true)
                 .build();
+
+        when(registryService.isPublicReadAllowed(bucketPublic.getIdentifier())).thenReturn(true);
 
         final AuthorizationResult result = frameworkAuthorizer.authorize(request);
         assertNotNull(result);
@@ -138,8 +139,9 @@ public class TestFrameworkAuthorizer {
                 .accessAttempt(true)
                 .identity("user1")
                 .anonymous(false)
-                .proxyIdentities(Arrays.asList("proxy1", "proxy2"))
                 .build();
+
+        when(registryService.isPublicReadAllowed(bucketPublic.getIdentifier())).thenReturn(true);
 
         final AuthorizationResult result = frameworkAuthorizer.authorize(request);
         assertNotNull(result);
@@ -149,65 +151,6 @@ public class TestFrameworkAuthorizer {
         verify(wrappedAuthorizer, times(0)).authorize(any(AuthorizationRequest.class));
     }
 
-    @Test
-    public void testReadNonPublicBucketWhenNotAnonymousAndAuthorizedProxies() {
-        final Resource resource = ResourceFactory.getBucketResource(bucketNotPublic.getIdentifier(), bucketNotPublic.getName());
-
-        final AuthorizationRequest request = new AuthorizationRequest.Builder()
-                .resource(resource)
-                .requestedResource(resource)
-                .action(RequestAction.READ)
-                .accessAttempt(true)
-                .identity("user1")
-                .anonymous(false)
-                .proxyIdentities(Arrays.asList("proxy1", "proxy2"))
-                .build();
-
-        // since the bucket is not public it will fall through to the wrapped authorizer
-        when(wrappedAuthorizer.authorize(any(AuthorizationRequest.class)))
-                .thenReturn(AuthorizationResult.approved());
-
-        final AuthorizationResult result = frameworkAuthorizer.authorize(request);
-        assertNotNull(result);
-        assertEquals(AuthorizationResult.Result.Approved, result.getResult());
-
-        // should make 3 calls to the wrapped authorizer to authorize user1, proxy1, proxy2
-        verify(wrappedAuthorizer, times(3)).authorize(any(AuthorizationRequest.class));
-    }
-
-    @Test
-    public void testReadNonPublicBucketWhenNotAnonymousAndUnauthorizedProxy() {
-        final Resource resource = ResourceFactory.getBucketResource(bucketNotPublic.getIdentifier(), bucketNotPublic.getName());
-
-        final AuthorizationRequest request = new AuthorizationRequest.Builder()
-                .resource(resource)
-                .requestedResource(resource)
-                .action(RequestAction.READ)
-                .accessAttempt(true)
-                .identity("user1")
-                .anonymous(false)
-                .proxyIdentities(Arrays.asList("proxy1", "proxy2"))
-                .build();
-
-        // since the bucket is not public and the user is not anonymous, it will continue to proxy authorization
-
-        // simulate the first proxy being authorized for READ actions
-        final AuthorizationRequestMatcher proxy1Matcher = new AuthorizationRequestMatcher(
-                "proxy1", ResourceFactory.getProxyResource(), request.getAction());
-        when(wrappedAuthorizer.authorize(argThat(proxy1Matcher))).thenReturn(AuthorizationResult.approved());
-
-        // simulate the second proxy being unauthorized for READ actions
-        final AuthorizationRequestMatcher proxy2Matcher = new AuthorizationRequestMatcher(
-                "proxy2", ResourceFactory.getProxyResource(), request.getAction());
-        when(wrappedAuthorizer.authorize(argThat(proxy2Matcher))).thenReturn(AuthorizationResult.denied("denied"));
-
-        final AuthorizationResult result = frameworkAuthorizer.authorize(request);
-        assertNotNull(result);
-        assertEquals(AuthorizationResult.Result.Denied, result.getResult());
-
-        // should make 2 calls to the wrapped authorizer for the two proxies
-        verify(wrappedAuthorizer, times(2)).authorize(any(AuthorizationRequest.class));
-    }
 
     @Test
     public void testReadNonPublicBucketWhenNotAnonymousAndUnauthorizedEndUser() {
@@ -220,20 +163,7 @@ public class TestFrameworkAuthorizer {
                 .accessAttempt(true)
                 .identity("user1")
                 .anonymous(false)
-                .proxyIdentities(Arrays.asList("proxy1", "proxy2"))
                 .build();
-
-        // since the bucket is not public and the user is not anonymous, it will continue to proxy authorization
-
-        // simulate the first proxy being authorized for READ actions
-        final AuthorizationRequestMatcher proxy1Matcher = new AuthorizationRequestMatcher(
-                "proxy1", ResourceFactory.getProxyResource(), request.getAction());
-        when(wrappedAuthorizer.authorize(argThat(proxy1Matcher))).thenReturn(AuthorizationResult.approved());
-
-        // simulate the second proxy being authorized for READ actions
-        final AuthorizationRequestMatcher proxy2Matcher = new AuthorizationRequestMatcher(
-                "proxy2", ResourceFactory.getProxyResource(), request.getAction());
-        when(wrappedAuthorizer.authorize(argThat(proxy2Matcher))).thenReturn(AuthorizationResult.approved());
 
         // simulate the end user being unauthorized for READ actions
         final AuthorizationRequestMatcher user1Matcher = new AuthorizationRequestMatcher(
@@ -244,8 +174,8 @@ public class TestFrameworkAuthorizer {
         assertNotNull(result);
         assertEquals(AuthorizationResult.Result.Denied, result.getResult());
 
-        // should make 3 calls to the wrapped authorizer for the two proxies and end user
-        verify(wrappedAuthorizer, times(3)).authorize(any(AuthorizationRequest.class));
+        // should make 1 calls to the wrapped authorizer for the end user
+        verify(wrappedAuthorizer, times(1)).authorize(any(AuthorizationRequest.class));
     }
 
 

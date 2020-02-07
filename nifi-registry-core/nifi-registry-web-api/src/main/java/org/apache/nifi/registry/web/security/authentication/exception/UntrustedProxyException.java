@@ -14,33 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.web.security.authentication.x509;
+package org.apache.nifi.registry.web.security.authentication.exception;
 
-import java.util.Objects;
+import org.springframework.security.core.AuthenticationException;
 
-public class X509AuthenticationRequestDetails {
+public class UntrustedProxyException extends AuthenticationException {
 
-    private final String proxiedEntitiesChain;
-
-    private final String httpMethod;
-
-    private final String contextPath;
-
-    public X509AuthenticationRequestDetails(final String proxiedEntitiesChain, final String httpMethod, final String contextPath) {
-        this.proxiedEntitiesChain = proxiedEntitiesChain;
-        this.httpMethod = Objects.requireNonNull(httpMethod);
-        this.contextPath = contextPath;
+    public UntrustedProxyException(String msg) {
+        super(msg);
     }
 
-    public String getProxiedEntitiesChain() {
-        return proxiedEntitiesChain;
+    public UntrustedProxyException(String msg, Throwable t) {
+        super(msg, t);
     }
 
-    public String getHttpMethod() {
-        return httpMethod;
-    }
-
-    public String getContextPath() {
-        return contextPath;
-    }
 }

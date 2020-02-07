@@ -278,6 +278,20 @@ public class RegistryService {
         return BucketMappings.map(existingBucket);
     }
 
+    public boolean isPublicReadAllowed(final String bucketIdentifier) {
+        try {
+            final Bucket bucket = getBucket(bucketIdentifier);
+            return bucket.isAllowPublicRead();
+        } catch (ResourceNotFoundException rnfe) {
+            // if not found then we can't determine public access, so return false to delegate to regular authorizer
+            LOGGER.debug("Cannot determine public access, bucket not found with id [{}]", new Object[]{bucketIdentifier});
+            return false;
+        } catch (Exception e) {
+            LOGGER.error("Error checking public access to bucket with id [{}]", new Object[]{bucketIdentifier}, e);
+            return false;
+        }
+    }
+
     // ---------------------- BucketItem methods ---------------------------------------------
 
     public List<BucketItem> getBucketItems(final String bucketIdentifier) {

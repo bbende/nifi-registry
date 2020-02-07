@@ -27,6 +27,7 @@ import org.apache.nifi.registry.web.security.authentication.jwt.JwtIdentityProvi
 import org.apache.nifi.registry.web.security.authentication.x509.X509IdentityAuthenticationProvider;
 import org.apache.nifi.registry.web.security.authentication.x509.X509IdentityProvider;
 import org.apache.nifi.registry.web.security.authorization.ResourceAuthorizationFilter;
+import org.apache.nifi.registry.web.service.ServiceFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +64,9 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private AuthorizationService authorizationService;
+
+    @Autowired
+    private ServiceFacade serviceFacade;
 
     @Autowired
     private Authorizer authorizer;
@@ -146,7 +150,7 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
 
     private IdentityAuthenticationProvider x509AuthenticationProvider() {
         if (x509AuthenticationProvider == null) {
-            x509AuthenticationProvider = new X509IdentityAuthenticationProvider(properties, authorizer, x509IdentityProvider);
+            x509AuthenticationProvider = new X509IdentityAuthenticationProvider(properties, authorizer, x509IdentityProvider, serviceFacade);
         }
         return x509AuthenticationProvider;
     }

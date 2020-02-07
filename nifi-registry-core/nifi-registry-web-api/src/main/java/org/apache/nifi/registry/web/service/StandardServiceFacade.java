@@ -196,6 +196,11 @@ public class StandardServiceFacade implements ServiceFacade {
                 () -> registryService.deleteBucket(bucketIdentifier));
     }
 
+    @Override
+    public boolean isPublicReadAllowed(final String bucketIdentifier) {
+        return registryService.isPublicReadAllowed(bucketIdentifier);
+    }
+
     // ---------------------- BucketItem methods ----------------------------------------------
 
     @Override
@@ -972,7 +977,6 @@ public class StandardServiceFacade implements ServiceFacade {
     public CurrentUser getCurrentUser() {
         return authorizationService.getCurrentUser();
     }
-
 
     // ---------------------- Authorization methods -----------------------------
 
