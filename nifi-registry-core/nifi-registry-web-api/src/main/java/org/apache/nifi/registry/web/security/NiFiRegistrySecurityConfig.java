@@ -23,6 +23,7 @@ import org.apache.nifi.registry.service.AuthorizationService;
 import org.apache.nifi.registry.web.security.authentication.AnonymousIdentityFilter;
 import org.apache.nifi.registry.web.security.authentication.IdentityAuthenticationProvider;
 import org.apache.nifi.registry.web.security.authentication.IdentityFilter;
+import org.apache.nifi.registry.web.security.authentication.exception.UntrustedProxyException;
 import org.apache.nifi.registry.web.security.authentication.jwt.JwtIdentityProvider;
 import org.apache.nifi.registry.web.security.authentication.x509.X509IdentityAuthenticationProvider;
 import org.apache.nifi.registry.web.security.authentication.x509.X509IdentityProvider;
@@ -191,10 +192,20 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
                                  AuthenticationException authenticationException)
                     throws IOException, ServletException {
 
-                // return a 401 response
-                final int status = HttpServletResponse.SC_UNAUTHORIZED;
-                logger.info("Client could not be authenticated due to: {} Returning 401 response.", authenticationException.toString());
-                logger.debug("", authenticationException);
+                final int status;
+
+                // See X509IdentityAuthenticationProvider.buildAuthenticatedToken(...)
+                if (authenticationException instanceof UntrustedProxyException) {
+                    // return a 403 response
+                    status = HttpServletResponse.SC_FORBIDDEN;
+                    logger.info("Identity in proxy chain not trusted to act as a proxy: {} Returning 403 response.", authenticationException.toString());
+
+                } else {
+                    // return a 401 response
+                    status = HttpServletResponse.SC_UNAUTHORIZED;
+                    logger.info("Client could not be authenticated due to: {} Returning 401 response.", authenticationException.toString());
+                    logger.debug("", authenticationException);
+                }
 
                 if (!response.isCommitted()) {
                     response.setStatus(status);
